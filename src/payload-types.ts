@@ -187,6 +187,8 @@ export interface Article {
  */
 export interface SdlcIntake {
   id: number;
+  projectKey?: string | null;
+  contextHash?: string | null;
   submissionKey: string;
   title: string;
   kind: 'requirement' | 'review' | 'feedback';
@@ -205,6 +207,17 @@ export interface SdlcIntake {
  */
 export interface SdlcRun {
   id: number;
+  projectKey?: string | null;
+  projectContext?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  contextHash?: string | null;
   taskKey: string;
   status: 'queued' | 'running' | 'awaiting-review' | 'failed';
   snapshot:
@@ -239,6 +252,7 @@ export interface SdlcRun {
  */
 export interface SdlcDecision {
   id: number;
+  projectKey?: string | null;
   decisionKey: string;
   run: number | SdlcRun;
   scopeHash: string;
@@ -394,6 +408,8 @@ export interface ArticlesSelect<T extends boolean = true> {
  * via the `definition` "sdlc-intake_select".
  */
 export interface SdlcIntakeSelect<T extends boolean = true> {
+  projectKey?: T;
+  contextHash?: T;
   submissionKey?: T;
   title?: T;
   kind?: T;
@@ -411,6 +427,9 @@ export interface SdlcIntakeSelect<T extends boolean = true> {
  * via the `definition` "sdlc-runs_select".
  */
 export interface SdlcRunsSelect<T extends boolean = true> {
+  projectKey?: T;
+  projectContext?: T;
+  contextHash?: T;
   taskKey?: T;
   status?: T;
   snapshot?: T;
@@ -428,6 +447,7 @@ export interface SdlcRunsSelect<T extends boolean = true> {
  * via the `definition` "sdlc-decisions_select".
  */
 export interface SdlcDecisionsSelect<T extends boolean = true> {
+  projectKey?: T;
   decisionKey?: T;
   run?: T;
   scopeHash?: T;

@@ -4,6 +4,7 @@ import { open, mkdir, writeFile, readFile, rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { digest, responseSchema, triagePrompt, validateTriage, type IntakeRecord } from '../src/sdlc/contracts'
+import { activeProject, validateProject } from '../src/sdlc/project'
 const root = resolve('.local/sdlc-worker')
 await mkdir(root, { recursive: true })
 // Never expire this lock automatically: a crashed worker can leave an unknown live child.
@@ -18,7 +19,9 @@ try {
     const run = queued.docs[0], startedAt = Date.now()
     await payload.update({ collection: 'sdlc-runs', id: run.id, data: { status: 'running' }, overrideAccess: true })
     try {
-      if (!Array.isArray(run.snapshot) || !run.snapshot.length || run.snapshot.length > 100 || digest(run.snapshot) !== run.taskKey) throw new Error('Snapshot integrity check failed.')
+      const project = validateProject(run.projectContext)
+      if (project.key !== run.projectKey || digest(project) !== run.contextHash || digest(await activeProject()) !== run.contextHash) throw new Error('Snapshot project context is stale or invalid.')
+      if (!Array.isArray(run.snapshot) || !run.snapshot.length || run.snapshot.length > 100 || digest({ project, records: run.snapshot }) !== run.taskKey || run.snapshot.some(x => !x || typeof x !== 'object' || (x as { projectKey?: string }).projectKey !== project.key)) throw new Error('Snapshot integrity check failed.')
       const records = run.snapshot as IntakeRecord[]
       const folder = resolve(root, `run-${run.id}`)
       await mkdir(folder, { recursive: true })
@@ -48,12 +51,12 @@ try {
         child.stdin.on('error', () => {}); child.stdin.end(input || '')
       })
       const version = await invoke(['--version'])
-      const execution = await invoke(['exec', '--ignore-user-config', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check', '--cd', folder, '--json', '--output-schema', resolve(folder, 'schema.json'), '--output-last-message', resolve(folder, 'result.json'), '-'], triagePrompt(records))
+      const execution = await invoke(['exec', '--ignore-user-config', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check', '--cd', folder, '--json', '--output-schema', resolve(folder, 'schema.json'), '--output-last-message', resolve(folder, 'result.json'), '-'], triagePrompt(records, project))
       if (execution.code !== 0 || execution.toolUsed || execution.timedOut) throw new Error(`Read-only triage failed: exit=${execution.code}, toolAttempt=${execution.toolUsed}, timedOut=${execution.timedOut}. No work promoted.`)
       const raw = await readFile(resolve(folder, 'result.json'), 'utf8')
       if (raw.length > 200000) throw new Error('AI response exceeds size limit.')
       const result = validateTriage(JSON.parse(raw), records.map(x => String(x.id)))
-      await payload.update({ collection: 'sdlc-runs', id: run.id, overrideAccess: true, data: { status: 'awaiting-review', result, resultHash: digest(result), elapsedMs: Date.now() - startedAt, toolVersion: version.stdout.trim().slice(0, 100), exitCode: execution.code } })
+      await payload.update({ collection: 'sdlc-runs', id: run.id, overrideAccess: true, data: { status: 'awaiting-review', result, resultHash: digest({ project, result }), elapsedMs: Date.now() - startedAt, toolVersion: version.stdout.trim().slice(0, 100), exitCode: execution.code } })
       console.log(`RUN-${run.id}: schema and provenance validated; awaiting human review. No implementation or release authorized.`)
     } catch (error) {
       const message = error instanceof Error && /^(Snapshot|AI |Unknown|Invalid|Read-only)/.test(error.message) ? error.message : 'Worker failed. Inspect the local environment; no output was promoted.'

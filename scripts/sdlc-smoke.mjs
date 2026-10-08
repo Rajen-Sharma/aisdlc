@@ -17,7 +17,7 @@ try {
     for (let item = 0; item < await templates.count(); item++) {
       await templates.nth(item).click()
       await expect(page.locator('.template-content')).toContainText('#')
-      await page.getByRole('button', { name: 'CMS example', exact: true }).click()
+      await page.getByRole('button', { name: 'Project example', exact: true }).click()
       await expect(page.locator('.example-warning')).toContainText('not an executed result')
       await page.getByRole('button', { name: 'Blank template', exact: true }).click()
       templateCount++
@@ -38,10 +38,10 @@ try {
   assert.equal(download.suggestedFilename(), 'design-security-review.md')
   assert.equal(normalise(await readFile(await download.path(), 'utf8')), normalise(content))
   checks.push({ check: 'Copy/download preserve selected template', result: 'pass' })
-  await page.screenshot({ path: 'docs/evidence/sdlc-guide.png', fullPage: true })
+  await page.screenshot({ path: 'docs/evidence/generic-sdlc-guide.png', fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
-  await page.screenshot({ path: 'docs/evidence/sdlc-guide-mobile.png', fullPage: true })
+  await page.screenshot({ path: 'docs/evidence/generic-sdlc-guide-mobile.png', fullPage: true })
   checks.push({ check: 'Mobile layout has no horizontal overflow', result: 'pass' })
   await page.goto('http://127.0.0.1:3000')
   await page.getByRole('link', { name: 'Explore AI SDLC & templates' }).click()
@@ -51,6 +51,6 @@ try {
   checks.push({ check: 'Guide verification', result: 'fail', message: error.message }); process.exitCode = 1
 } finally {
   await browser.close()
-  await writeFile('docs/evidence/sdlc-guide-check.json', JSON.stringify({ recordedAt: new Date().toISOString(), checks }, null, 2))
+  await writeFile('docs/evidence/generic-sdlc-guide-check.json', JSON.stringify({ recordedAt: new Date().toISOString(), checks }, null, 2))
   console.log(JSON.stringify(checks, null, 2))
 }

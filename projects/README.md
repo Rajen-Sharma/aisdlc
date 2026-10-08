@@ -1,0 +1,11 @@
+# Project profiles
+
+The AI SDLC engine is shared. Each product supplies a stable key, display name, version, objective, constraints and its own backlog. The engine supplies generic intake, planning/review templates, verification/evidence contracts and mandatory human gates. A project profile cannot specify executable commands or weaken governance.
+
+`active.json` is the single operator-controlled active profile for this local increment. Its default is generic. `examples/headless-cms.json` is a deferred profile carrying the original CMS/Drupal/later-AEM scope; it is not active. Add other products by creating a profile using the same five-field structure, reviewing its scope, and copying it to `active.json`. Increment the version when objectives or constraints change; keep a stable key for revisions of the same project. Commit the configuration and its review evidence.
+
+Intake is automatically tagged with the active project key and context hash. The dashboard only lists that project's inputs, runs and decisions. Submitted forms include the displayed context hash; a changed profile rejects stale submissions. Run/task/result identities include the project profile, preventing reuse across changed project contexts. The worker freezes the project profile in its snapshot and checks its current hash before execution. Human analysis decisions reject changed context. No project activation approves a sprint, security review or release.
+
+Existing untagged CMS intake and runs are retained as historical records. They are not silently relabelled or inserted into the generic backlog. Inspect them through the administration collections and previous evidence packs. To activate the CMS later, first review its saved scope and add the existing backlog through explicit intake with provenance links. Historical approvals do not authorize new implementation tasks.
+
+This is project scoping within one trusted local administrator workspace, **not tenant isolation**. All delivery administrators still have authority over all stored project records through administration. Multi-project switching in the UI, membership permissions, repository bindings, isolated runners and tenant separation require further implementation/design review. Storage/authentication currently reuse Payload/PostgreSQL; the core contracts contain no CMS/domain-specific policy.

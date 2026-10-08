@@ -1,17 +1,29 @@
 import { APIError, type CollectionConfig } from 'payload'
 import { admin } from '../security'
 import { digest, intakeKinds } from './contracts'
+import { activeProject } from './project'
 const immutable = { read: admin, create: admin, update: () => false, delete: () => false }
 export const Intake: CollectionConfig = {
   slug: 'sdlc-intake', admin: { useAsTitle: 'title', group: 'AI delivery' }, access: immutable,
-  hooks: { beforeValidate: [({ data, operation, req }) => {
+  hooks: { beforeValidate: [async ({ data, operation, req }) => {
     if (operation !== 'create') return data
     if (!data || !req.user) throw new APIError('Authenticated human intake required.', 403)
-    data.sourceHash = digest({ title: data.title, kind: data.kind, content: data.content, target: data.target, origin: data.origin, supersedes: data.supersedes ?? null })
+    const project = await activeProject()
+    if (data.projectKey && data.projectKey !== project.key) throw new APIError('Intake belongs to a different project.', 409)
+    if (data.contextHash && data.contextHash !== digest(project)) throw new APIError('Project context changed. Reload before submitting.', 409)
+    data.projectKey = project.key
+    data.contextHash = digest(project)
+    if (data.supersedes) {
+      const prior = await req.payload.findByID({ collection: 'sdlc-intake', id: data.supersedes, user: req.user, overrideAccess: false, depth: 0 })
+      if (prior.projectKey !== project.key) throw new APIError('Cannot supersede another project intake.', 409)
+    }
+    data.sourceHash = digest({ projectKey: data.projectKey, contextHash: data.contextHash, title: data.title, kind: data.kind, content: data.content, target: data.target, origin: data.origin, supersedes: data.supersedes ?? null })
     data.actor = req.user.id
     return data
   }] },
   fields: [
+    { name: 'projectKey', type: 'text', admin: { readOnly: true } },
+    { name: 'contextHash', type: 'text', admin: { readOnly: true } },
     { name: 'submissionKey', type: 'text', required: true, unique: true, maxLength: 100 },
     { name: 'title', type: 'text', required: true, maxLength: 200 },
     { name: 'kind', type: 'select', required: true, options: [...intakeKinds] },
@@ -27,6 +39,9 @@ export const Runs: CollectionConfig = {
   slug: 'sdlc-runs', admin: { useAsTitle: 'taskKey', group: 'AI delivery' },
   access: { read: admin, create: () => false, update: () => false, delete: () => false },
   fields: [
+    { name: 'projectKey', type: 'text' },
+    { name: 'projectContext', type: 'json' },
+    { name: 'contextHash', type: 'text' },
     { name: 'taskKey', type: 'text', unique: true, required: true },
     { name: 'status', type: 'select', required: true, options: ['queued', 'running', 'awaiting-review', 'failed'] },
     { name: 'snapshot', type: 'json', required: true },
@@ -42,12 +57,18 @@ export const Decisions: CollectionConfig = {
     if (!req.user || !data?.run) throw new APIError('Human decision requires a reviewed run.', 403)
     const run = await req.payload.findByID({ collection: 'sdlc-runs', id: data.run, user: req.user, overrideAccess: false, depth: 0 })
     if (run.status !== 'awaiting-review' || !run.resultHash || data.scopeHash !== run.resultHash) throw new APIError('Decision is stale or run is not reviewable.', 409)
+    if (run.projectKey) {
+      const project = await activeProject()
+      if (run.projectKey !== project.key || run.contextHash !== digest(project) || digest({ project: run.projectContext, result: run.result }) !== run.resultHash) throw new APIError('Project context changed or review integrity failed.', 409)
+    }
     data.actor = req.user.id
+    data.projectKey = run.projectKey || 'legacy-headless-cms'
     // Decision identity is derived server-side. Contradictory decisions require a new reviewed run.
     data.decisionKey = `${run.id}:${run.resultHash}`
     return data
   }] },
   fields: [
+    { name: 'projectKey', type: 'text', admin: { readOnly: true } },
     { name: 'decisionKey', type: 'text', unique: true, required: true, admin: { readOnly: true } },
     { name: 'run', type: 'relationship', relationTo: 'sdlc-runs', required: true },
     { name: 'scopeHash', type: 'text', required: true },

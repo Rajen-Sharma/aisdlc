@@ -1,0 +1,10 @@
+✔ intake response rejects unknown provenance, lost inputs and fabricated approval (4.8318ms)
+✔ generic project context binds scope without introducing a product or weakening human gates (1.5278ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 618.5965

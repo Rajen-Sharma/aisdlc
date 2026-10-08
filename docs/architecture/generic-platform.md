@@ -1,0 +1,13 @@
+# Generic AI SDLC platform direction CR-ENG-001
+
+Recorded 8 October 2026, Australia/Sydney, following the human request: “Can it be made generic and we add headless CMS and drupal migration to it later ?” This replaces the default CMS-focused project presentation with a generic software delivery workspace. It preserves prior CMS plans, code, records and evidence as a deferred example. It does not approve pending code security, sprint completion, MVP acceptance or production release.
+
+The platform owns intake provenance, feedback triage, planning/document templates, execution contracts, deterministic verification, evidence and human gates. Product context owns outcomes, functional/nonfunctional requirements, chosen technology, domain policies, repository configuration and integration/migration adapters. CMS/Drupal/AEM belong to a later product profile and backlog, not the platform prompt or default interface.
+
+The first local implementation uses an operator-controlled versioned JSON profile, project-tagged database records and project-bound task/result hashes. There are no new roles, credentials, external services or executable project configuration. Existing administrator-only authorization remains in force. The profile is data; neither profile text nor intake can change platform governance. Unknown profile fields are rejected. Stale project forms/runs/decisions are blocked. Source-ID validation remains independent of AI output.
+
+No existing record is rewritten to pretend it originated in the generic project. Historic CMS evidence remains at its previous paths; the CMS public preview moves to `/cms`, while `/` becomes the generic landing page. Shared templates use generic examples. The optional CMS profile preserves synthetic Drupal first and AEM later when that project is deliberately activated.
+
+Human design/code security reviews, approved sprint plans/outcomes, every-MVP showcases, meaningful reporting and production qualification remain mandatory. Isolation remains a prerequisite for coding execution. The local profile mechanism is not a complete multi-tenant project management service: one profile is active at a time and administrators are trusted across project records. That limitation is explicit until new trust boundaries are reviewed and tested.
+
+Verification targets: generic prompt contains no assumed CMS/migration/stack; changed project/version changes task/result identity; forged/stale intake context rejected; project-filtered UI excludes historic CMS records; actual non-CMS AI triage; preserved CMS permission journey at `/cms`; template copy/download and mobile layout.

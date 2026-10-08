@@ -43,3 +43,7 @@ The human explicitly selected “Build the AI SDLC engine first; preserve scope 
 [TRIAL-INTAKE-001](../research/intake-trial-findings.md) records discovery results; a passing AI intake trial does not approve a sprint or security design.
 
 Product quality requirement QLT-001: final engine and CMS must be polished, with complete workflows, accessible/responsive interfaces, understandable reporting, documentation and tested failure states. “Polished” does not waive production criteria or permit claiming incomplete work is production ready.
+
+## Generic platform direction
+
+CR-ENG-001 records the user's request to make the platform generic and add CMS/Drupal later. See [the scope separation and implementation boundaries](../architecture/generic-platform.md). This changes the active product context, preserves the deferred CMS plans and historical decisions, and does not grant any pending security/outcome/release approvals.

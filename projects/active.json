@@ -1,0 +1,10 @@
+{
+  "key": "software-project",
+  "name": "Software project",
+  "version": 1,
+  "objective": "Capture and review software requirements, plan human-approved delivery increments, and retain verification evidence.",
+  "constraints": [
+    "Use synthetic or redacted inputs in this local increment.",
+    "The product domain and technology stack are selected per project, not by the delivery engine."
+  ]
+}

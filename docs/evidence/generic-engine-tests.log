@@ -1,0 +1,50 @@
+
+> headless-cms-sdlc@0.1.0 test
+> node scripts/test.mjs
+
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[⢿] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+[22:03:58] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+▶ CMS permissions and migration acceptance
+  ✔ editor creates and reloads a private draft; cannot publish or escalate role (95.1572ms)
+  ✔ public reads hide private/draft/revision/nested content; publisher can publish (108.9453ms)
+  ✔ fresh import creates two; rerun skips; destination edits conflict; source changes update (141.6933ms)
+  ✔ invalid and hostile samples rejected; injected instructions remain plain text (25.0576ms)
+✔ CMS permissions and migration acceptance (4525.3131ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17342.1173
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+[22:04:16] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+✔ delivery records enforce human authority, immutable provenance and exact review scope (2980.67ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15561.1858
+✔ intake response rejects unknown provenance, lost inputs and fabricated approval (4.7979ms)
+✔ generic project context binds scope without introducing a product or weakening human gates (1.4889ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 587.5536

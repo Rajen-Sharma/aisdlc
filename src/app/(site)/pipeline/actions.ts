@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { role } from '../../../security'
 import { digest, intakeKinds } from '../../../sdlc/contracts'
+import { activeProject } from '../../../sdlc/project'
 export async function session() {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: await headers() })
@@ -19,24 +20,28 @@ const text = (form: FormData, key: string, max: number) => {
 }
 export async function submitIntake(form: FormData) {
   const { payload, user } = await session()
+  const project = await activeProject()
   const kind = text(form, 'kind', 20) as typeof intakeKinds[number]
   if (!intakeKinds.includes(kind)) throw new Error('Invalid intake type.')
-  const data = { submissionKey: text(form, 'submissionKey', 100), title: text(form, 'title', 200), content: text(form, 'content', 12000), target: text(form, 'target', 120), origin: text(form, 'origin', 200), kind }
+  if (text(form, 'projectKey', 64) !== project.key || text(form, 'contextHash', 64) !== digest(project)) throw new Error('Project context changed. Reload before submitting.')
+  const data = { projectKey: project.key, contextHash: digest(project), submissionKey: text(form, 'submissionKey', 100), title: text(form, 'title', 200), content: text(form, 'content', 12000), target: text(form, 'target', 120), origin: text(form, 'origin', 200), kind }
   const prior = await payload.find({ collection: 'sdlc-intake', where: { submissionKey: { equals: data.submissionKey } }, user, overrideAccess: false, limit: 1 })
   if (prior.docs.length) {
     const old = prior.docs[0]
-    if (['title', 'content', 'target', 'origin', 'kind'].some(k => old[k as keyof typeof old] !== data[k as keyof typeof data])) throw new Error('Submission key reused with changed content.')
+    if (['projectKey', 'contextHash', 'title', 'content', 'target', 'origin', 'kind'].some(k => old[k as keyof typeof old] !== data[k as keyof typeof data])) throw new Error('Submission key reused with changed content.')
   } else await payload.create({ collection: 'sdlc-intake', data: { ...data, actor: user.id, sourceHash: '' }, user, overrideAccess: false })
   revalidatePath('/pipeline'); redirect('/pipeline?notice=submitted')
 }
-export async function queueTriage() {
+export async function queueTriage(form: FormData) {
   const { payload, user } = await session()
-  const intake = await payload.find({ collection: 'sdlc-intake', user, overrideAccess: false, limit: 100, sort: 'id', depth: 0 })
+  const project = await activeProject()
+  if (text(form, 'contextHash', 64) !== digest(project)) throw new Error('Project context changed. Reload before queueing.')
+  const intake = await payload.find({ collection: 'sdlc-intake', where: { projectKey: { equals: project.key } }, user, overrideAccess: false, limit: 100, sort: 'id', depth: 0 })
   if (!intake.docs.length || intake.totalDocs > 100) throw new Error('Select a bounded intake batch: 1–100 records supported in this increment.')
-  const snapshot = intake.docs.map(({ id, title, content, kind, target, sourceHash, supersedes }) => ({ id, title, content, kind, target, sourceHash, supersedes }))
-  const taskKey = digest(snapshot)
+  const snapshot = intake.docs.map(({ id, title, content, kind, target, sourceHash, supersedes, projectKey, contextHash }) => ({ id, title, content, kind, target, sourceHash, supersedes, projectKey, contextHash }))
+  const taskKey = digest({ project, records: snapshot })
   const prior = await payload.find({ collection: 'sdlc-runs', where: { taskKey: { equals: taskKey } }, user, overrideAccess: false, limit: 1 })
-  if (!prior.docs.length) await payload.create({ collection: 'sdlc-runs', data: { taskKey, snapshot, status: 'queued' }, overrideAccess: true })
+  if (!prior.docs.length) await payload.create({ collection: 'sdlc-runs', data: { taskKey, snapshot, status: 'queued', projectKey: project.key, projectContext: project, contextHash: digest(project) }, overrideAccess: true })
   revalidatePath('/pipeline'); redirect('/pipeline?notice=queued')
 }
 export async function reviewTriage(form: FormData) {

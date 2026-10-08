@@ -1,0 +1,11 @@
+{
+  "key": "headless-cms",
+  "name": "Headless CMS",
+  "version": 1,
+  "objective": "Build a polished, production-ready headless CMS with a repeatable Drupal migration and a later AEM source adapter.",
+  "constraints": [
+    "Start with synthetic Drupal information; assess real source access separately.",
+    "Schedule Drupal migration before the later AEM adapter.",
+    "Preserve the existing CMS backlog, security findings and evidence when this project is activated."
+  ]
+}

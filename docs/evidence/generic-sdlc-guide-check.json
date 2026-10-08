@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-10-08T11:06:44.054Z",
+  "checks": [
+    {
+      "check": "Stage/template navigation",
+      "result": "pass",
+      "stages": 10,
+      "templates": 14
+    },
+    {
+      "check": "Copy/download preserve selected template",
+      "result": "pass"
+    },
+    {
+      "check": "Mobile layout has no horizontal overflow",
+      "result": "pass"
+    },
+    {
+      "check": "Homepage entry works at mobile width",
+      "result": "pass"
+    }
+  ]
+}

@@ -68,7 +68,7 @@ try {
   assert.equal(visible.status(), 200)
   assert.equal((await visible.json()).title, 'Browser reviewed article')
   const home = await anonymous.newPage()
-  await home.goto(base)
+  await home.goto(`${base}/cms`)
   await expect(home.getByRole('heading', { name: 'Browser reviewed article' })).toBeVisible()
   results.push({ criterion: 'AC-002', outcome: 'pass', behavior: 'Publisher publishes public content through UI; anonymous API and page show it.' })
   const admin = await login('admin')
@@ -83,7 +83,7 @@ try {
     if (removed.status() !== 200) { results.push({ outcome: 'fail', message: 'Test record cleanup failed' }); process.exitCode = 1 }
   }
   const home = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
-  await home.goto(base)
+  await home.goto(`${base}/cms`)
   await home.screenshot({ path: '.local/screenshots/home.png', fullPage: true })
   await home.setViewportSize({ width: 390, height: 844 })
   await home.screenshot({ path: '.local/screenshots/mobile.png', fullPage: true })
@@ -91,6 +91,6 @@ try {
   results.push({ outcome: 'pass', behavior: 'Mobile page has no horizontal overflow.' })
   for (const context of contexts) await context.close()
   await browser.close()
-  await writeFile('docs/evidence/browser-check.json', JSON.stringify({ timestamp: new Date().toISOString(), synthetic: true, results }, null, 2))
+  await writeFile('docs/evidence/generic-preserved-cms-browser.json', JSON.stringify({ timestamp: new Date().toISOString(), synthetic: true, results }, null, 2))
   console.log(JSON.stringify(results, null, 2))
 }
