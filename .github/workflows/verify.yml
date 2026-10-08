@@ -1,0 +1,68 @@
+name: Verify local MVP
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.14.0
+          cache: npm
+      - run: npm ci
+      - run: npm run setup
+      - name: Start isolated development database
+        shell: pwsh
+        run: |
+          Start-Process -FilePath node -ArgumentList '--env-file=.env','scripts/database.mjs' -WindowStyle Hidden -RedirectStandardOutput .local/database.log -RedirectStandardError .local/database-error.log
+          $ready = $false
+          for ($attempt = 0; $attempt -lt 60; $attempt++) {
+            $client = [System.Net.Sockets.TcpClient]::new()
+            try { $client.Connect('127.0.0.1', 55432); $ready = $true; break } catch { Start-Sleep -Seconds 1 } finally { $client.Dispose() }
+          }
+          if (-not $ready) { throw 'Database did not become ready' }
+      - run: npm run seed
+      - run: npm run typecheck
+      - name: Integration tests
+        shell: pwsh
+        run: |
+          npm test *> docs/evidence/integration-tests.log
+          exit $LASTEXITCODE
+      - name: Dependency audit
+        shell: pwsh
+        run: |
+          npm audit --json > docs/evidence/dependency-audit.json
+          exit $LASTEXITCODE
+      - run: npm run import:demo
+      - name: Optimized build
+        shell: pwsh
+        run: |
+          npm run build *> docs/evidence/build.log
+          exit $LASTEXITCODE
+      - run: npx playwright install chromium
+      - name: Start built app and verify browser journeys
+        shell: pwsh
+        run: |
+          Start-Process -FilePath node -ArgumentList 'scripts/next.mjs','start' -WindowStyle Hidden -RedirectStandardOutput .local/app.log -RedirectStandardError .local/app-error.log
+          node scripts/wait-http.mjs
+          npm run test:browser
+          exit $LASTEXITCODE
+      - name: Retain check evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: mvp-evidence-${{ github.sha }}
+          path: |
+            docs/evidence/*.log
+            docs/evidence/*.json
+            .local/screenshots/*.png
+          include-hidden-files: true
+          retention-days: 30

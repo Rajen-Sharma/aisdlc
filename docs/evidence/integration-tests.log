@@ -1,0 +1,25 @@
+
+> headless-cms-sdlc@0.1.0 test
+> node --env-file=.env --import tsx --test --test-force-exit tests/*.test.ts
+
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[⢿] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+[20:50:52] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+▶ CMS permissions and migration acceptance
+  ✔ editor creates and reloads a private draft; cannot publish or escalate role (116.1715ms)
+  ✔ public reads hide private/draft/revision/nested content; publisher can publish (158.9042ms)
+  ✔ fresh import creates two; rerun skips; destination edits conflict; source changes update (187.6431ms)
+  ✔ invalid and hostile samples rejected; injected instructions remain plain text (45.1243ms)
+✔ CMS permissions and migration acceptance (5640.9575ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19219.0523

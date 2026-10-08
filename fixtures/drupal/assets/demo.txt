@@ -1,0 +1,1 @@
+Synthetic private media fixture. Contains no customer data.

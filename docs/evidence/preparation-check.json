@@ -1,0 +1,71 @@
+{
+  "evidenceId": "EVD-PREP-001",
+  "artifacts": [
+    {
+      "sha256": "BBCFB7B6789942598293BA45191B23786B220A0FFC064B7444B482090AEFC632",
+      "path": "docs\\architecture-and-delivery.md"
+    },
+    {
+      "sha256": "8A87C2FFE29EF984E5E83085C0D9BC86E05E5638DBE4143F6E93627839C82217",
+      "path": "docs\\evidence\\traceability.md"
+    },
+    {
+      "sha256": "87EB7524A07540F96D42F9340A5F0D219313A6722671309B2971B57A9F116437",
+      "path": "docs\\governance\\registers.md"
+    },
+    {
+      "sha256": "F41C596D217E1A5CC514146D52B03EB22B7DE9571A047C6574472922C8CF5DE5",
+      "path": "docs\\planning\\project-baseline.md"
+    },
+    {
+      "sha256": "A18B35E9280AC5D7A66DB9B22CFB602EE584256ECC9747B2299AC5839715475E",
+      "path": "docs\\planning\\sprint-1.md"
+    },
+    {
+      "sha256": "FD8A8C4A4E40F4B6EEFEE39731624E004727703CDE8FCEBEBD8D0081A77070C5",
+      "path": "docs\\requirements\\requirements.md"
+    },
+    {
+      "sha256": "A7EECC1D497EC33A450F609E80F31ECCC02F6AB2AE8282E70AC7A5E06DDC2D0D",
+      "path": "docs\\research\\ai-sdlc-industry-research.md"
+    },
+    {
+      "sha256": "D5C925BB5605EE571AB4C6178DE64D4C7F7357ED0CA10246230175475D90505D",
+      "path": "docs\\reviews\\baseline-review.md"
+    },
+    {
+      "sha256": "ABBE176BACDE26027C75D3308328B025CC8B11546331B746B38B5A8258966EED",
+      "path": "docs\\security\\design-review.md"
+    },
+    {
+      "sha256": "84304727C19EC82198251C026E12FAE7B10CF70049BEE232937BCB2A92B92509",
+      "path": "fixtures\\drupal\\README.md"
+    },
+    {
+      "sha256": "591F0FC6A9A27444AD31A5FDE1F3E74F483BBDB2D6A4D22714599149FFD3910D",
+      "path": "fixtures\\drupal\\synthetic-site.json"
+    },
+    {
+      "sha256": "289A6FD98CBD221BCFDF0D0DF92A3961B391A249ECA120F218A960B3E2DF6274",
+      "path": "fixtures\\drupal\\assets\\demo.txt"
+    }
+  ],
+  "result": "pass",
+  "limitations": "No CMS, import, security controls, or human approvals tested",
+  "timestamp": "2026-10-08T08:28:26.6361035+00:00",
+  "checks": [
+    "Fixture JSON parses",
+    "Current-content composite identities unique",
+    "Local Markdown links resolve"
+  ],
+  "purpose": "Baseline preparation checks only",
+  "counts": {
+    "content": 4,
+    "revisions": 1,
+    "media": 1,
+    "taxonomy": 1,
+    "negativeCases": 4,
+    "authors": 1,
+    "redirects": 1
+  }
+}

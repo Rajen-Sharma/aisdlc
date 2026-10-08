@@ -1,0 +1,31 @@
+{
+  "runId": "2dfee50d-bbd4-422d-b550-dc4f44b1a363",
+  "timestamp": "2026-10-08T09:49:01.435Z",
+  "fixtureId": "SYN-001",
+  "synthetic": true,
+  "selected": 2,
+  "created": 2,
+  "updated": 0,
+  "skipped": 0,
+  "rejected": 0,
+  "conflicted": 0,
+  "failed": 0,
+  "outcomes": [
+    {
+      "sourceKey": "[\"drupal\",\"synthetic-demo\",\"article\",\"n1\",\"en\"]",
+      "outcome": "created"
+    },
+    {
+      "sourceKey": "[\"drupal\",\"synthetic-demo\",\"article\",\"n2\",\"en\"]",
+      "outcome": "created"
+    }
+  ],
+  "excluded": 2,
+  "adapter": "synthetic-drupal-v1",
+  "capabilities": {
+    "revisions": false,
+    "incremental": false,
+    "deletionDetection": false,
+    "media": false
+  }
+}

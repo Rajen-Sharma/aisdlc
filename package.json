@@ -1,0 +1,46 @@
+{
+  "name": "headless-cms-sdlc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.14.0 <25"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "db": "node --env-file=.env scripts/database.mjs",
+    "dev": "node scripts/next.mjs dev",
+    "build": "node scripts/next.mjs build",
+    "start": "node scripts/next.mjs start",
+    "typecheck": "tsc --noEmit",
+    "test:browser": "node scripts/browser-check.mjs",
+    "seed": "node --env-file=.env --import tsx scripts/seed.ts",
+    "import:demo": "node --env-file=.env --import tsx scripts/import.ts",
+    "test": "node --env-file=.env --import tsx --test --test-force-exit tests/*.test.ts"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/ui": "3.90.2",
+    "graphql": "16.11.0",
+    "next": "16.4.0",
+    "payload": "3.90.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "overrides": {
+    "undici": "7.29.1",
+    "sass": "1.105.1",
+    "dompurify": "3.4.16",
+    "esbuild": "0.28.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "24.10.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "embedded-postgres": "17.10.0-beta.17",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

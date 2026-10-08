@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-10-08T09:59:11.413Z",
+  "synthetic": true,
+  "results": [
+    {
+      "criterion": "AC-001",
+      "outcome": "pass",
+      "behavior": "Editor logs in, edits, saves and reloads a draft; publish action absent."
+    },
+    {
+      "criterion": "AC-002",
+      "outcome": "pass",
+      "behavior": "REST rejects editor publishing/role escalation and anonymous draft/version access."
+    },
+    {
+      "criterion": "AC-002",
+      "outcome": "pass",
+      "behavior": "Publisher publishes public content through UI; anonymous API and page show it."
+    },
+    {
+      "outcome": "pass",
+      "behavior": "Mobile page has no horizontal overflow."
+    }
+  ]
+}

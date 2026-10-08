@@ -1,0 +1,35 @@
+
+> headless-cms-sdlc@0.1.0 import:demo
+> node --env-file=.env --import tsx scripts/import.ts
+
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[⢿] Pulling schema from database...
+[2K[1G[⣻] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+[20:52:13] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+{
+  "runId": "39a7c4ac-83d4-4f14-ac5d-53f68dff64df",
+  "timestamp": "2026-10-08T09:52:13.973Z",
+  "fixtureId": "SYN-001",
+  "synthetic": true,
+  "selected": 2,
+  "created": 0,
+  "updated": 0,
+  "skipped": 2,
+  "rejected": 0,
+  "conflicted": 0,
+  "failed": 0,
+  "outcomes": [
+    {
+      "sourceKey": "[\"drupal\",\"synthetic-demo\",\"article\",\"n1\",\"en\"]",
+      "outcome": "skipped"
+    },
+    {
+      "sourceKey": "[\"drupal\",\"synthetic-demo\",\"article\",\"n2\",\"en\"]",
+      "outcome": "skipped"
+    }
+  ]
+}
