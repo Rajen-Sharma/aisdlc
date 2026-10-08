@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-08T11:50:53.664Z",
+  "scope": "Navigation/authentication/empty review section; populated gate form security exercised in database tests, not browser automation.",
+  "results": [
+    {
+      "check": "Anonymous cannot view story reviews",
+      "passed": true
+    },
+    {
+      "check": "Authenticated story review section and preparation link",
+      "passed": true
+    },
+    {
+      "check": "390px layout without horizontal overflow",
+      "passed": true
+    }
+  ]
+}
