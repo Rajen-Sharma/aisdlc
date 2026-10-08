@@ -1,0 +1,143 @@
+{
+  "preparedAt": "2026-10-08T12:38:25.301Z",
+  "implementationCommit": "e5ddba0e66ac829f147e499c76e695b380b0b42e",
+  "baselineCommit": "a8c23ff0f0c730c1ffbaa51cf81fdbde9e305611",
+  "hashBasis": "Working filesystem bytes; Git CRLF normalization may differ.",
+  "buildId": "-Dmwxs4VJffUgBMeqtNcn",
+  "scope": "Reservation control only; no qualified coding executor.",
+  "results": {
+    "integrationLeafScenarios": 10,
+    "nodeReportedResults": 11,
+    "populatedBrowserChecks": 5,
+    "localBuild": "passed",
+    "restartRegression": "passed",
+    "githubCI": "passed",
+    "githubRunId": 37777213187,
+    "humanCodeReview": "pending",
+    "actualHumanApprovalsFromAutomation": 0,
+    "executionAllowed": false,
+    "pipelineModelCalls": 0
+  },
+  "files": [
+    {
+      "file": ".github/workflows/verify.yml",
+      "sha256": "5cdabc54b20854387192459a663d3be7466376bd299df21545ee026ea15dbfa4"
+    },
+    {
+      "file": "docs/evidence/github-2026-10-08/linux-verification-run.json",
+      "sha256": "41c1e80b3e31e9087aea0ef26a84345db80039f8cbfdabe5f31b18a3acbcc39e"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/build.log",
+      "sha256": "a8ff61f7ed60fc50095286b4e1efc20b1074dad42cdc731e0f136a82555cf009"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/integration-tests.log",
+      "sha256": "12ab6d9b7951cf00c9c36187f3916e37b778fd2113005efb8c60c409e9f638d0"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/ownership-browser.json",
+      "sha256": "ae624995bb8f54485cf17a3a74fa959eb9a39491c2b8a68505144b0a4eef8522"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/ownership-clock-refreshed.log",
+      "sha256": "5c94b54df84ee0820bb0637643cd09aba9ebd0de34948f4087fa50aa8f79aded"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/ownership-clock-regression.log",
+      "sha256": "5f3f8a4c40c81f23693cb90aaefe5460c5609b80aaab0d160ffaa4e77a3e85c9"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/ownership-desktop.png",
+      "sha256": "2ac84d726bf23c779e5550cd94656735920ad4977dd066dd3382f841225d5940"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/ownership-mobile.png",
+      "sha256": "2eb893a32006a914d4c49639aae6c3b7e734941a7a797eb01180aa7a826e52a1"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/ownership-restart.log",
+      "sha256": "d3e527d214222b6b332cd3e0d3c684075569731a273f79f723bb8f9b2b251dbd"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/remote-final-run.json",
+      "sha256": "0e88343fc4b91122ef7bcd03f552b7990ee8c77014b3458cea4c31b188f2ec18"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/remote-initial-runs.json",
+      "sha256": "5570c110b0dc2447e350494056fb64277b24f42df925f448baca73cc8bdbbfb5"
+    },
+    {
+      "file": "docs/evidence/ownership-checkpoint/typecheck.log",
+      "sha256": "557bbc87ba003d606d0f5857f39b8dcee84e22600c6449448f38d97ffaa412a5"
+    },
+    {
+      "file": "docs/governance/current-status.md",
+      "sha256": "c285573320ca2897911294b453931f0a0d9555e7b06aa5531c18caf51618574d"
+    },
+    {
+      "file": "docs/reviews/github-connection-2026-10-08.md",
+      "sha256": "348db0535124b4155cc6af179dd9e06a24bdd8078b17e81fd045e15aec82d491"
+    },
+    {
+      "file": "docs/reviews/ownership-checkpoint.md",
+      "sha256": "9d9f31b10442755615145fbacc605e410d7f2be8da525ed71ccc238b9bc0ce4b"
+    },
+    {
+      "file": "docs/security/ownership-code-review.md",
+      "sha256": "26cde476e07b84aec0e8196a6a01203d821fce3b7bf6b163aaa0a153756ffb92"
+    },
+    {
+      "file": "scripts/ci-test-summary.mjs",
+      "sha256": "d9064ad576a52653cc905a6099b3b91497bd293b266ea3db861b4af08dcc9cd4"
+    },
+    {
+      "file": "scripts/ownership-browser.ts",
+      "sha256": "9cf4484add1054e8033bd9bec576eae9eb64cfc7c082d1b09fc384894ca6b215"
+    },
+    {
+      "file": "src/app/(site)/pipeline/StoryReviews.tsx",
+      "sha256": "55f687b78039ce4bb942e67e75dd69632818d7031d1178fde5be0607bfc66dd9"
+    },
+    {
+      "file": "src/app/(site)/pipeline/TaskLedger.tsx",
+      "sha256": "ed345ce5cd44e5049a1dde30601000f472844c43f453e5dcc9cca8b0d195c2b3"
+    },
+    {
+      "file": "src/app/(site)/pipeline/actions.ts",
+      "sha256": "116e5b29940b50d182c08059db9b6d93a54150509b894761f825aba9942342ae"
+    },
+    {
+      "file": "src/app/(site)/pipeline/page.tsx",
+      "sha256": "446a966c8e20eb1658d575b440a8934c04b37bde9476366f62c5fa95bd8c228f"
+    },
+    {
+      "file": "src/payload-types.ts",
+      "sha256": "24db465240eb04eadcc4cc006b3708c65afef5fb8ebb1e9087558811eb5ca5d7"
+    },
+    {
+      "file": "src/payload.config.ts",
+      "sha256": "895c7bd1d105031acd4e41088c87f6ee080e4d05948ce0487c0428b45619c2ac"
+    },
+    {
+      "file": "src/sdlc/delivery.ts",
+      "sha256": "2a3c891d89807d71bdadebe3390952fb002cebcc36efcf5ee30df480a67ac720"
+    },
+    {
+      "file": "src/sdlc/story-lock.ts",
+      "sha256": "83efdac22d0d28cbcd70ad6240ff728d4c3336e30741c9d773eab2d5b0a0be16"
+    },
+    {
+      "file": "src/sdlc/task-collections.ts",
+      "sha256": "12c1bd471395e0c6b32c9f377bcba5735b4dbae1d33ddae512822d2e3660264e"
+    },
+    {
+      "file": "src/sdlc/task-coordinator.ts",
+      "sha256": "a4574fee95934aae75343ac67a487cc7cb07d07def134204622ce681cbb9a1b5"
+    },
+    {
+      "file": "tests/sdlc-ownership.test.ts",
+      "sha256": "bf47f25272db6a9cda3204a3e79b827db8d12047a63b161d6a684a17e38fa341"
+    }
+  ]
+}
