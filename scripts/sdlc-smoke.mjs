@@ -3,6 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import assert from 'node:assert/strict'
 const browser = await chromium.launch()
 const checks = []
+const evidenceRoot = process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence'
 try {
   const context = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'], viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
@@ -38,10 +39,10 @@ try {
   assert.equal(download.suggestedFilename(), 'design-security-review.md')
   assert.equal(normalise(await readFile(await download.path(), 'utf8')), normalise(content))
   checks.push({ check: 'Copy/download preserve selected template', result: 'pass' })
-  await page.screenshot({ path: 'docs/evidence/generic-sdlc-guide.png', fullPage: true })
+  await page.screenshot({ path: `${evidenceRoot}/generic-sdlc-guide.png`, fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
-  await page.screenshot({ path: 'docs/evidence/generic-sdlc-guide-mobile.png', fullPage: true })
+  await page.screenshot({ path: `${evidenceRoot}/generic-sdlc-guide-mobile.png`, fullPage: true })
   checks.push({ check: 'Mobile layout has no horizontal overflow', result: 'pass' })
   await page.goto('http://127.0.0.1:3000')
   await page.getByRole('link', { name: 'Explore AI SDLC & templates' }).click()
@@ -51,6 +52,6 @@ try {
   checks.push({ check: 'Guide verification', result: 'fail', message: error.message }); process.exitCode = 1
 } finally {
   await browser.close()
-  await writeFile('docs/evidence/generic-sdlc-guide-check.json', JSON.stringify({ recordedAt: new Date().toISOString(), checks }, null, 2))
+  await writeFile(`${evidenceRoot}/generic-sdlc-guide-check.json`, JSON.stringify({ recordedAt: new Date().toISOString(), checks }, null, 2))
   console.log(JSON.stringify(checks, null, 2))
 }

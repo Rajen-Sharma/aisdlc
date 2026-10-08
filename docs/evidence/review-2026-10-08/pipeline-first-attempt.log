@@ -1,0 +1,5 @@
+Review browser attempt before restarting the rebuilt application: FAIL.
+Command: node scripts/pipeline-smoke.mjs --results --review
+Observed: locator.fill timeout after 30000ms waiting for input[name="email"] at the administrator sign-in page.
+The optimized build was running concurrently against the active server's .next directory.
+This attempt is retained as a verification sequencing failure. Retest against a restarted built server is required; it is not counted as a pass.

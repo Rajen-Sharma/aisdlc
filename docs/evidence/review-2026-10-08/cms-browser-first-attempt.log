@@ -1,0 +1,11 @@
+[
+  {
+    "outcome": "fail",
+    "message": "Expected values to be strictly equal:\n\n403 !== 200\n",
+    "location": "\n403 !== 200"
+  },
+  {
+    "outcome": "pass",
+    "behavior": "Mobile page has no horizontal overflow."
+  }
+]

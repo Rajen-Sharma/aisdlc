@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-10-08T11:21:36.096Z",
+  "finding": "REV-003",
+  "bothReadersSawQueued": true,
+  "bothUnconditionalClaimsAccepted": true,
+  "reproduced": true,
+  "modelInvocations": 0,
+  "realApprovals": 0,
+  "scope": "DB primitive probe emulating distinct worker lock roots. The existing same-root filesystem lock is bypassed in this diagnostic; this is not a claim that two current same-root workers run simultaneously."
+}

@@ -1,0 +1,14 @@
+{
+  "recordedAt": "2026-10-08T11:22:16.969Z",
+  "projectKey": "software-project",
+  "checks": [
+    "Generic homepage renders on desktop/mobile with no assumed product",
+    "Anonymous delivery records and actions denied",
+    "Editor delivery records denied",
+    "Generic workspace excludes archived CMS intake and product-specific constraints",
+    "Actual worker result shows proposals, conflicts, injection rejection and pending human review",
+    "Desktop/mobile workspace renders without horizontal overflow"
+  ],
+  "decisionsGranted": 0,
+  "scope": "Synthetic generic showcase only; no human approval impersonated."
+}

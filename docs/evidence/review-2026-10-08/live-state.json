@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-10-08T11:25:13.309Z",
+  "projectKey": "software-project",
+  "counts": {
+    "intake": 6,
+    "runs": 1,
+    "humanAnalysisDecisions": 0
+  },
+  "checks": [
+    {
+      "id": 8,
+      "status": "awaiting-review",
+      "contextValid": true,
+      "snapshotValid": true,
+      "resultValid": true,
+      "toolVersion": "codex-cli 0.155.1",
+      "elapsedMs": 18738,
+      "cost": "unavailable"
+    }
+  ],
+  "freshModelCalls": 0,
+  "humanDecisionsGranted": 0,
+  "scope": "Live persisted state inspected; fresh AI execution, coding and production actions not performed."
+}

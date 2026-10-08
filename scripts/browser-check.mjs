@@ -5,6 +5,7 @@ const base = 'http://127.0.0.1:3000'
 const credentials = JSON.parse(await readFile('.local/demo-credentials.json', 'utf8'))
 const browser = await chromium.launch()
 const results = []
+const evidenceRoot = process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence'
 const contexts = []
 async function login(role) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, extraHTTPHeaders: { Origin: base } })
@@ -91,6 +92,6 @@ try {
   results.push({ outcome: 'pass', behavior: 'Mobile page has no horizontal overflow.' })
   for (const context of contexts) await context.close()
   await browser.close()
-  await writeFile('docs/evidence/generic-preserved-cms-browser.json', JSON.stringify({ timestamp: new Date().toISOString(), synthetic: true, results }, null, 2))
+  await writeFile(`${evidenceRoot}/generic-preserved-cms-browser.json`, JSON.stringify({ timestamp: new Date().toISOString(), synthetic: true, results }, null, 2))
   console.log(JSON.stringify(results, null, 2))
 }

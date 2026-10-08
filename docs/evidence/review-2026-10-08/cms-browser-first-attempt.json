@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-10-08T11:22:15.183Z",
+  "synthetic": true,
+  "results": [
+    {
+      "outcome": "fail",
+      "message": "Expected values to be strictly equal:\n\n403 !== 200\n",
+      "location": "\n403 !== 200"
+    },
+    {
+      "outcome": "pass",
+      "behavior": "Mobile page has no horizontal overflow."
+    }
+  ]
+}
