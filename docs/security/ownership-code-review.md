@@ -6,6 +6,8 @@ Implemented controls: fixed parameterized SQL, bounded lease/attempt limits, cur
 
 Recovery/eligibility evidence: two parallel clients get one owner; forged/stale fences and expired completion denied; lost leases are not reassigned; editor recovery denied; all three attempts survive repeated coordinator invocations; old-scope completion cannot create a candidate after revision. Lock-wait test starts heartbeat before expiry then expires its lease while the row is locked: database wall-clock checking denies renewal. Tests and browser fixtures create explicitly synthetic test decisions and remove them afterward.
 
+A fresh trusted coordinator process also verifies persisted attempt consumption after restart. It imports control-plane code only and reserves ownership; no generated source or coding process runs. CI diagnostic annotations use a safe allowlist instead of publishing arbitrary test logs. A first remote integration failure and the subsequent passing retest are retained; the precise original failure is not asserted from unavailable detailed logs.
+
 Blocking limitations:
 
 - No qualified executor or independent verifier is attached. Every reservation explicitly returns executionAllowed=false. No real AI patch or execution proof exists.

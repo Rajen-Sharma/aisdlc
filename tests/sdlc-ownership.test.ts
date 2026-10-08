@@ -1,10 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 import { digest } from '../src/sdlc/contracts'
 import { activeProject } from '../src/sdlc/project'
-import { queueReservation, reserveTask, heartbeat, finishReservation, expireReservation, recoverReservation } from '../src/sdlc/task-coordinator'
+import { queueReservation, reserveTask, heartbeat, finishReservation, expireReservation, recoverReservation, type Reservation } from '../src/sdlc/task-coordinator'
 
 test('ownership is atomic, fenced, scope-bound and capped across coordinator calls', async () => {
   const payload = await getPayload({ config })
@@ -64,7 +66,15 @@ test('ownership is atomic, fenced, scope-bound and capped across coordinator cal
     await assert.rejects(recoverReservation(payload, taskId, editor.id, digest('recovery')), /administrator/)
     assert.equal(await recoverReservation(payload, taskId, admin.id, digest('reservation-only-no-child')), 'queued')
     for (const attempt of [2, 3]) {
-      const next = await reserveTask(payload, taskId)
+      let next: Reservation | null
+      if (attempt === 2) {
+        // A fresh trusted coordinator process must see the consumed first attempt.
+        // This process reserves ownership only; it never launches generated code.
+        const script = `import {getPayload} from 'payload'; import config from './src/payload.config.ts'; import {reserveTask} from './src/sdlc/task-coordinator.ts'; const payload=await getPayload({config}); const ticket=await reserveTask(payload,${taskId}); await payload.destroy(); console.log('RESERVATION:'+JSON.stringify(ticket)); process.exit(0);`
+        const child = await promisify(execFile)(process.execPath, ['--env-file=.env', '--import', 'tsx', '--input-type=module', '-e', script], { env: { ...process.env, NODE_ENV: 'production' }, timeout: 30000, maxBuffer: 64000, encoding: 'utf8', windowsHide: true })
+        const marker = child.stdout.split('\n').find(line => line.startsWith('RESERVATION:'))
+        assert.ok(marker); next = JSON.parse(marker.slice('RESERVATION:'.length)) as Reservation
+      } else next = await reserveTask(payload, taskId)
       assert.ok(next); assert.equal(next.attempt, attempt); assert.ok(next.fence > first.fence)
       await assert.rejects(finishReservation(payload, first, 'candidate', digest('stale')), /stale/)
       await finishReservation(payload, next, 'failed', digest(`failure-${attempt}`))
