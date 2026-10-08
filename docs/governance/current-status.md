@@ -14,5 +14,7 @@ As of 8 October 2026, Australia/Sydney. This index reconciles current decisions 
 | Deferred CMS migration SP-002 / SEC-DES-002 | Pending | Not changed or activated by generic platform work |
 | BUILD-ENG-002 continuation plan / SEC-DES-ENG-002 | Accepted for local implementation | APP-BUILD-ENG-002 / APP-DES-ENG-002; preserved exact hashes in register; checkpoint code/outcome review remains pending |
 | Production release | Not eligible | APP-REL-001; production criteria unmet |
+| GitHub repository / platform verification | Connected; full Linux CI passed | Rajen-Sharma/aisdlc; run 37773865509 at a8c23ff; [connection evidence](../reviews/github-connection-2026-10-08.md) |
+| Preliminary Linux container probes | Three checks passed; coding qualification incomplete | Run 37773072611; actual probe JSON retained; provider/ownership/verifier boundaries still pending |
 
 No response, elapsed time, passing checks, AI-generated acceptance or approval of a different project/version may satisfy a pending gate. Accountable product/security reviewer is the chat user for the recorded local decisions; legal identity and exact message times were not supplied and are not invented. The human subsequently selected GitHub Actions to replace local Docker/WSL2 for the first isolated trial; repository details are pending. This changes the provisioning choice while preserving scope and human gates. See the [GitHub handoff](../operations/github-delivery.md).
