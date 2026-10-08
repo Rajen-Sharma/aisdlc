@@ -14,9 +14,10 @@
     "start": "node scripts/next.mjs start",
     "typecheck": "tsc --noEmit",
     "test:browser": "node scripts/browser-check.mjs",
+    "sdlc:worker": "node --env-file=.env --import tsx scripts/sdlc-worker.ts",
     "seed": "node --env-file=.env --import tsx scripts/seed.ts",
     "import:demo": "node --env-file=.env --import tsx scripts/import.ts",
-    "test": "node --env-file=.env --import tsx --test --test-force-exit tests/*.test.ts"
+    "test": "node scripts/test.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.90.2",

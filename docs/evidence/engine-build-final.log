@@ -1,0 +1,30 @@
+
+> headless-cms-sdlc@0.1.0 build
+> node scripts/next.mjs build
+
+▲ Next.js 16.4.0 (webpack)
+- Environments: .env
+✓ Running next.config.mjs took 72ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 19.2s
+  Running TypeScript ...
+  Finished TypeScript in 10.6s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/3) ...
+✓ Generating static pages using 7 workers (3/3) in 1746ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin/[[...segments]]
+├ ƒ /api/[...slug]
+├ ƒ /pipeline
+└ ○ /sdlc
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -70,6 +70,9 @@ export interface Config {
     users: User;
     authors: Author;
     articles: Article;
+    'sdlc-intake': SdlcIntake;
+    'sdlc-runs': SdlcRun;
+    'sdlc-decisions': SdlcDecision;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +83,9 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    'sdlc-intake': SdlcIntakeSelect<false> | SdlcIntakeSelect<true>;
+    'sdlc-runs': SdlcRunsSelect<false> | SdlcRunsSelect<true>;
+    'sdlc-decisions': SdlcDecisionsSelect<false> | SdlcDecisionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -177,6 +183,73 @@ export interface Article {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-intake".
+ */
+export interface SdlcIntake {
+  id: number;
+  submissionKey: string;
+  title: string;
+  kind: 'requirement' | 'review' | 'feedback';
+  content: string;
+  target: string;
+  origin: string;
+  supersedes?: (number | null) | SdlcIntake;
+  sourceHash: string;
+  actor: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-runs".
+ */
+export interface SdlcRun {
+  id: number;
+  taskKey: string;
+  status: 'queued' | 'running' | 'awaiting-review' | 'failed';
+  snapshot:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  result?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  resultHash?: string | null;
+  failure?: string | null;
+  elapsedMs?: number | null;
+  toolVersion?: string | null;
+  exitCode?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-decisions".
+ */
+export interface SdlcDecision {
+  id: number;
+  decisionKey: string;
+  run: number | SdlcRun;
+  scopeHash: string;
+  decision: 'accept-triage' | 'return-findings';
+  notes: string;
+  actor: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -210,6 +283,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'articles';
         value: number | Article;
+      } | null)
+    | ({
+        relationTo: 'sdlc-intake';
+        value: number | SdlcIntake;
+      } | null)
+    | ({
+        relationTo: 'sdlc-runs';
+        value: number | SdlcRun;
+      } | null)
+    | ({
+        relationTo: 'sdlc-decisions';
+        value: number | SdlcDecision;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -303,6 +388,54 @@ export interface ArticlesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-intake_select".
+ */
+export interface SdlcIntakeSelect<T extends boolean = true> {
+  submissionKey?: T;
+  title?: T;
+  kind?: T;
+  content?: T;
+  target?: T;
+  origin?: T;
+  supersedes?: T;
+  sourceHash?: T;
+  actor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-runs_select".
+ */
+export interface SdlcRunsSelect<T extends boolean = true> {
+  taskKey?: T;
+  status?: T;
+  snapshot?: T;
+  result?: T;
+  resultHash?: T;
+  failure?: T;
+  elapsedMs?: T;
+  toolVersion?: T;
+  exitCode?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-decisions_select".
+ */
+export interface SdlcDecisionsSelect<T extends boolean = true> {
+  decisionKey?: T;
+  run?: T;
+  scopeHash?: T;
+  decision?: T;
+  notes?: T;
+  actor?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

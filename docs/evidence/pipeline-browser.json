@@ -1,0 +1,11 @@
+{
+  "recordedAt": "2026-10-08T10:56:27.838Z",
+  "checks": [
+    "Anonymous delivery records and actions denied",
+    "Editor delivery records denied",
+    "Actual worker result shows proposals, conflicts, injection rejection and pending human review",
+    "Desktop/mobile workspace renders without horizontal overflow"
+  ],
+  "decisionsGranted": 0,
+  "scope": "Synthetic automated showcase only; no human approval impersonated."
+}

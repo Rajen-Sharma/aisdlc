@@ -1,0 +1,128 @@
+
+> headless-cms-sdlc@0.1.0 test
+> node --env-file=.env --import tsx --test --test-force-exit tests/*.test.ts
+
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[⢿] Pulling schema from database...
+[2K[1G[⣻] Pulling schema from database...
+[2K[1G[⣽] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+✖ CMS permissions and migration acceptance (2903.7758ms)
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[⢿] Pulling schema from database...
+[2K[1G[⣻] Pulling schema from database...
+[2K[1G[⣽] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+[21:47:08] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+✖ delivery records enforce human authority, immutable provenance and exact review scope (3463.5683ms)
+✔ intake response rejects unknown provenance, lost inputs and fabricated approval (4.2526ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16297.5494
+
+✖ failing tests:
+
+test at tests\cms.test.ts:1:302
+✖ CMS permissions and migration acceptance (2903.7758ms)
+  Error: Failed query: CREATE TYPE "public"."enum_sdlc_intake_kind" AS ENUM('requirement', 'review', 'feedback');
+  params: 
+      at NodePgPreparedQuery.queryWithCache (F:\CodeRepos\HeadlessCMS\node_modules\src\pg-core\session.ts:73:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Object.query (F:\CodeRepos\HeadlessCMS\node_modules\drizzle-kit\api.js:166296:19)
+      ... 4 lines matching cause stack trace ...
+      at async getPayload (F:\CodeRepos\HeadlessCMS\node_modules\payload\src\index.ts:1226:22)
+      at async TestContext.<anonymous> (F:\CodeRepos\HeadlessCMS\tests\cms.test.ts:10:19)
+      at async Test.run (node:internal/test_runner/test:1125:7) {
+    query: `CREATE TYPE "public"."enum_sdlc_intake_kind" AS ENUM('requirement', 'review', 'feedback');`,
+    params: [],
+    cause: error: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+        at F:\CodeRepos\HeadlessCMS\node_modules\pg-pool\index.js:45:11
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async <anonymous> (F:\CodeRepos\HeadlessCMS\node_modules\src\node-postgres\session.ts:149:14)
+        at async NodePgPreparedQuery.queryWithCache (F:\CodeRepos\HeadlessCMS\node_modules\src\pg-core\session.ts:71:12)
+        at async Object.query (F:\CodeRepos\HeadlessCMS\node_modules\drizzle-kit\api.js:166296:19)
+        at async apply (F:\CodeRepos\HeadlessCMS\node_modules\drizzle-kit\api.js:166334:9)
+        at async pushDevSchema (F:\CodeRepos\HeadlessCMS\node_modules\@payloadcms\drizzle\src\utilities\pushDevSchema.ts:88:3)
+        at async Object.connect (F:\CodeRepos\HeadlessCMS\node_modules\@payloadcms\db-postgres\src\connect.ts:123:5)
+        at async BasePayload.init (F:\CodeRepos\HeadlessCMS\node_modules\payload\src\index.ts:914:7)
+        at async getPayload (F:\CodeRepos\HeadlessCMS\node_modules\payload\src\index.ts:1226:22) {
+      length: 261,
+      severity: 'ERROR',
+      code: '23505',
+      detail: 'Key (typname, typnamespace)=(enum_sdlc_intake_kind, 2200) already exists.',
+      hint: undefined,
+      position: undefined,
+      internalPosition: undefined,
+      internalQuery: undefined,
+      where: undefined,
+      schema: 'pg_catalog',
+      table: 'pg_type',
+      column: undefined,
+      dataType: undefined,
+      constraint: 'pg_type_typname_nsp_index',
+      file: 'nbtinsert.c',
+      line: '673',
+      routine: '_bt_check_unique'
+    },
+    payloadInitError: true
+  }
+
+test at tests\sdlc-access.test.ts:1:184
+✖ delivery records enforce human authority, immutable provenance and exact review scope (3463.5683ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   collection: 'users',
+  +   createdAt: '2026-10-08T09:46:57.420Z',
+  +   email: 'admin@example.invalid',
+  +   id: 1,
+  +   role: 'admin',
+  +   sessions: [
+  +     {
+  +       createdAt: '2026-10-08T09:55:49.217Z',
+  +       expiresAt: '2026-10-08T10:55:49.217Z',
+  +       id: '43363ab6-7891-4493-9693-430a1dd16f84'
+  +     },
+  +     {
+  +       createdAt: '2026-10-08T09:59:10.458Z',
+  +       expiresAt: '2026-10-08T10:59:10.458Z',
+  +       id: '5ada2c9b-e9d1-4d8c-9166-c4cfc8aff6cf'
+  +     },
+  +     {
+  +       createdAt: '2026-10-08T10:16:26.901Z',
+  +       expiresAt: '2026-10-08T11:16:26.901Z',
+  +       id: '2e2862b0-9691-40ab-9d77-eccb787a3b44'
+  +     },
+  +     {
+  +       createdAt: '2026-10-08T10:17:11.191Z',
+  +       expiresAt: '2026-10-08T11:17:11.191Z',
+  +       id: '36c64e6f-54e3-45d7-8090-eca0df88ff4c'
+  +     }
+  +   ],
+  +   updatedAt: '2026-10-08T09:46:57.423Z'
+  + }
+  - 1
+  
+      at TestContext.<anonymous> (F:\CodeRepos\HeadlessCMS\tests\sdlc-access.test.ts:18:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { id: 1, role: 'admin', updatedAt: '2026-10-08T09:46:57.423Z', createdAt: '2026-10-08T09:46:57.420Z', email: 'admin@example.invalid', sessions: [ [Object], [Object], [Object], [Object] ], collection: 'users' },
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

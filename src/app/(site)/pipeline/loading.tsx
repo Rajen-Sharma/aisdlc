@@ -1,0 +1,1 @@
+export default function Loading() { return <main><section className="hero" aria-busy="true"><span className="eyebrow">DELIVERY STUDIO</span><h1>Opening your workspace…</h1><p>Loading the current backlog, runs and human review decisions.</p></section></main> }
