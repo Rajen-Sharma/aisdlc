@@ -1,0 +1,32 @@
+name: Preliminary Linux isolation probe
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Official Node image pinned as node@sha256:<64 hex characters>
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.14.0
+      - name: Run deterministic probes without provider or application secrets
+        env:
+          PROBE_IMAGE: ${{ inputs.image }}
+        run: node scripts/isolation-probe.mjs
+      - name: Preserve preliminary evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: preliminary-isolation-${{ github.sha }}-${{ github.run_id }}
+          path: docs/evidence/isolation/probe.json
+          retention-days: 30

@@ -12,7 +12,7 @@ As of 8 October 2026, Australia/Sydney. This index reconciles current decisions 
 | Current generic/engine code-security review | Pending human review | SEC-CODE-GEN-001 and SEC-CODE-ENG-001 checkpoint packs; no independent audit claimed |
 | Complete engine sprint outcome and engine MVP | Not yet eligible | Full approved implementation/verification loop incomplete |
 | Deferred CMS migration SP-002 / SEC-DES-002 | Pending | Not changed or activated by generic platform work |
-| BUILD-ENG-002 continuation plan / SEC-DES-ENG-002 | Proposed, pending human review | New exact versions must be reviewed before dependent implementation |
+| BUILD-ENG-002 continuation plan / SEC-DES-ENG-002 | Accepted for local implementation | APP-BUILD-ENG-002 / APP-DES-ENG-002; preserved exact hashes in register; checkpoint code/outcome review remains pending |
 | Production release | Not eligible | APP-REL-001; production criteria unmet |
 
-No response, elapsed time, passing checks, AI-generated acceptance or approval of a different project/version may satisfy a pending gate. Planning/review preparation is authorized; this index does not approve the proposed next build. Accountable product/security reviewer is the chat user for the recorded local decisions; legal identity and exact message times were not supplied and are not invented.
+No response, elapsed time, passing checks, AI-generated acceptance or approval of a different project/version may satisfy a pending gate. Accountable product/security reviewer is the chat user for the recorded local decisions; legal identity and exact message times were not supplied and are not invented. The human subsequently selected GitHub Actions to replace local Docker/WSL2 for the first isolated trial; repository details are pending. This changes the provisioning choice while preserving scope and human gates. See the [GitHub handoff](../operations/github-delivery.md).

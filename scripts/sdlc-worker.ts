@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { digest, responseSchema, triagePrompt, validateTriage, type IntakeRecord } from '../src/sdlc/contracts'
 import { activeProject, validateProject } from '../src/sdlc/project'
+import { claimTriage } from '../src/sdlc/claim'
 const root = resolve('.local/sdlc-worker')
 await mkdir(root, { recursive: true })
 // Never expire this lock automatically: a crashed worker can leave an unknown live child.
@@ -13,11 +14,10 @@ await lock.writeFile(JSON.stringify({ pid: process.pid, startedAt: new Date().to
 let payload: Awaited<ReturnType<typeof getPayload>> | undefined
 try {
   payload = await getPayload({ config })
-  const queued = await payload.find({ collection: 'sdlc-runs', where: { status: { equals: 'queued' } }, limit: 1, sort: 'id', overrideAccess: true, depth: 0 })
-  if (!queued.docs.length) console.log('No queued intake tasks.')
+  const claimed = await claimTriage(payload)
+  if (!claimed) console.log('No queued intake tasks.')
   else {
-    const run = queued.docs[0], startedAt = Date.now()
-    await payload.update({ collection: 'sdlc-runs', id: run.id, data: { status: 'running' }, overrideAccess: true })
+    const run = claimed, startedAt = Date.now()
     try {
       const project = validateProject(run.projectContext)
       if (project.key !== run.projectKey || digest(project) !== run.contextHash || digest(await activeProject()) !== run.contextHash) throw new Error('Snapshot project context is stale or invalid.')

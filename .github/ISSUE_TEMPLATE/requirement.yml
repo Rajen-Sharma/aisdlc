@@ -1,0 +1,33 @@
+name: Delivery requirement
+description: Submit a project requirement for AI triage and human story review.
+title: "[Requirement] "
+body:
+  - type: input
+    id: project
+    attributes:
+      label: Project key
+      description: Match the selected project profile. Do not include secrets or real migration exports.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User problem and expected outcome
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria and failure cases
+      description: Describe observable behaviour and how a verifier can check it.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and security considerations
+  - type: input
+    id: supersedes
+    attributes:
+      label: Superseded requirement or review reference
+      description: Reference the earlier issue or exact story version. Existing approvals do not carry forward automatically.

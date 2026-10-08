@@ -1,0 +1,34 @@
+name: Review or showcase feedback
+description: Return a finding as traceable new input, preserving the reviewed artifact.
+title: "[Feedback] "
+body:
+  - type: input
+    id: artifact
+    attributes:
+      label: Project, story version and reviewed commit or artifact hash
+    validations:
+      required: true
+  - type: dropdown
+    id: origin
+    attributes:
+      label: Review stage
+      options:
+        - Design security
+        - Code security
+        - Sprint review
+        - MVP showcase
+        - Other finding
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: Finding, evidence and requested change
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Expected verification for the revised version
+    validations:
+      required: true

@@ -7,7 +7,7 @@ import config from '@payload-config'
 import { role } from '../../../security'
 import { digest, intakeKinds } from '../../../sdlc/contracts'
 import { activeProject } from '../../../sdlc/project'
-export async function session() {
+async function session() {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: await headers() })
   if (role(user) !== 'admin') throw new Error('Administrator sign-in required for delivery control.')
@@ -17,6 +17,16 @@ const text = (form: FormData, key: string, max: number) => {
   const value = form.get(key)
   if (typeof value !== 'string' || !value.trim() || value.length > max) throw new Error(`Invalid ${key}.`)
   return value.trim()
+}
+export async function reviewStory(form: FormData) {
+  const { payload, user } = await session()
+  const id = Number(text(form, 'story', 20)), kind = text(form, 'kind', 30), decision = text(form, 'decision', 20)
+  if (!Number.isSafeInteger(id) || id < 1 || !['sprint', 'design-security'].includes(kind) || !['accept', 'reject'].includes(decision)) throw new Error('Invalid story review.')
+  await payload.create({ collection: 'sdlc-gates', user, overrideAccess: false, depth: 0, data: {
+    story: id, kind: kind as 'sprint' | 'design-security', decision: decision as 'accept' | 'reject',
+    scopeHash: text(form, 'scopeHash', 64), notes: text(form, 'notes', 4000), actor: user.id, projectKey: '', decisionKey: '',
+  } })
+  revalidatePath('/pipeline'); redirect('/pipeline')
 }
 export async function submitIntake(form: FormData) {
   const { payload, user } = await session()

@@ -47,3 +47,7 @@ Product quality requirement QLT-001: final engine and CMS must be polished, with
 ## Generic platform direction
 
 CR-ENG-001 records the user's request to make the platform generic and add CMS/Drupal later. See [the scope separation and implementation boundaries](../architecture/generic-platform.md). This changes the active product context, preserves the deferred CMS plans and historical decisions, and does not grant any pending security/outcome/release approvals.
+
+## Continuation acceptance, 8 October 2026
+
+Chat user said 'lets get building' after the full review and proposed continuation. This context authorizes BUILD-ENG-002 v1 (SHA-256 b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82) and SEC-DES-ENG-002 v1 (SHA-256 3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d) for local implementation. IDs APP-BUILD-ENG-002 and APP-DES-ENG-002. Reviewed files remain unchanged. This records implementation/design acceptance; it grants no code-security, outcome, MVP or production-release acceptance. Exact message time and legal identity were not supplied.

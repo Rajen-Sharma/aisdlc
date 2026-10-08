@@ -73,6 +73,8 @@ export interface Config {
     'sdlc-intake': SdlcIntake;
     'sdlc-runs': SdlcRun;
     'sdlc-decisions': SdlcDecision;
+    'sdlc-stories': SdlcStory;
+    'sdlc-gates': SdlcGate;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +88,8 @@ export interface Config {
     'sdlc-intake': SdlcIntakeSelect<false> | SdlcIntakeSelect<true>;
     'sdlc-runs': SdlcRunsSelect<false> | SdlcRunsSelect<true>;
     'sdlc-decisions': SdlcDecisionsSelect<false> | SdlcDecisionsSelect<true>;
+    'sdlc-stories': SdlcStoriesSelect<false> | SdlcStoriesSelect<true>;
+    'sdlc-gates': SdlcGatesSelect<false> | SdlcGatesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -264,6 +268,50 @@ export interface SdlcDecision {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-stories".
+ */
+export interface SdlcStory {
+  id: number;
+  projectKey: string;
+  contextHash: string;
+  storyKey: string;
+  title: string;
+  contract:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  supersedes?: (number | null) | SdlcStory;
+  revision: number;
+  versionKey: string;
+  scopeHash: string;
+  actor: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-gates".
+ */
+export interface SdlcGate {
+  id: number;
+  story: number | SdlcStory;
+  projectKey: string;
+  scopeHash: string;
+  kind: 'sprint' | 'design-security' | 'code-security' | 'outcome' | 'mvp';
+  decision: 'accept' | 'reject';
+  notes: string;
+  actor: number | User;
+  decisionKey: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -309,6 +357,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sdlc-decisions';
         value: number | SdlcDecision;
+      } | null)
+    | ({
+        relationTo: 'sdlc-stories';
+        value: number | SdlcStory;
+      } | null)
+    | ({
+        relationTo: 'sdlc-gates';
+        value: number | SdlcGate;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -454,6 +510,40 @@ export interface SdlcDecisionsSelect<T extends boolean = true> {
   decision?: T;
   notes?: T;
   actor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-stories_select".
+ */
+export interface SdlcStoriesSelect<T extends boolean = true> {
+  projectKey?: T;
+  contextHash?: T;
+  storyKey?: T;
+  title?: T;
+  contract?: T;
+  supersedes?: T;
+  revision?: T;
+  versionKey?: T;
+  scopeHash?: T;
+  actor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-gates_select".
+ */
+export interface SdlcGatesSelect<T extends boolean = true> {
+  story?: T;
+  projectKey?: T;
+  scopeHash?: T;
+  kind?: T;
+  decision?: T;
+  notes?: T;
+  actor?: T;
+  decisionKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }

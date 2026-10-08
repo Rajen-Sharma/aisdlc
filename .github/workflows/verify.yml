@@ -1,8 +1,8 @@
-name: Verify local MVP
+name: Verify delivery platform
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, master]
 permissions:
   contents: read
 jobs:
@@ -54,6 +54,12 @@ jobs:
           Start-Process -FilePath node -ArgumentList 'scripts/next.mjs','start' -WindowStyle Hidden -RedirectStandardOutput .local/app.log -RedirectStandardError .local/app-error.log
           node scripts/wait-http.mjs
           npm run test:browser
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/pipeline-smoke.mjs --review
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/sdlc-smoke.mjs --review
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/delivery-browser.mjs
           exit $LASTEXITCODE
       - name: Retain check evidence
         if: always()
@@ -63,6 +69,10 @@ jobs:
           path: |
             docs/evidence/*.log
             docs/evidence/*.json
+            docs/evidence/review-2026-10-08/*.json
+            docs/evidence/review-2026-10-08/*.png
+            docs/evidence/build-eng-002/*.json
+            docs/evidence/build-eng-002/*.png
             .local/screenshots/*.png
           include-hidden-files: true
           retention-days: 30

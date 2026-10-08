@@ -1,0 +1,11 @@
+# Local coding runtime setup OPS-ENG-002 v1
+
+Human selected Docker Desktop with WSL2 locally, 8 October 2026. Runtime qualification is pending. This is the selected implementation environment, not evidence of passed isolation tests.
+
+Environment inspection: Docker/Podman executables absent, Docker Desktop absent in both standard installation locations, WSL kernel absent at the inspected system path, current PowerShell session not elevated. `wsl --status` provided no useful version/status output. These checks do not establish that BIOS virtualization is disabled.
+
+In an administrator PowerShell terminal run `wsl --install --no-distribution`, follow its reported requirements and restart if requested. Verify `wsl --version` and `wsl --status`. Install Docker Desktop from its [official Windows setup guide](https://docs.docker.com/desktop/setup/install/windows-install/) using the per-user WSL2 option. Start Docker Desktop and complete its own setup/terms. Then verify `docker version` and `docker info --format '{{.OSType}}'`; the server must report Linux. The coding agent session cannot perform the administrator WSL step from its current token. No reboot, elevated process or software installation was initiated by this build.
+
+Before enabling coding, qualify a pinned image and provider credential boundary: no operator home, Docker socket, application/database credentials, privileged mode or host filesystem mounts; exact exported fixture inputs only. Use non-root users, dropped capabilities, no new privileges, bounded CPU/memory/processes/output/time, read-only roots and bounded writable workspace. Keep trusted tests/policy outside agent write scope. Verifier has no provider credentials and no network. Demonstrate path/symlink escape, secret access, outbound network, resource and orphan-process denial. Confirm termination before recovery/retry. Store actual image digest, tool versions and probe outcomes with the task artifacts.
+
+Do not treat Docker availability, a container launch or a separate checkout as a successful security qualification. The provider adapter, coding lease/fencing/attempt ledger, artifact promotion and independent verification still need implementation and tests.
