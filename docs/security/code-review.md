@@ -1,6 +1,6 @@
 # Code security review SEC-CODE-001
 
-Status: AI-prepared findings/evidence pack; human code-security acceptance pending. Design: SEC-DES-001 local MVP. Reviewed source is bound by the implementation commit and evidence manifest in the sprint review. This document cannot approve its own code.
+Status: human acceptance recorded for local MVP scope on 8 October 2026; see APP-CODE-001. Design: SEC-DES-001 local MVP. Reviewed source: d6f926dfad2f654e43c853990cd831e8c7bc7ba6; evidence commit: 225a598. Production blockers and limitations remain. This acceptance comes from the user's explicit review decision, not the AI's own approval.
 
 | Design risk | Implementation/evidence | Disposition for human review |
 | --- | --- | --- |
