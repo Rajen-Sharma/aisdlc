@@ -75,6 +75,8 @@ export interface Config {
     'sdlc-decisions': SdlcDecision;
     'sdlc-stories': SdlcStory;
     'sdlc-gates': SdlcGate;
+    'sdlc-tasks': SdlcTask;
+    'sdlc-task-events': SdlcTaskEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +92,8 @@ export interface Config {
     'sdlc-decisions': SdlcDecisionsSelect<false> | SdlcDecisionsSelect<true>;
     'sdlc-stories': SdlcStoriesSelect<false> | SdlcStoriesSelect<true>;
     'sdlc-gates': SdlcGatesSelect<false> | SdlcGatesSelect<true>;
+    'sdlc-tasks': SdlcTasksSelect<false> | SdlcTasksSelect<true>;
+    'sdlc-task-events': SdlcTaskEventsSelect<false> | SdlcTaskEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -312,6 +316,43 @@ export interface SdlcGate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-tasks".
+ */
+export interface SdlcTask {
+  id: number;
+  taskKey: string;
+  story: number | SdlcStory;
+  projectKey: string;
+  scopeHash: string;
+  status: 'queued' | 'reserved' | 'uncertain' | 'awaiting-verification' | 'exhausted';
+  owner?: string | null;
+  fence: number;
+  attemptCount: number;
+  leaseExpiresAt?: string | null;
+  deadlineAt?: string | null;
+  resultHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-task-events".
+ */
+export interface SdlcTaskEvent {
+  id: number;
+  eventKey: string;
+  task: number | SdlcTask;
+  attempt: number;
+  fence: number;
+  owner?: string | null;
+  kind: 'queued' | 'claimed' | 'heartbeat' | 'uncertain' | 'candidate' | 'recovered';
+  evidenceHash?: string | null;
+  actor?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -365,6 +406,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sdlc-gates';
         value: number | SdlcGate;
+      } | null)
+    | ({
+        relationTo: 'sdlc-tasks';
+        value: number | SdlcTask;
+      } | null)
+    | ({
+        relationTo: 'sdlc-task-events';
+        value: number | SdlcTaskEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -544,6 +593,41 @@ export interface SdlcGatesSelect<T extends boolean = true> {
   notes?: T;
   actor?: T;
   decisionKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-tasks_select".
+ */
+export interface SdlcTasksSelect<T extends boolean = true> {
+  taskKey?: T;
+  story?: T;
+  projectKey?: T;
+  scopeHash?: T;
+  status?: T;
+  owner?: T;
+  fence?: T;
+  attemptCount?: T;
+  leaseExpiresAt?: T;
+  deadlineAt?: T;
+  resultHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-task-events_select".
+ */
+export interface SdlcTaskEventsSelect<T extends boolean = true> {
+  eventKey?: T;
+  task?: T;
+  attempt?: T;
+  fence?: T;
+  owner?: T;
+  kind?: T;
+  evidenceHash?: T;
+  actor?: T;
   updatedAt?: T;
   createdAt?: T;
 }

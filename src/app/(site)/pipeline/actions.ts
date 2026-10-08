@@ -7,6 +7,7 @@ import config from '@payload-config'
 import { role } from '../../../security'
 import { digest, intakeKinds } from '../../../sdlc/contracts'
 import { activeProject } from '../../../sdlc/project'
+import { queueReservation } from '../../../sdlc/task-coordinator'
 async function session() {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: await headers() })
@@ -17,6 +18,13 @@ const text = (form: FormData, key: string, max: number) => {
   const value = form.get(key)
   if (typeof value !== 'string' || !value.trim() || value.length > max) throw new Error(`Invalid ${key}.`)
   return value.trim()
+}
+export async function queueStoryReservation(form: FormData) {
+  const { payload } = await session()
+  const id = Number(text(form, 'story', 20))
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error('Invalid story.')
+  await queueReservation(payload, id)
+  revalidatePath('/pipeline'); redirect('/pipeline')
 }
 export async function reviewStory(form: FormData) {
   const { payload, user } = await session()

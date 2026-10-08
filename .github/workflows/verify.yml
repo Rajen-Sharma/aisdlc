@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: [main, master]
+    branches: [main, master, 'build/**']
 permissions:
   contents: read
 jobs:
@@ -59,6 +59,7 @@ jobs:
           node scripts/pipeline-smoke.mjs --evidence-dir=docs/evidence/github-ci
           node scripts/sdlc-smoke.mjs --evidence-dir=docs/evidence/github-ci
           node scripts/delivery-browser.mjs --evidence-dir=docs/evidence/github-ci
+          node --env-file=.env --import tsx scripts/ownership-browser.ts --evidence-dir=docs/evidence/github-ci
       - name: Retain check evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0

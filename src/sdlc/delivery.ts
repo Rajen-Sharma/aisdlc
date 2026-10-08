@@ -2,6 +2,7 @@ import { APIError, type CollectionConfig } from 'payload'
 import { admin, role } from '../security'
 import { digest } from './contracts'
 import { activeProject } from './project'
+import { lockStory } from './story-lock'
 
 const immutable = { read: admin, create: admin, update: () => false, delete: () => false }
 const hashPattern = /^[a-f0-9]{64}$/
@@ -30,10 +31,11 @@ export const Stories: CollectionConfig = {
     if (!data || role(req.user) !== 'admin') throw new APIError('Authenticated human story submission required.', 403)
     const project = await activeProject()
     if (data.projectKey !== project.key || data.contextHash !== digest(project)) throw new APIError('Story project context is stale.', 409)
+    await lockStory(req, project.key, data.storyKey)
     try { validateTaskContract(data.contract) } catch (error) { throw new APIError((error as Error).message, 400) }
     let revision = 1
     if (data.supersedes) {
-      const previous = await req.payload.findByID({ collection: 'sdlc-stories', id: data.supersedes, user: req.user, overrideAccess: false, depth: 0 })
+      const previous = await req.payload.findByID({ collection: 'sdlc-stories', id: data.supersedes, user: req.user, overrideAccess: false, depth: 0, req })
       if (previous.projectKey !== project.key || previous.storyKey !== data.storyKey) throw new APIError('Revision must supersede the same project and story.', 409)
       revision = previous.revision + 1
     }
@@ -60,9 +62,10 @@ export const Gates: CollectionConfig = {
     if (operation !== 'create') return data
     if (!data || role(req.user) !== 'admin') throw new APIError('Authenticated human gate decision required.', 403)
     const story = await req.payload.findByID({ collection: 'sdlc-stories', id: data.story, user: req.user, overrideAccess: false, depth: 0 })
+    await lockStory(req, story.projectKey, story.storyKey)
     const project = await activeProject()
     if (story.projectKey !== project.key || story.contextHash !== digest(project) || data.scopeHash !== story.scopeHash) throw new APIError('Gate scope is stale or belongs to another project.', 409)
-    const revisions = await req.payload.find({ collection: 'sdlc-stories', user: req.user, overrideAccess: false, where: { and: [{ projectKey: { equals: project.key } }, { storyKey: { equals: story.storyKey } }] }, sort: '-revision', limit: 1, depth: 0 })
+    const revisions = await req.payload.find({ collection: 'sdlc-stories', user: req.user, overrideAccess: false, where: { and: [{ projectKey: { equals: project.key } }, { storyKey: { equals: story.storyKey } }] }, sort: '-revision', limit: 1, depth: 0, req })
     if (revisions.docs[0]?.id !== story.id) throw new APIError('Superseded story cannot receive approvals.', 409)
     // Artifact review needs a verified artifact ledger, which this checkpoint does not yet provide.
     if (!['sprint', 'design-security'].includes(data.kind)) throw new APIError('Artifact review is unavailable until verified artifact evidence exists.', 409)

@@ -1,0 +1,150 @@
+import { randomUUID } from 'node:crypto'
+import type { PoolClient } from 'pg'
+import type { Payload } from 'payload'
+import { digest } from './contracts'
+import { activeProject } from './project'
+import { validateTaskContract } from './delivery'
+
+const maxAttempts = 3
+const executionAllowed = false as const // No qualified executor or verifier is attached.
+type Task = { id: number; story_id: number; project_key: string; scope_hash: string; status: string; owner: string | null; fence: number; attempt_count: number }
+export type Reservation = { taskId: number; owner: string; fence: number; attempt: number; executionAllowed: false }
+async function transaction<T>(payload: Payload, work: (db: PoolClient) => Promise<T>) {
+  const db = await payload.db.pool.connect()
+  try {
+    await db.query('BEGIN')
+    await db.query("SET LOCAL lock_timeout='5s'")
+    await db.query("SET LOCAL statement_timeout='10s'")
+    const result = await work(db); await db.query('COMMIT'); return result
+  }
+  catch (error) { await db.query('ROLLBACK'); throw error }
+  finally { db.release() }
+}
+async function lock(db: PoolClient, project: string, key: string) {
+  await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`${project}:${key}`])
+}
+async function eligible(db: PoolClient, storyId: number) {
+  const { rows } = await db.query('SELECT * FROM sdlc_stories WHERE id=$1', [storyId])
+  const story = rows[0]
+  if (!story) throw new Error('Story not found.')
+  const project = await activeProject()
+  if (story.project_key !== project.key || story.context_hash !== digest(project)) throw new Error('Project scope is stale.')
+  validateTaskContract(story.contract)
+  const scope = digest({ projectKey: story.project_key, contextHash: story.context_hash, storyKey: story.story_key, revision: Number(story.revision), title: story.title, contract: story.contract, supersedes: story.supersedes_id ?? null })
+  if (scope !== story.scope_hash) throw new Error('Story integrity failed.')
+  const latest = await db.query('SELECT id FROM sdlc_stories WHERE project_key=$1 AND story_key=$2 ORDER BY revision DESC LIMIT 1', [project.key, story.story_key])
+  if (latest.rows[0]?.id !== storyId) throw new Error('Story is superseded.')
+  const gates = await db.query(`SELECT g.kind FROM sdlc_gates g JOIN users u ON u.id=g.actor_id
+    WHERE g.story_id=$1 AND g.scope_hash=$2 AND g.project_key=$3 AND g.decision='accept'
+    AND u.role='admin' AND g.decision_key=concat(g.story_id, ':', g.scope_hash, ':', g.kind)`, [storyId, scope, project.key])
+  for (const kind of ['sprint', 'design-security']) if (!gates.rows.some(g => g.kind === kind)) throw new Error(`${kind} acceptance required.`)
+  return story
+}
+async function lockedTask(db: PoolClient, id: number): Promise<Task> {
+  const lookup = await db.query('SELECT s.project_key,s.story_key FROM sdlc_tasks t JOIN sdlc_stories s ON s.id=t.story_id WHERE t.id=$1', [id])
+  if (!lookup.rows[0]) throw new Error('Task not found.')
+  await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
+  const result = await db.query<Task>('SELECT * FROM sdlc_tasks WHERE id=$1 FOR UPDATE', [id])
+  return taskRow(result.rows[0])
+}
+function taskRow(value: Task): Task {
+  if (!value) throw new Error('Task not found.')
+  const row = { ...value, fence: Number(value.fence), attempt_count: Number(value.attempt_count) }
+  if (!Number.isSafeInteger(row.fence) || row.fence < 0 || !Number.isSafeInteger(row.attempt_count) || row.attempt_count < 0 || row.attempt_count > maxAttempts) throw new Error('Task counter integrity failed.')
+  return row
+}
+async function event(db: PoolClient, task: Task, kind: string, evidenceHash?: string, actor?: number) {
+  await db.query(`INSERT INTO sdlc_task_events (event_key,task_id,attempt,fence,owner,kind,evidence_hash,actor_id,created_at,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp(),clock_timestamp())`, [randomUUID(), task.id, task.attempt_count, task.fence, task.owner, kind, evidenceHash ?? null, actor ?? null])
+}
+function leaseSeconds(value: number) { if (!Number.isInteger(value) || value < 1 || value > 300) throw new Error('Lease must be 1–300 seconds.'); return value }
+function evidence(value: string) { if (!/^[a-f0-9]{64}$/.test(value)) throw new Error('Evidence SHA-256 required.'); return value }
+function validateReservation(value: Reservation) {
+  if (!Number.isSafeInteger(value.taskId) || value.taskId < 1 || typeof value.owner !== 'string' || !/^[a-f0-9-]{36}$/.test(value.owner) || !Number.isSafeInteger(value.fence) || value.fence < 1 || !Number.isSafeInteger(value.attempt) || value.attempt < 1 || value.attempt > maxAttempts || value.executionAllowed !== false) throw new Error('Invalid reservation.')
+}
+
+export async function queueReservation(payload: Payload, storyId: number) {
+  return transaction(payload, async db => {
+    const lookup = await db.query('SELECT project_key,story_key FROM sdlc_stories WHERE id=$1', [storyId])
+    if (!lookup.rows[0]) throw new Error('Story not found.')
+    await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
+    const story = await eligible(db, storyId)
+    const inserted = await db.query<Task>(`INSERT INTO sdlc_tasks (task_key,story_id,project_key,scope_hash,status,fence,attempt_count,created_at,updated_at)
+      VALUES ($1,$2,$3,$4,'queued',0,0,clock_timestamp(),clock_timestamp()) ON CONFLICT (task_key) DO NOTHING RETURNING *`, [story.scope_hash, storyId, story.project_key, story.scope_hash])
+    if (inserted.rows[0]) { await event(db, inserted.rows[0], 'queued'); return inserted.rows[0].id }
+    const existing = await db.query('SELECT id FROM sdlc_tasks WHERE task_key=$1', [story.scope_hash])
+    return existing.rows[0].id as number
+  })
+}
+
+export async function reserveTask(payload: Payload, id: number, seconds = 30): Promise<Reservation | null> {
+  leaseSeconds(seconds)
+  return transaction(payload, async db => {
+    const task = await lockedTask(db, id)
+    if (task.status !== 'queued' || task.attempt_count >= maxAttempts) return null
+    const story = await eligible(db, task.story_id)
+    if (task.scope_hash !== story.scope_hash || task.project_key !== story.project_key) throw new Error('Task scope is stale.')
+    const owner = randomUUID()
+    const claimed = await db.query<Task>(`UPDATE sdlc_tasks SET status='reserved',owner=$2,fence=fence+1,attempt_count=attempt_count+1,
+      lease_expires_at=clock_timestamp()+$3*INTERVAL '1 second',deadline_at=clock_timestamp()+INTERVAL '300 seconds',updated_at=clock_timestamp() WHERE id=$1 RETURNING *`, [id, owner, seconds])
+    const row = taskRow(claimed.rows[0])
+    await event(db, row, 'claimed')
+    return { taskId: id, owner, fence: row.fence, attempt: row.attempt_count, executionAllowed }
+  })
+}
+
+export async function heartbeat(payload: Payload, reservation: Reservation, seconds = 30) {
+  validateReservation(reservation); leaseSeconds(seconds)
+  return transaction(payload, async db => {
+    const task = await lockedTask(db, reservation.taskId)
+    const story = await eligible(db, task.story_id)
+    if (story.scope_hash !== task.scope_hash) throw new Error('Task scope is stale.')
+    const renewed = await db.query<Task>(`UPDATE sdlc_tasks SET lease_expires_at=LEAST(deadline_at,clock_timestamp()+$4*INTERVAL '1 second'),updated_at=clock_timestamp()
+      WHERE id=$1 AND owner=$2 AND fence=$3 AND attempt_count=$5 AND status='reserved' AND lease_expires_at>clock_timestamp() AND deadline_at>clock_timestamp() RETURNING *`, [task.id, reservation.owner, reservation.fence, seconds, reservation.attempt])
+    if (!renewed.rows[0]) throw new Error('Reservation is stale or expired.')
+    await event(db, renewed.rows[0], 'heartbeat')
+  })
+}
+
+export async function finishReservation(payload: Payload, reservation: Reservation, outcome: 'candidate' | 'failed', evidenceHash: string) {
+  validateReservation(reservation); evidence(evidenceHash)
+  if (!['candidate', 'failed'].includes(outcome)) throw new Error('Invalid reservation outcome.')
+  return transaction(payload, async db => {
+    const task = await lockedTask(db, reservation.taskId)
+    const story = await eligible(db, task.story_id)
+    if (story.scope_hash !== task.scope_hash) throw new Error('Task scope is stale.')
+    const result = await db.query<Task>(`UPDATE sdlc_tasks SET status=$4,owner=NULL,fence=fence+1,lease_expires_at=NULL,updated_at=clock_timestamp(),result_hash=$5
+      WHERE id=$1 AND owner=$2 AND fence=$3 AND attempt_count=$6 AND status='reserved' AND lease_expires_at>clock_timestamp() AND deadline_at>clock_timestamp() RETURNING *`, [task.id, reservation.owner, reservation.fence, outcome === 'candidate' ? 'awaiting-verification' : 'uncertain', evidenceHash, reservation.attempt])
+    if (!result.rows[0]) throw new Error('Reservation is stale or expired.')
+    await event(db, { ...result.rows[0], owner: reservation.owner }, outcome === 'candidate' ? 'candidate' : 'uncertain', evidenceHash)
+  })
+}
+
+export async function expireReservation(payload: Payload, id: number) {
+  return transaction(payload, async db => {
+    const task = await lockedTask(db, id)
+    const expired = await db.query<Task>(`UPDATE sdlc_tasks SET status='uncertain',owner=NULL,fence=fence+1,lease_expires_at=NULL,updated_at=clock_timestamp()
+      WHERE id=$1 AND status='reserved' AND (lease_expires_at<=clock_timestamp() OR deadline_at<=clock_timestamp()) RETURNING *`, [id])
+    if (!expired.rows[0]) return false
+    await event(db, { ...expired.rows[0], owner: task.owner }, 'uncertain')
+    return true
+  })
+}
+
+/** Recovery for reservations only: no executor is attached and no child was launched.
+ * This must be replaced with verified backend termination before enabling real coding.
+ * Trusted control-plane callers must supply the authenticated human's ID, not intake data.
+ */
+export async function recoverReservation(payload: Payload, id: number, humanId: number, evidenceHash: string) {
+  evidence(evidenceHash)
+  return transaction(payload, async db => {
+    const task = await lockedTask(db, id)
+    const human = await db.query('SELECT id FROM users WHERE id=$1 AND role=\'admin\'', [humanId])
+    if (!human.rows[0]) throw new Error('Human administrator recovery required.')
+    if (task.status !== 'uncertain') throw new Error('Only uncertain reservations can be recovered.')
+    const status = task.attempt_count >= maxAttempts ? 'exhausted' : 'queued'
+    const result = await db.query<Task>('UPDATE sdlc_tasks SET status=$2,fence=fence+1,result_hash=NULL,deadline_at=NULL,updated_at=clock_timestamp() WHERE id=$1 RETURNING *', [id, status])
+    await event(db, result.rows[0], 'recovered', evidenceHash, humanId)
+    return status
+  })
+}
