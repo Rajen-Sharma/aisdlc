@@ -8,8 +8,25 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: windows-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      # Synthetic credentials for this disposable CI database, never deployment credentials.
+      DATABASE_URL: postgresql://cms:ci-only-not-for-deployment@127.0.0.1:55432/cms
+    services:
+      postgres:
+        image: postgres@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f
+        env:
+          POSTGRES_USER: cms
+          POSTGRES_PASSWORD: ci-only-not-for-deployment
+          POSTGRES_DB: cms
+        ports:
+          - 127.0.0.1:55432:5432
+        options: >-
+          --health-cmd "pg_isready -U cms -d cms"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -20,60 +37,35 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run setup
-      - name: Start isolated development database
-        shell: pwsh
+      - name: Prepare fresh run evidence
         run: |
-          Start-Process -FilePath node -ArgumentList '--env-file=.env','scripts/database.mjs' -WindowStyle Hidden -RedirectStandardOutput .local/database.log -RedirectStandardError .local/database-error.log
-          $ready = $false
-          for ($attempt = 0; $attempt -lt 60; $attempt++) {
-            $client = [System.Net.Sockets.TcpClient]::new()
-            try { $client.Connect('127.0.0.1', 55432); $ready = $true; break } catch { Start-Sleep -Seconds 1 } finally { $client.Dispose() }
-          }
-          if (-not $ready) { throw 'Database did not become ready' }
+          mkdir -p docs/evidence/github-ci
+          node --input-type=module -e "import fs from 'node:fs'; fs.writeFileSync('docs/evidence/github-ci/run.json', JSON.stringify({commit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,createdAt:new Date().toISOString()},null,2))"
       - run: npm run seed
       - run: npm run typecheck
       - name: Integration tests
-        shell: pwsh
-        run: |
-          npm test *> docs/evidence/integration-tests.log
-          exit $LASTEXITCODE
+        run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
       - name: Dependency audit
-        shell: pwsh
-        run: |
-          npm audit --json > docs/evidence/dependency-audit.json
-          exit $LASTEXITCODE
+        run: npm audit --json > docs/evidence/github-ci/dependency-audit.json
       - run: npm run import:demo
       - name: Optimized build
-        shell: pwsh
-        run: |
-          npm run build *> docs/evidence/build.log
-          exit $LASTEXITCODE
-      - run: npx playwright install chromium
+        run: npm run build > docs/evidence/github-ci/build.log 2>&1
+      - run: npx playwright install --with-deps chromium
       - name: Start built app and verify browser journeys
-        shell: pwsh
         run: |
-          Start-Process -FilePath node -ArgumentList 'scripts/next.mjs','start' -WindowStyle Hidden -RedirectStandardOutput .local/app.log -RedirectStandardError .local/app-error.log
+          node scripts/next.mjs start > .local/app.log 2> .local/app-error.log &
           node scripts/wait-http.mjs
-          npm run test:browser
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node scripts/pipeline-smoke.mjs --review
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node scripts/sdlc-smoke.mjs --review
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node scripts/delivery-browser.mjs
-          exit $LASTEXITCODE
+          node scripts/browser-check.mjs --evidence-dir=docs/evidence/github-ci
+          node scripts/pipeline-smoke.mjs --evidence-dir=docs/evidence/github-ci
+          node scripts/sdlc-smoke.mjs --evidence-dir=docs/evidence/github-ci
+          node scripts/delivery-browser.mjs --evidence-dir=docs/evidence/github-ci
       - name: Retain check evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: mvp-evidence-${{ github.sha }}
+          name: verification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            docs/evidence/*.log
-            docs/evidence/*.json
-            docs/evidence/review-2026-10-08/*.json
-            docs/evidence/review-2026-10-08/*.png
-            docs/evidence/build-eng-002/*.json
-            docs/evidence/build-eng-002/*.png
+            docs/evidence/github-ci/
             .local/screenshots/*.png
           include-hidden-files: true
           retention-days: 30

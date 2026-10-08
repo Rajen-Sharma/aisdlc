@@ -5,7 +5,7 @@ const base = 'http://127.0.0.1:3000'
 const credentials = JSON.parse(await readFile('.local/demo-credentials.json', 'utf8'))
 const browser = await chromium.launch()
 const results = []
-const evidenceRoot = process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence'
+const evidenceRoot = process.argv.find(arg => arg.startsWith('--evidence-dir='))?.slice('--evidence-dir='.length) || (process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence')
 const contexts = []
 async function login(role) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, extraHTTPHeaders: { Origin: base } })

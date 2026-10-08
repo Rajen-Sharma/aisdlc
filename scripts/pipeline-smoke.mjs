@@ -6,7 +6,7 @@ const browser = await chromium.launch()
 const accounts = JSON.parse(await readFile('.local/demo-credentials.json', 'utf8'))
 const project = JSON.parse(await readFile('projects/active.json', 'utf8'))
 const checks = []
-const evidenceRoot = process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence'
+const evidenceRoot = process.argv.find(arg => arg.startsWith('--evidence-dir='))?.slice('--evidence-dir='.length) || (process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence')
 await mkdir(evidenceRoot, { recursive: true })
 try {
   const anon = await browser.newContext()

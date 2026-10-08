@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import assert from 'node:assert/strict'
 const browser = await chromium.launch()
 const checks = []
-const evidenceRoot = process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence'
+const evidenceRoot = process.argv.find(arg => arg.startsWith('--evidence-dir='))?.slice('--evidence-dir='.length) || (process.argv.includes('--review') ? 'docs/evidence/review-2026-10-08' : 'docs/evidence')
 try {
   const context = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'], viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()

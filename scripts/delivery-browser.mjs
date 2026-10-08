@@ -1,7 +1,7 @@
 import { chromium, expect } from '@playwright/test'
 import { readFile, mkdir, writeFile } from 'node:fs/promises'
 const base = 'http://127.0.0.1:3000'
-const root = 'docs/evidence/build-eng-002'
+const root = process.argv.find(arg => arg.startsWith('--evidence-dir='))?.slice('--evidence-dir='.length) || 'docs/evidence/build-eng-002'
 await mkdir(root, { recursive: true })
 const browser = await chromium.launch()
 const results = []
