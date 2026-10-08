@@ -43,6 +43,7 @@ test('ownership is atomic, fenced, scope-bound and capped across coordinator cal
       blockedHeartbeat = heartbeat(payload, first).catch(error => error)
       let waiting = false
       for (let index = 0; index < 100; index++) {
+        await blocker.query('SELECT pg_stat_clear_snapshot()')
         const activity = await blocker.query("SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query='SELECT * FROM sdlc_tasks WHERE id=$1 FOR UPDATE'")
         if (activity.rowCount) { waiting = true; break }
         await new Promise(resolve => setTimeout(resolve, 10))

@@ -45,6 +45,9 @@ jobs:
       - run: npm run typecheck
       - name: Integration tests
         run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
+      - name: Publish safe integration diagnostics
+        if: failure()
+        run: node scripts/ci-test-summary.mjs
       - name: Dependency audit
         run: npm audit --json > docs/evidence/github-ci/dependency-audit.json
       - run: npm run import:demo
