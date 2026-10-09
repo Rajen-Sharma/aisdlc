@@ -6,6 +6,7 @@ import { mkdir, mkdtemp, writeFile, readFile, chmod } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
+import { exportSourceCapsule, validateSourceCapsule } from '../src/sdlc/source-capsule.ts'
 
 const exec = promisify(execFile)
 const image = 'node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8'
@@ -19,7 +20,7 @@ const variants = [
   ['output-flood', 'while(true) console.log("x".repeat(8192))', false],
   ['cpu-runaway', 'while(true) {}', false],
   ['grandchild-runaway', `import {spawn} from 'node:child_process'; spawn(process.execPath,['-e', 'require("node:child_process").spawn(process.execPath,["-e","while(true) {}"],{stdio:"ignore"}); while(true) {}'],{stdio:'ignore'}); while(true) {}`, false],
-  ['protected-write', `import fs from 'node:fs'; fs.writeFileSync('/source/candidate.mjs','export default x=>x'); export default x=>x`, false],
+  ['protected-write', `import fs from 'node:fs'; fs.writeFileSync('/source/src/candidate.mjs','export default x=>x'); export default x=>x`, false],
   ['checks-absent', `import fs from 'node:fs'; fs.readFileSync('/checks/policy.json'); export default x=>x`, false],
   ['host-secret-path', `import fs from 'node:fs'; fs.readFileSync('/host-canary/secret'); export default x=>x`, false],
   ['socket-absent', `import fs from 'node:fs'; fs.statSync('/var/run/docker.sock'); export default x=>x`, false],
@@ -38,11 +39,28 @@ async function run(source, input) {
   const name = `sdlc-verifier-${randomUUID()}`
   const directory = await mkdtemp(path.join(tmpdir(), 'sdlc-verifier-'))
   await chmod(directory, 0o755)
-  const file = path.join(directory, 'candidate.mjs')
+  await mkdir(path.join(directory, 'src'), { mode: 0o755 })
+  const file = path.join(directory, 'src', 'candidate.mjs')
   await writeFile(file, source, { mode: 0o444 })
+  const exported = await exportSourceCapsule(directory, ['src/candidate.mjs'])
+  // Controller-owned expected digest; never accept a sender's self-asserted digest.
+  const trustedDigest = exported.sha256
+  const capsule = validateSourceCapsule(exported, trustedDigest)
+  if (!Buffer.from(capsule.files[0].content, 'base64').equals(Buffer.from(source))) throw new Error('Source binding failed.')
+  for (const mutate of [
+    value => { value.files[0].content = Buffer.from('process.exit(0)').toString('base64') },
+    value => { value.files[0].path = '../checks/policy.json' },
+    value => { value.sha256 = '0'.repeat(64) },
+  ]) {
+    const altered = structuredClone(exported)
+    mutate(altered)
+    let denied = false
+    try { validateSourceCapsule(altered, trustedDigest) } catch { denied = true }
+    if (!denied) throw new Error('Modified capsule accepted; execution blocked.')
+  }
   let outcome = { accepted: false, reason: 'execution-failed', removed: false }
   try {
-    await docker(['create', '--name', name, '--network', 'none', '--read-only', '--user', '65534:65534', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--pids-limit', '32', '--memory', '128m', '--memory-swap', '128m', '--cpus', '1', '--tmpfs', '/tmp:rw,noexec,nosuid,size=16m,mode=1777', '--mount', `type=bind,source=${directory},target=/source,readonly`, image, 'node', '--input-type=module', '-e', `const {default:fn}=await import('/source/candidate.mjs'); console.log(JSON.stringify(await fn(${JSON.stringify(input)})))`])
+    await docker(['create', '--name', name, '--network', 'none', '--read-only', '--user', '65534:65534', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--pids-limit', '32', '--memory', '128m', '--memory-swap', '128m', '--cpus', '1', '--tmpfs', '/tmp:rw,noexec,nosuid,size=16m,mode=1777', '--mount', `type=bind,source=${directory},target=/source,readonly`, image, 'node', '--input-type=module', '-e', `const {default:fn}=await import('/source/src/candidate.mjs'); console.log(JSON.stringify(await fn(${JSON.stringify(input)})))`])
     try {
       const result = await docker(['start', '--attach', name], { timeout: 5000 })
       const state = JSON.parse((await docker(['inspect', '--format', '{{json .State}}', name])).stdout)
@@ -57,7 +75,7 @@ async function run(source, input) {
     if (hash(await readFile(file)) !== hash(source)) throw new Error('Immutable source changed.')
     // Synthetic staging retained in runner temp; runner disposal removes it. No recursive host deletion.
   }
-  return outcome
+  return { ...outcome, capsuleSha256: trustedDigest, capsuleTamperDenials: 3 }
 }
 
 try {
