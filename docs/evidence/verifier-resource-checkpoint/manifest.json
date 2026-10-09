@@ -1,0 +1,102 @@
+{
+  "files": [
+    {
+      "sha256": "9585ff519ebc78b9b5317d253409c14fffb92ea2214479e065d15cc5ec3ebbab",
+      "path": "scripts/verifier-qualification.mjs",
+      "bytes": 12311
+    },
+    {
+      "sha256": "346b44ec2c0a239dc3987e7b45bca5874fdd00b3e28f78a09f2bd2ab66ef0144",
+      "path": "scripts/verifier-container-recovery.mjs",
+      "bytes": 1281
+    },
+    {
+      "sha256": "d924a0a730b6cd505da32e2c9dd7171272e555cc704a2453a1810d825a4813fc",
+      "path": "scripts/verifier-crash-qualification.mjs",
+      "bytes": 6567
+    },
+    {
+      "sha256": "c29abd1a34b1ddf936bbdabcf80a9acdf02d8a4e9bd49858b87bf8de0f6cc098",
+      "path": "tests/verifier-recovery.test.mjs",
+      "bytes": 1589
+    },
+    {
+      "sha256": "d5394d832fca6e4de300a1255d68b5c5d802d815eed11a461552b60f5acc4baf",
+      "path": ".github/workflows/verifier-qualification.yml",
+      "bytes": 1162
+    },
+    {
+      "sha256": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594",
+      "path": "src/sdlc/source-capsule.ts",
+      "bytes": 5215
+    },
+    {
+      "sha256": "f39f8e0fc11f18c122afeae4ac33e637814453a8dc1e40fcb0eed5f084eef119",
+      "path": "docs/security/verifier-resource-boundaries.md",
+      "bytes": 2803
+    },
+    {
+      "sha256": "c5fea6b21bbc668bf09eab27be79fd5fded3b6bf98a250303a99213a75917bed",
+      "path": "docs/security/verifier-crash-reconciliation.md",
+      "bytes": 2317
+    },
+    {
+      "sha256": "4b16c04c3016892f051fe2979a9d73a56036b9f21fed7cdc413522fdf9e77aab",
+      "path": "docs/reviews/verifier-resource-checkpoint.md",
+      "bytes": 4845
+    },
+    {
+      "sha256": "831f3142fecc690610b24f030bc7e34932d1d144a4a7a2575838b588ef7903c6",
+      "path": "docs/evidence/verifier-resource-checkpoint/annotations-37915205382.json",
+      "bytes": 5879
+    },
+    {
+      "sha256": "949fe15d2f78d4bf02f826dc800ae3aa067bfb664937f242f05038de60998fb8",
+      "path": "docs/evidence/verifier-resource-checkpoint/annotations-37915394883.json",
+      "bytes": 3818
+    },
+    {
+      "sha256": "8b7e29efc214982008de8755f792f8685cc56578fd4f6df66301c7aa5c8e65d6",
+      "path": "docs/evidence/verifier-resource-checkpoint/platform-public-page.json",
+      "bytes": 454
+    },
+    {
+      "sha256": "cda76b0f26bed5022acb84e79f8a1694bc7b71b2738f2ecb38b34bded8888410",
+      "path": "docs/evidence/verifier-resource-checkpoint/recovery-tests.txt",
+      "bytes": 337
+    },
+    {
+      "sha256": "6f9b4948c609bac81016c103ba09d259dd0719f588f9dac6e56cc576c423e089",
+      "path": "docs/evidence/verifier-resource-checkpoint/run-37914583086.json",
+      "bytes": 18036
+    },
+    {
+      "sha256": "7f811cc8e8e47bf8069590e41e73cdd5a4d83ee8bb3b54966be1d593d191040b",
+      "path": "docs/evidence/verifier-resource-checkpoint/run-37914977256.json",
+      "bytes": 18665
+    },
+    {
+      "sha256": "c23d55b181328acb1b079c0d5f240600a204cb8b145ece6a7149f54962b4ccbe",
+      "path": "docs/evidence/verifier-resource-checkpoint/run-37915030910.json",
+      "bytes": 18621
+    },
+    {
+      "sha256": "ca12da80df32fd8d7448b1d394cdc719922492253e49413534e510a15b0a9ea8",
+      "path": "docs/evidence/verifier-resource-checkpoint/run-37915205382.json",
+      "bytes": 18645
+    },
+    {
+      "sha256": "2c3ed3e53123d13c53abda957441e5a0dcc0b858e07ec7b1c70a27bbca6cdf9b",
+      "path": "docs/evidence/verifier-resource-checkpoint/run-37915394883.json",
+      "bytes": 18637
+    },
+    {
+      "sha256": "f06dad4f9d8e64b47fada9f914402c54c920213be0bf8c2f5cdd16693068ee0d",
+      "path": "docs/evidence/verifier-resource-checkpoint/run-37915394927.json",
+      "bytes": 14462
+    }
+  ],
+  "scope": "Working-file bytes; public metadata and controller summaries, local recovery test output; no downloaded detailed artifacts or logs",
+  "sourceCommit": "78e3c91ae43e956e31b65ba6c505ce748ecaa660",
+  "version": 1
+}

@@ -1,0 +1,11 @@
+✔ recovery confirms absence but never authorizes retry (3.8646ms)
+✔ recovery refuses wrong identity before removal (2.9124ms)
+✔ failed removal, daemon failure and surviving inventory all fail closed (2.5895ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.4
