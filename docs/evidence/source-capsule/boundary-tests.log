@@ -1,0 +1,11 @@
+✔ source export is deterministic and excludes unselected host files (54.1375ms)
+✔ capsule validation denies tampering, ambiguous encoding and bounds violations (6.8303ms)
+✔ export denies directory links, oversized files and aggregate overflow (65.3257ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 687.9318
