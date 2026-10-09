@@ -129,4 +129,7 @@ try {
   await mkdir('docs/evidence/verifier', { recursive: true })
   await writeFile('docs/evidence/verifier/qualification.json', JSON.stringify(evidence, null, 2))
   console.log(JSON.stringify(evidence))
+  // Only controller-owned summaries enter workflow commands; never candidate output/errors.
+  const summary = { controllerSha256: evidence.controllerSha256, policySha256: evidence.policySha256, image, qualified: evidence.qualified, hostCanaryUnchanged: evidence.hostCanaryUnchanged === true, variants: evidence.results.map(({ name, sourceSha256, passed, cases }) => ({ name, sourceSha256, passed, cases: cases.length, removed: cases.filter(x => x.removed).length, capsuleTamperDenials: cases.reduce((sum, x) => sum + x.capsuleTamperDenials, 0), boundaryObserved: cases.filter(x => x.boundaryObserved).length, oomKilled: cases.filter(x => x.state.oomKilled).length, cancelled: cases.filter(x => x.reason === 'controller-cancelled').length })) }
+  console.log(`::notice title=Trusted verifier summary::${JSON.stringify(summary)}`)
 }

@@ -109,5 +109,7 @@ if (process.argv[2] === '--child') {
     await mkdir('docs/evidence/verifier', { recursive: true })
     await open('docs/evidence/verifier/crash-qualification.json', 'w').then(async file => { try { await file.writeFile(JSON.stringify(evidence, null, 2)) } finally { await file.close() } })
     console.log(JSON.stringify(evidence))
+    // Contains only trusted stage names, booleans and pinned hashes, never child diagnostics.
+    console.log(`::notice title=Trusted crash recovery summary::${JSON.stringify(evidence)}`)
   }
 }
