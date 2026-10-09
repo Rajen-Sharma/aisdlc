@@ -4,7 +4,7 @@ import type { Payload } from 'payload'
 import { digest } from './contracts'
 import { activeProject } from './project'
 import { validateTaskContract } from './delivery'
-import { bindArtifacts, validateBinding, type BindingGate, type BindingReceipt, type TaskBindingRecord } from './task-binding'
+import { bindArtifacts, validateBinding, validateBoundCandidate, type BindingArtifacts, type BindingGate, type BindingReceipt, type TaskBindingRecord } from './task-binding'
 
 const maxAttempts = 3
 const executionAllowed = false as const // No qualified executor or verifier is attached.
@@ -112,12 +112,30 @@ export async function heartbeat(payload: Payload, reservation: Reservation, seco
 }
 
 export async function finishReservation(payload: Payload, reservation: Reservation, outcome: 'candidate' | 'failed', evidenceHash: string) {
+  return completeReservation(payload, reservation, outcome, evidenceHash)
+}
+
+/** Trusted internal caller supplies retained binding digest and independently expected material.
+ * This records candidate integrity only, never a verifier verdict or execution authority.
+ */
+export async function submitBoundCandidate(payload: Payload, reservation: Reservation, bindingHash: string, candidate: unknown, expected: BindingArtifacts & { recoveryKey: string }) {
+  evidence(bindingHash)
+  return completeReservation(payload, reservation, 'candidate', bindingHash, { candidate, expected })
+}
+
+async function completeReservation(payload: Payload, reservation: Reservation, outcome: 'candidate' | 'failed', evidenceHash: string, bound?: { candidate: unknown; expected: BindingArtifacts & { recoveryKey: string } }) {
   validateReservation(reservation); evidence(evidenceHash)
   if (!['candidate', 'failed'].includes(outcome)) throw new Error('Invalid reservation outcome.')
   return transaction(payload, async db => {
     const task = await lockedTask(db, reservation.taskId)
     const story = await eligible(db, task.story_id)
     if (story.scope_hash !== task.scope_hash) throw new Error('Task scope is stale.')
+    await bindingStillCurrent(db, reservation)
+    if (outcome === 'candidate') {
+      if (!bound) throw new Error('Candidate completion requires a bound candidate handoff.')
+      const receipt = await inspectBinding(db, reservation, evidenceHash)
+      validateBoundCandidate(receipt, bound.candidate, bound.expected)
+    }
     const result = await db.query<Task>(`UPDATE sdlc_tasks SET status=$4,owner=NULL,fence=fence+1,lease_expires_at=NULL,updated_at=clock_timestamp(),result_hash=$5
       WHERE id=$1 AND owner=$2 AND fence=$3 AND attempt_count=$6 AND status='reserved' AND lease_expires_at>clock_timestamp() AND deadline_at>clock_timestamp() RETURNING *`, [task.id, reservation.owner, reservation.fence, outcome === 'candidate' ? 'awaiting-verification' : 'uncertain', evidenceHash, reservation.attempt])
     if (!result.rows[0]) throw new Error('Reservation is stale or expired.')
@@ -196,7 +214,10 @@ export async function bindReservationArtifacts(payload: Payload, reservation: Re
 /** Expected hash must come from a trusted retained receipt, not the row or candidate sender. */
 export async function inspectReservationBinding(payload: Payload, reservation: Reservation, expectedHash: string): Promise<BindingReceipt> {
   validateReservation(reservation); evidence(expectedHash)
-  return transaction(payload, async db => {
+  return transaction(payload, db => inspectBinding(db, reservation, expectedHash))
+}
+
+async function inspectBinding(db: PoolClient, reservation: Reservation, expectedHash: string): Promise<BindingReceipt> {
     const { task, story, bindingKey } = await bindingContext(db, reservation)
     const result = await db.query('SELECT binding_hash,recovery_key,record FROM sdlc_task_bindings WHERE binding_key=$1 AND task_id=$2', [bindingKey, task.id])
     const row = result.rows[0]
@@ -206,5 +227,4 @@ export async function inspectReservationBinding(payload: Payload, reservation: R
     if (r.taskId !== task.id || r.owner !== reservation.owner || r.fence !== reservation.fence || r.attempt !== reservation.attempt || r.storyId !== story.id || r.storyRevision !== Number(story.revision) || r.projectKey !== task.project_key || r.scopeHash !== task.scope_hash || digest(r.approvalGates) !== digest(story.approvalGates) || r.sourceHash !== story.contract.sourceHash || r.checkPolicyHash !== story.contract.checkPolicyHash) throw new Error('Task binding context mismatch.')
     await bindingStillCurrent(db, reservation)
     return receipt
-  })
 }

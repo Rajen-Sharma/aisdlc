@@ -1,0 +1,13 @@
+# Bound candidate handoff
+
+9 October 2026. AI-prepared review; human acceptance remains pending. Execution remains disabled.
+
+The internal coordinator now consumes the retained artifact-binding digest before accepting a candidate. `submitBoundCandidate` reloads the binding within the same PostgreSQL transaction as completion, checks current project/story/gates and owner/fence/attempt/lease, compares independently supplied expected artifact and recovery identifiers, and validates the supplied capsule against its bound candidate hash. The final update repeats ownership and database wall-clock expiry checks. Concurrent submissions serialize on the task lock; only one can advance the fence and write the candidate event.
+
+The legacy `finishReservation(..., 'candidate', hash)` path rejects current reservations because an arbitrary evidence hash supplies no binding. Failure completion remains available for reservation-only operation. Candidate completion stores the exact binding digest in both task `result_hash` and candidate event `evidence_hash`, clears ownership, increments the fence and enters only `awaiting-verification`. It does not store a behavioral verdict. Completion is deliberately not idempotent: a repeated or concurrent losing call sees a stale reservation; no retry permission follows.
+
+The expected digest/material must be retained by trusted coordinator code, not accepted from an unauthenticated candidate sender or reconstructed solely from the same database row. No new route, Server Action, verifier service or authentication mechanism was introduced. Input transport must enforce bounds before JSON parsing. Binding records remain synthetic-only and cannot authorize execution. Qualification references and supervisor names still establish no service identity or freshness.
+
+Tests exercise unbound completion, wrong retained digest, swapped candidate and verifier, old-attempt binding reuse, expired/superseded submission, unchanged task/event state after rejection, concurrent exactly-once transition, exact binding linkage, stale replay and denial of reservation recovery from awaiting-verification. Existing tests cover receipt corruption, changed human gate authority and lock-wait expiry in the shared inspection path. All test approvals are synthetic and cleaned up.
+
+Independent authenticated supervisor/recovery identity, durable external artifacts, trusted verifier-result evidence and recovery after whole-job/host/daemon loss remain outstanding. No verified state, promotion, paid model call, taskboard implementation, merge or deployment is enabled. The installed Next.js data-security guide was consulted before editing server code.

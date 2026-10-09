@@ -8,7 +8,7 @@ import config from '../src/payload.config'
 import { digest } from '../src/sdlc/contracts'
 import { activeProject } from '../src/sdlc/project'
 import { verifierImage, validateBoundCandidate } from '../src/sdlc/task-binding'
-import { queueReservation, reserveTask, bindReservationArtifacts, inspectReservationBinding, finishReservation, recoverReservation } from '../src/sdlc/task-coordinator'
+import { queueReservation, reserveTask, bindReservationArtifacts, inspectReservationBinding, finishReservation, recoverReservation, submitBoundCandidate } from '../src/sdlc/task-coordinator'
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 function capsule(text: string) {
@@ -44,6 +44,13 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     const receipts = await Promise.all([bindReservationArtifacts(payload, reservation, material), bindReservationArtifacts(payload, reservation, material)])
     assert.deepEqual(receipts[0], receipts[1])
     const receipt = receipts[0]
+    const expected = { sourceHash: receipt.record.sourceHash, candidateHash: receipt.record.candidateHash, checkPolicyHash: receipt.record.checkPolicyHash, verifierHash: receipt.record.verifierHash, qualificationHash: receipt.record.qualificationHash, image: receipt.record.image, supervisorKey: receipt.record.supervisorKey, recoveryKey: receipt.record.recoveryKey }
+    await assert.rejects(finishReservation(payload, reservation, 'candidate', candidate.sha256), /bound candidate handoff/)
+    await assert.rejects(submitBoundCandidate(payload, reservation, hash('wrong receipt'), candidate, expected), /mismatch/)
+    await assert.rejects(submitBoundCandidate(payload, reservation, receipt.bindingHash, capsule('swapped candidate'), expected))
+    await assert.rejects(submitBoundCandidate(payload, reservation, receipt.bindingHash, candidate, { ...expected, verifierHash: hash('swapped verifier') }))
+    assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_tasks WHERE id=$1', [taskId])).rows[0].status, 'reserved')
+    assert.equal((await payload.db.pool.query("SELECT count(*)::int AS count FROM sdlc_task_events WHERE task_id=$1 AND kind='candidate'", [taskId])).rows[0].count, 0)
     assert.equal(receipt.record.executionAllowed, false)
     assert.notEqual(receipt.record.recoveryKey, reservation.owner)
     assert.equal(receipt.record.approvalGates.length, 2)
@@ -79,6 +86,8 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     await assert.rejects(inspectReservationBinding(payload, reservation, receipt.bindingHash), /stale/)
     await assert.rejects(inspectReservationBinding(payload, next, receipt.bindingHash), /mismatch/)
     const newReceipt = await bindReservationArtifacts(payload, next, material)
+    const nextExpected = { ...expected, recoveryKey: newReceipt.record.recoveryKey }
+    await assert.rejects(submitBoundCandidate(payload, next, receipt.bindingHash, candidate, expected), /mismatch/)
     assert.notEqual(newReceipt.bindingHash, receipt.bindingHash)
     assert.notEqual(newReceipt.record.recoveryKey, receipt.record.recoveryKey)
     // Waiting on a task row cannot use an earlier transaction clock to evade expiry.
@@ -102,12 +111,34 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     const expired = await pending!
     assert.ok(expired instanceof Error); assert.match(expired.message, /expired/)
     await assert.rejects(bindReservationArtifacts(payload, next, material), /expired/)
+    await assert.rejects(submitBoundCandidate(payload, next, newReceipt.bindingHash, candidate, nextExpected), /expired/)
     await payload.db.pool.query("UPDATE sdlc_tasks SET lease_expires_at=clock_timestamp()+INTERVAL '300 seconds' WHERE id=$1", [taskId])
     const revision = await payload.create({ collection: 'sdlc-stories', data: { ...data, supersedes: story.id }, user: admin, overrideAccess: false, depth: 0 })
     records.push({ collection: 'sdlc-stories', id: revision.id })
     await assert.rejects(inspectReservationBinding(payload, next, newReceipt.bindingHash), /superseded/)
     await assert.rejects(bindReservationArtifacts(payload, next, material), /superseded/)
+    await assert.rejects(submitBoundCandidate(payload, next, newReceipt.bindingHash, candidate, nextExpected), /superseded/)
     assert.equal((await payload.findByID({ collection: 'sdlc-tasks', id: taskId, overrideAccess: true, depth: 0 })).status, 'reserved')
+    // Remove only this test's superseding revision to exercise a valid integrity handoff.
+    await payload.delete({ collection: 'sdlc-stories', id: revision.id, overrideAccess: true })
+    records.pop()
+    const submissions = await Promise.allSettled([
+      submitBoundCandidate(payload, next, newReceipt.bindingHash, candidate, nextExpected),
+      submitBoundCandidate(payload, next, newReceipt.bindingHash, candidate, nextExpected),
+    ])
+    assert.equal(submissions.filter(result => result.status === 'fulfilled').length, 1)
+    assert.equal(submissions.filter(result => result.status === 'rejected').length, 1)
+    const completed = (await payload.db.pool.query('SELECT status,owner,fence,result_hash FROM sdlc_tasks WHERE id=$1', [taskId])).rows[0]
+    assert.equal(completed.status, 'awaiting-verification')
+    assert.equal(completed.owner, null)
+    assert.equal(Number(completed.fence), next.fence + 1)
+    assert.equal(completed.result_hash, newReceipt.bindingHash)
+    const events = await payload.db.pool.query("SELECT evidence_hash,owner FROM sdlc_task_events WHERE task_id=$1 AND kind='candidate'", [taskId])
+    assert.equal(events.rows.length, 1)
+    assert.equal(events.rows[0].evidence_hash, newReceipt.bindingHash)
+    assert.equal(events.rows[0].owner, next.owner)
+    await assert.rejects(submitBoundCandidate(payload, next, newReceipt.bindingHash, candidate, nextExpected), /stale/)
+    await assert.rejects(recoverReservation(payload, taskId, admin.id, hash('not uncertain')), /Only uncertain/)
   } finally {
     if (taskId) {
       // Test-owned synthetic records only. Immutable API hooks intentionally forbid cleanup writes.
