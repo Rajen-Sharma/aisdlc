@@ -14,6 +14,21 @@ const image = 'node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb1992
 const filename = fileURLToPath(import.meta.url)
 if (process.platform !== 'linux' || process.env.GITHUB_ACTIONS !== 'true') throw new Error('Disposable selected Linux CI only.')
 
+async function readJournal(journal) {
+  const file = await open(journal, 'r')
+  try {
+    const buffer = Buffer.alloc(4097)
+    let bytes = 0
+    while (bytes < buffer.length) {
+      const result = await file.read(buffer, bytes, buffer.length - bytes, bytes)
+      if (!result.bytesRead) break
+      bytes += result.bytesRead
+    }
+    assert.ok(bytes > 0 && bytes <= 4096, 'Journal exceeds transport bound.')
+    return JSON.parse(buffer.subarray(0, bytes).toString('utf8'))
+  } finally { await file.close() }
+}
+
 if (process.argv[2] === '--child') {
   const [journal, token, stage] = process.argv.slice(3)
   assert.match(token, /^[a-f0-9-]{36}$/)
@@ -42,9 +57,7 @@ if (process.argv[2] === '--child') {
   setInterval(() => {}, 1000)
 } else if (process.argv[2] === '--recover') {
   const [journal, token] = process.argv.slice(3)
-  const raw = await readFile(journal)
-  assert.ok(raw.length < 4096)
-  const result = await reconcile(JSON.parse(raw), token, docker)
+  const result = await reconcile(await readJournal(journal), token, docker)
   console.log(JSON.stringify(result))
 } else {
   const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(filename)).digest('hex'), cases: [], qualified: false, retryAuthorized: false }
@@ -68,7 +81,7 @@ if (process.argv[2] === '--child') {
         })
         assert.equal(child.kill('SIGKILL'), true)
         assert.equal((await exited).signal, 'SIGKILL')
-        const state = JSON.parse((await readFile(journal)).toString())
+        const state = await readJournal(journal)
         assert.equal(state.state, 'uncertain')
         if (stage === 'running-tree') {
           const info = JSON.parse((await docker(['inspect', '--format', '{{json .State}}', state.name])).stdout)
