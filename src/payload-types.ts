@@ -77,6 +77,7 @@ export interface Config {
     'sdlc-gates': SdlcGate;
     'sdlc-tasks': SdlcTask;
     'sdlc-task-events': SdlcTaskEvent;
+    'sdlc-task-bindings': SdlcTaskBinding;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     'sdlc-gates': SdlcGatesSelect<false> | SdlcGatesSelect<true>;
     'sdlc-tasks': SdlcTasksSelect<false> | SdlcTasksSelect<true>;
     'sdlc-task-events': SdlcTaskEventsSelect<false> | SdlcTaskEventsSelect<true>;
+    'sdlc-task-bindings': SdlcTaskBindingsSelect<false> | SdlcTaskBindingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -345,9 +347,31 @@ export interface SdlcTaskEvent {
   attempt: number;
   fence: number;
   owner?: string | null;
-  kind: 'queued' | 'claimed' | 'heartbeat' | 'uncertain' | 'candidate' | 'recovered';
+  kind: 'queued' | 'claimed' | 'heartbeat' | 'uncertain' | 'candidate' | 'recovered' | 'artifacts-bound';
   evidenceHash?: string | null;
   actor?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-task-bindings".
+ */
+export interface SdlcTaskBinding {
+  id: number;
+  task: number | SdlcTask;
+  bindingKey: string;
+  bindingHash: string;
+  recoveryKey: string;
+  record:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -414,6 +438,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sdlc-task-events';
         value: number | SdlcTaskEvent;
+      } | null)
+    | ({
+        relationTo: 'sdlc-task-bindings';
+        value: number | SdlcTaskBinding;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -628,6 +656,19 @@ export interface SdlcTaskEventsSelect<T extends boolean = true> {
   kind?: T;
   evidenceHash?: T;
   actor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-task-bindings_select".
+ */
+export interface SdlcTaskBindingsSelect<T extends boolean = true> {
+  task?: T;
+  bindingKey?: T;
+  bindingHash?: T;
+  recoveryKey?: T;
+  record?: T;
   updatedAt?: T;
   createdAt?: T;
 }

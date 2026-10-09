@@ -4,6 +4,7 @@ import type { Payload } from 'payload'
 import { digest } from './contracts'
 import { activeProject } from './project'
 import { validateTaskContract } from './delivery'
+import { bindArtifacts, validateBinding, type BindingGate, type BindingReceipt, type TaskBindingRecord } from './task-binding'
 
 const maxAttempts = 3
 const executionAllowed = false as const // No qualified executor or verifier is attached.
@@ -34,11 +35,15 @@ async function eligible(db: PoolClient, storyId: number) {
   if (scope !== story.scope_hash) throw new Error('Story integrity failed.')
   const latest = await db.query('SELECT id FROM sdlc_stories WHERE project_key=$1 AND story_key=$2 ORDER BY revision DESC LIMIT 1', [project.key, story.story_key])
   if (latest.rows[0]?.id !== storyId) throw new Error('Story is superseded.')
-  const gates = await db.query(`SELECT g.kind FROM sdlc_gates g JOIN users u ON u.id=g.actor_id
+  const gates = await db.query(`SELECT g.id,g.kind,g.actor_id,g.decision_key FROM sdlc_gates g JOIN users u ON u.id=g.actor_id
     WHERE g.story_id=$1 AND g.scope_hash=$2 AND g.project_key=$3 AND g.decision='accept'
     AND u.role='admin' AND g.decision_key=concat(g.story_id, ':', g.scope_hash, ':', g.kind)`, [storyId, scope, project.key])
   for (const kind of ['sprint', 'design-security']) if (!gates.rows.some(g => g.kind === kind)) throw new Error(`${kind} acceptance required.`)
-  return story
+  const approvalGates: BindingGate[] = (['sprint', 'design-security'] as const).map(kind => {
+    const gate = gates.rows.find(g => g.kind === kind)!
+    return { id: Number(gate.id), kind, actorId: Number(gate.actor_id), decisionKey: gate.decision_key }
+  })
+  return { ...story, approvalGates }
 }
 async function lockedTask(db: PoolClient, id: number): Promise<Task> {
   const lookup = await db.query('SELECT s.project_key,s.story_key FROM sdlc_tasks t JOIN sdlc_stories s ON s.id=t.story_id WHERE t.id=$1', [id])
@@ -146,5 +151,60 @@ export async function recoverReservation(payload: Payload, id: number, humanId: 
     const result = await db.query<Task>('UPDATE sdlc_tasks SET status=$2,fence=fence+1,result_hash=NULL,deadline_at=NULL,updated_at=clock_timestamp() WHERE id=$1 RETURNING *', [id, status])
     await event(db, result.rows[0], 'recovered', evidenceHash, humanId)
     return status
+  })
+}
+
+async function bindingContext(db: PoolClient, reservation: Reservation) {
+  const task = await lockedTask(db, reservation.taskId)
+  const story = await eligible(db, task.story_id)
+  if (task.scope_hash !== story.scope_hash || task.project_key !== story.project_key) throw new Error('Task scope is stale.')
+  // Wall clock is read after every story/gate/row lock wait.
+  await bindingStillCurrent(db, reservation)
+  return { task, story, bindingKey: digest({ taskId: task.id, fence: reservation.fence, attempt: reservation.attempt }) }
+}
+async function bindingStillCurrent(db: PoolClient, reservation: Reservation) {
+  const current = await db.query(`SELECT id FROM sdlc_tasks WHERE id=$1 AND owner=$2 AND fence=$3 AND attempt_count=$4
+    AND status='reserved' AND lease_expires_at>clock_timestamp() AND deadline_at>clock_timestamp()`, [reservation.taskId, reservation.owner, reservation.fence, reservation.attempt])
+  if (!current.rows[0]) throw new Error('Reservation is stale or expired.')
+}
+
+/** Internal integrity handoff only. No child process, provider call or execution transition. */
+export async function bindReservationArtifacts(payload: Payload, reservation: Reservation, input: unknown): Promise<BindingReceipt> {
+  validateReservation(reservation)
+  return transaction(payload, async db => {
+    const { task, story, bindingKey } = await bindingContext(db, reservation)
+    const artifacts = bindArtifacts(story.contract, input)
+    const existing = await db.query('SELECT binding_hash,record,recovery_key FROM sdlc_task_bindings WHERE binding_key=$1', [bindingKey])
+    const recoveryKey = existing.rows[0]?.recovery_key ?? randomUUID()
+    const record: TaskBindingRecord = { version: 1, executionAllowed: false, syntheticOnly: true, taskId: task.id, storyId: story.id, storyRevision: Number(story.revision), projectKey: task.project_key, scopeHash: task.scope_hash, owner: reservation.owner, fence: reservation.fence, attempt: reservation.attempt, recoveryKey, approvalGates: story.approvalGates, ...artifacts }
+    const receipt = validateBinding(record, digest(record))
+    if (existing.rows[0]) {
+      validateBinding(existing.rows[0].record, existing.rows[0].binding_hash)
+      if (existing.rows[0].binding_hash !== receipt.bindingHash) throw new Error('Reservation already binds different artifacts.')
+      await bindingStillCurrent(db, reservation)
+      return receipt
+    }
+    const inserted = await db.query(`INSERT INTO sdlc_task_bindings (task_id,binding_key,binding_hash,recovery_key,record,created_at,updated_at)
+      SELECT $1,$2,$3,$4,$5,clock_timestamp(),clock_timestamp() FROM sdlc_tasks WHERE id=$1 AND owner=$6 AND fence=$7 AND attempt_count=$8
+      AND status='reserved' AND lease_expires_at>clock_timestamp() AND deadline_at>clock_timestamp() RETURNING id`, [task.id, bindingKey, receipt.bindingHash, recoveryKey, JSON.stringify(record), reservation.owner, reservation.fence, reservation.attempt])
+    if (!inserted.rows[0]) throw new Error('Reservation is stale or expired.')
+    await event(db, task, 'artifacts-bound', receipt.bindingHash)
+    return receipt
+  })
+}
+
+/** Expected hash must come from a trusted retained receipt, not the row or candidate sender. */
+export async function inspectReservationBinding(payload: Payload, reservation: Reservation, expectedHash: string): Promise<BindingReceipt> {
+  validateReservation(reservation); evidence(expectedHash)
+  return transaction(payload, async db => {
+    const { task, story, bindingKey } = await bindingContext(db, reservation)
+    const result = await db.query('SELECT binding_hash,recovery_key,record FROM sdlc_task_bindings WHERE binding_key=$1 AND task_id=$2', [bindingKey, task.id])
+    const row = result.rows[0]
+    if (!row || row.binding_hash !== expectedHash || row.recovery_key !== row.record?.recoveryKey) throw new Error('Task binding receipt mismatch.')
+    const receipt = validateBinding(row.record, expectedHash)
+    const r = receipt.record
+    if (r.taskId !== task.id || r.owner !== reservation.owner || r.fence !== reservation.fence || r.attempt !== reservation.attempt || r.storyId !== story.id || r.storyRevision !== Number(story.revision) || r.projectKey !== task.project_key || r.scopeHash !== task.scope_hash || digest(r.approvalGates) !== digest(story.approvalGates) || r.sourceHash !== story.contract.sourceHash || r.checkPolicyHash !== story.contract.checkPolicyHash) throw new Error('Task binding context mismatch.')
+    await bindingStillCurrent(db, reservation)
+    return receipt
   })
 }
