@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "sourceCommit": "f8b28318c89c39cfde44efb1f9a580613f1f6ae8",
+  "scope": "Working-file bytes; public CI metadata only; no downloaded detailed artifacts or logs",
+  "files": [
+    {
+      "bytes": 7504,
+      "path": "scripts/verifier-qualification.mjs",
+      "sha256": "684f44ca9b06be41d21dcd12fa069f4ccc8707414bc37f2a0677ee8f81ad69f7"
+    },
+    {
+      "bytes": 891,
+      "path": ".github/workflows/verifier-qualification.yml",
+      "sha256": "862b85835f03c735e095f584efeb29742ec0904869df53bf5b3d7c890cb6cf29"
+    },
+    {
+      "bytes": 5215,
+      "path": "src/sdlc/source-capsule.ts",
+      "sha256": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594"
+    },
+    {
+      "bytes": 3132,
+      "path": "docs/security/verifier-qualification.md",
+      "sha256": "67521d7b74a362b4df830d5baadfa7e30d899728a88850798a846965e1d2f276"
+    },
+    {
+      "bytes": 3072,
+      "path": "docs/reviews/verifier-checkpoint.md",
+      "sha256": "f01e65360f2e7ef1554db9d83be7d1849a97c356788281b941736bdfa9c3f179"
+    },
+    {
+      "bytes": 18020,
+      "path": "docs/evidence/verifier-checkpoint/run-37912684299.json",
+      "sha256": "4bd5c8ab8852bd50c405b531db453d9dfa3488facdc5794206bd5c00162b7d1e"
+    },
+    {
+      "bytes": 18002,
+      "path": "docs/evidence/verifier-checkpoint/run-37912951088.json",
+      "sha256": "dc300dc9cfabb4978aed75abcc35c8c34a0678bb2208ddb3f59efc329862c3dc"
+    },
+    {
+      "bytes": 18016,
+      "path": "docs/evidence/verifier-checkpoint/run-37913081171.json",
+      "sha256": "f4b87c95d18007ef9f1ac2a0645e8961ac2b81a2b4abbd81d66080bdd54d6331"
+    },
+    {
+      "bytes": 18018,
+      "path": "docs/evidence/verifier-checkpoint/run-37913189347.json",
+      "sha256": "0a399ecbece0b78918f6d083f87dcff06a44f1b3fea749611105c8af18040f5d"
+    },
+    {
+      "bytes": 21537,
+      "path": "docs/evidence/verifier-checkpoint/run-37913189376.json",
+      "sha256": "157743dec6b679573926a69f0b35ab8a4e7a8adad2266629b41e2d349d61f77b"
+    }
+  ]
+}
