@@ -1,0 +1,19 @@
+{
+  "timingLimit": "Sum of Node test-process reported durations, not full delivery time or CI timing",
+  "observedExitCodes": {
+    "typecheck": 0,
+    "build": 0,
+    "fullSuite": 0
+  },
+  "reportedNodeTests": 17,
+  "providerSpend": 0,
+  "sourceCommit": "0538e90a976480153a21dd762d8bc9ad4b486a69",
+  "modelCalls": 0,
+  "leafScenarios": 16,
+  "executionAllowed": false,
+  "nodeSuiteDurationMsSum": 132058.6174,
+  "newScenarios": 3,
+  "humanAcceptancesAdded": 0,
+  "reportedNodeFailures": 0,
+  "reportedNodePasses": 17
+}

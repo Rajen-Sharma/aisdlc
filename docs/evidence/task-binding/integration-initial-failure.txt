@@ -1,0 +1,35 @@
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[✓] Pulling schema from database...
+[21:30:05] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+✖ persisted artifact bindings are atomic, immutable and exact to the current gated attempt (3510.9728ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17920.9312
+
+✖ failing tests:
+
+test at tests\sdlc-binding.test.ts:1:1036
+✖ persisted artifact bindings are atomic, immutable and exact to the current gated attempt (3510.9728ms)
+  Forbidden: You are not allowed to perform this action.
+      at executeAccess (F:\CodeRepos\HeadlessCMS\node_modules\payload\src\auth\executeAccess.ts:30:15)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async findOperation (F:\CodeRepos\HeadlessCMS\node_modules\payload\src\collections\operations\find.ts:121:22)
+      at async TestContext.<anonymous> (F:\CodeRepos\HeadlessCMS\tests\sdlc-binding.test.ts:58:19)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    data: null,
+    isOperational: true,
+    isPublic: true,
+    status: 403,
+    [cause]: null
+  }

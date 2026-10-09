@@ -1,0 +1,8 @@
+{
+  "knownSecretOccurrencesRedacted": 0,
+  "transforms": [
+    "known database URL, database password and Payload secret redaction",
+    "ANSI control sequence removal"
+  ],
+  "limits": "Not general secret discovery. Original logs remain local and ignored; failure log is pre-final uncommitted test state."
+}

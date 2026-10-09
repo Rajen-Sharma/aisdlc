@@ -1,0 +1,7 @@
+{
+  "sourceCommit": "0538e90a976480153a21dd762d8bc9ad4b486a69",
+  "scope": "Built local app: root availability and anonymous collection denial only. No authenticated browser or execution claim.",
+  "anonymousBindingReadStatus": 403,
+  "observedAtUtc": "2026-10-09T10:37:03.2976831Z",
+  "rootStatus": 200
+}

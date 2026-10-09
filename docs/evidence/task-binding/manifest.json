@@ -1,0 +1,117 @@
+{
+  "files": [
+    {
+      "path": "src/sdlc/task-binding.ts",
+      "sha256": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e",
+      "bytes": 6197
+    },
+    {
+      "path": "src/sdlc/task-coordinator.ts",
+      "sha256": "1b843830e5c1edbcb5dd3165010da930dda99720057950cfbac9cb2455d1c40b",
+      "bytes": 15661
+    },
+    {
+      "path": "src/sdlc/task-collections.ts",
+      "sha256": "8a2153a18e378a08ac5edcd2086499aab76ff14ed3b776cbadca20cde1d14858",
+      "bytes": 2645
+    },
+    {
+      "path": "src/sdlc/source-capsule.ts",
+      "sha256": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594",
+      "bytes": 5215
+    },
+    {
+      "path": "src/sdlc/contracts.ts",
+      "sha256": "4983c31628ff0d301bfc12dce44679761cdd689408a2661504ad6918983ea01c",
+      "bytes": 4095
+    },
+    {
+      "path": "src/sdlc/delivery.ts",
+      "sha256": "2a3c891d89807d71bdadebe3390952fb002cebcc36efcf5ee30df480a67ac720",
+      "bytes": 6311
+    },
+    {
+      "path": "src/payload.config.ts",
+      "sha256": "f124c2c47ae2d42292e49fdf22fd4346fcec0847bb0a863bfca76c8a8ef16e9f",
+      "bytes": 1222
+    },
+    {
+      "path": "src/payload-types.ts",
+      "sha256": "c18b8485cbca058c444ec4e98ebae73d5a798ea726184f29ed25c9ae9d3d12ba",
+      "bytes": 16904
+    },
+    {
+      "path": "tests/task-binding.test.ts",
+      "sha256": "d86561e4bcc2bca288727d9380ac711b07f2ede9606f552ab05ca7442f6c5f8a",
+      "bytes": 4362
+    },
+    {
+      "path": "tests/sdlc-binding.test.ts",
+      "sha256": "8cd2a30490e654d5c12793dbf44a11294756ff35d291071ae8a8cb16e9892ea2",
+      "bytes": 11444
+    },
+    {
+      "path": "docs/security/task-artifact-binding.md",
+      "sha256": "c3035db9fa532a105bc2f021c433be15f945a741c7748ec7f976d655a8fc04f2",
+      "bytes": 4381
+    },
+    {
+      "path": "docs/reviews/task-binding-checkpoint.md",
+      "sha256": "9ab5557b580b9de3749ff0718167bc1d9f0998fe9fddf11db943969e4955ef53",
+      "bytes": 4565
+    },
+    {
+      "path": "docs/planning/next-build.md",
+      "sha256": "b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82",
+      "bytes": 7852
+    },
+    {
+      "path": "docs/security/next-build-design.md",
+      "sha256": "3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d",
+      "bytes": 5147
+    },
+    {
+      "path": "docs/evidence/task-binding/build.txt",
+      "sha256": "e57ff1eb303e1a6ddfc36b719de005d4085a4dd3e0ad0ab8319db084be64ddc3",
+      "bytes": 921
+    },
+    {
+      "path": "docs/evidence/task-binding/full-suite.txt",
+      "sha256": "03a5092f14bffbd6bf244dfc2f1c13102f0b9ff60d52072bfe2ee65eea233598",
+      "bytes": 5111
+    },
+    {
+      "path": "docs/evidence/task-binding/integration-initial-failure.txt",
+      "sha256": "b8c24a7c14dbac3047be315cc8793ce159eab4620c8aa5dbf8b213dc9c11dd53",
+      "bytes": 1541
+    },
+    {
+      "path": "docs/evidence/task-binding/local-checks.json",
+      "sha256": "91a6f0b9ea543cbf709f4e25558cbe154b7728e971ac4cda3da84568a1e2daf1",
+      "bytes": 539
+    },
+    {
+      "path": "docs/evidence/task-binding/local-smoke.json",
+      "sha256": "378fdd42c7d2f6b85386ff48bb26d8bbc7b8f9d1522aa56e372dcc23a31d0c1a",
+      "bytes": 313
+    },
+    {
+      "path": "docs/evidence/task-binding/log-transforms.json",
+      "sha256": "11f82b41dff8a4f92e44a38b6ba898e35d82dcf46fa4f6d5bc9bdc39e0978ba4",
+      "bytes": 308
+    },
+    {
+      "path": "docs/evidence/task-binding/platform-public-page.json",
+      "sha256": "06842d207d0d9ecaccd795ed1eafd833108b2eee3ce7492335c812b213a080e7",
+      "bytes": 395
+    },
+    {
+      "path": "docs/evidence/task-binding/typecheck.txt",
+      "sha256": "557bbc87ba003d606d0f5857f39b8dcee84e22600c6449448f38d97ffaa412a5",
+      "bytes": 57
+    }
+  ],
+  "sourceCommit": "0538e90a976480153a21dd762d8bc9ad4b486a69",
+  "version": 1,
+  "scope": "Windows working-file bytes; transformed local logs, coordinator-observed exits, local smoke and public CI run-page observation. Excludes manifest itself."
+}
