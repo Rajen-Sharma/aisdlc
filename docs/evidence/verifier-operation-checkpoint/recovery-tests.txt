@@ -1,0 +1,14 @@
+✔ proxy preserves unapproved-endpoint failure through closure without contacting Docker (37.1314ms)
+✔ proxy preserves oversized-body failure through closure without contacting Docker (21.5185ms)
+✔ pending writers deny recovery before any daemon query, even if inventory would be empty (9.65ms)
+✔ recovery confirms absence but never authorizes retry (2.604ms)
+✔ recovery refuses wrong identity before removal (3.134ms)
+✔ failed removal, daemon failure and surviving inventory all fail closed (1.7572ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 353.9079

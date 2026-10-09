@@ -1,0 +1,3 @@
+scripts/verifier-operation-qualification.mjs: runtime hash matches Git source
+scripts/verifier-crash-qualification.mjs: runtime hash matches Git source
+scripts/verifier-qualification.mjs: runtime hash matches Git source

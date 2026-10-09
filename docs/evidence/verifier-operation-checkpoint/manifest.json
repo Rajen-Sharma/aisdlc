@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "sourceCommit": "c079c83bc542e1cb7096ef095514b3c3ac177415",
+  "files": [
+    {
+      "sha256": "9585ff519ebc78b9b5317d253409c14fffb92ea2214479e065d15cc5ec3ebbab",
+      "path": "scripts/verifier-qualification.mjs",
+      "bytes": 12311
+    },
+    {
+      "sha256": "d924a0a730b6cd505da32e2c9dd7171272e555cc704a2453a1810d825a4813fc",
+      "path": "scripts/verifier-crash-qualification.mjs",
+      "bytes": 6567
+    },
+    {
+      "sha256": "b67d41439f18a099268bab700086affcefd2630c9509e24637064f7c51252450",
+      "path": "scripts/verifier-container-recovery.mjs",
+      "bytes": 1786
+    },
+    {
+      "sha256": "30f4b51648aef6202e6e2150524b2b64f5b9d461b534f37a7193722642b28e15",
+      "path": "scripts/qualification-docker-proxy.mjs",
+      "bytes": 3902
+    },
+    {
+      "sha256": "4e70fe54b57d0b84a17c68bdd3b944b61ecb8b9bb561ee0743f8b81c1d7c881b",
+      "path": "scripts/verifier-operation-qualification.mjs",
+      "bytes": 6932
+    },
+    {
+      "sha256": "7fd8d04a7aea4a1021651658384c335d536e0832a3baef2ab058f800514d1513",
+      "path": "tests/verifier-recovery.test.mjs",
+      "bytes": 2392
+    },
+    {
+      "sha256": "d5f8f12c72626d7f315ab0107c0989d34c1492f6222363bb95305711615b7c3a",
+      "path": "tests/qualification-docker-proxy.test.mjs",
+      "bytes": 1598
+    },
+    {
+      "sha256": "5f5197e0d52f576c96fa39d5ff8e3d0f2db1c2dec13d37b9564854dec7628a9c",
+      "path": ".github/workflows/verifier-qualification.yml",
+      "bytes": 1370
+    },
+    {
+      "sha256": "69813808f606983ffd1ec59d9c48d0e063f4ad537114125b6c156aa82be0560a",
+      "path": "docs/security/verifier-operation-drain.md",
+      "bytes": 3842
+    },
+    {
+      "sha256": "df5893712fafdf49ef6daeb6502ea49166d874bc570a28a4d250171a3755bb02",
+      "path": "docs/reviews/verifier-operation-checkpoint.md",
+      "bytes": 4167
+    },
+    {
+      "sha256": "2fe36b5b854608c71c65a3c8d5763e00ca854759412f3bf9d536e7fc978adcd0",
+      "path": "docs/evidence/verifier-operation-checkpoint/recovery-tests.txt",
+      "bytes": 641
+    },
+    {
+      "sha256": "a4889b6f48b0972a2028a9b9907eaf5b1eeb741a7b854502f929d2c812875013",
+      "path": "docs/evidence/verifier-operation-checkpoint/run-37916974134-public-page.json",
+      "bytes": 450
+    },
+    {
+      "sha256": "d35232d982b8cb19632130fa099e8cb888ab78794ea31c86db0830ea3a9f91e8",
+      "path": "docs/evidence/verifier-operation-checkpoint/run-37916974223-public-page.json",
+      "bytes": 450
+    },
+    {
+      "sha256": "1acf7b22430996ed8fcb58fa52b2fbd36c4b8d973bab9508cef02e4e61927022",
+      "path": "docs/evidence/verifier-operation-checkpoint/runtime-hash-check.txt",
+      "bytes": 223
+    },
+    {
+      "sha256": "2439888cd959f3b33ff91daef84d2cbd20ff4832d7a217d74bf1a3f16c702d45",
+      "path": "docs/evidence/verifier-operation-checkpoint/summaries-37916719647.json",
+      "bytes": 7898
+    },
+    {
+      "sha256": "f23284ff41565c324031c3d829ca1f85853c627807ecf079c222addb734cdfb3",
+      "path": "docs/evidence/verifier-operation-checkpoint/summaries-37916974134.json",
+      "bytes": 7898
+    }
+  ],
+  "scope": "Working-file bytes; public HTML run observations and parsed annotations, local test/hash checks; no authenticated detailed logs or artifacts"
+}
