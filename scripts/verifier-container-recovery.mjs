@@ -1,6 +1,14 @@
 // Qualification-only reconciliation. Never grants task ownership or retry permission.
 import assert from 'node:assert/strict'
 
+export async function reconcileAfterDrain(record, expectedToken, docker, proof) {
+  // Qualification-only proof from the surviving trusted observer, never candidate/journal data.
+  assert.equal(proof?.controllerClosed, true, 'Controller may still issue operations.')
+  assert.equal(proof?.operationClientsClosed, true, 'Pending operation client may still write.')
+  assert.equal(proof?.proxyClosed, true, 'Pending proxy may still forward operations.')
+  return reconcile(record, expectedToken, docker)
+}
+
 export async function reconcile(record, expectedToken, docker) {
   assert.match(expectedToken, /^[a-f0-9-]{36}$/)
   assert.equal(record.version, 1)
