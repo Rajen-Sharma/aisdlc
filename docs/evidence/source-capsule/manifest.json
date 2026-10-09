@@ -1,0 +1,66 @@
+{
+  "implementationCommit": "474f721534360290679417303992a7395cac759b",
+  "recordedAt": "2026-10-09T09:23:30.761Z",
+  "hashBasis": "Working-file bytes; Git line-ending normalization may differ. Manifest excludes itself.",
+  "local": {
+    "typecheck": "passed",
+    "boundaryTests": 3,
+    "boundaryTestsPassed": 3,
+    "fullSuite": "passed",
+    "leafScenarios": 13,
+    "reportedNodeResults": 14,
+    "fullSuiteEvidence": "Coordinator-observed exit 0; full raw local log not retained"
+  },
+  "remoteRunId": 37910640762,
+  "remoteConclusion": "success",
+  "pipelineModelCalls": 0,
+  "executionAllowed": false,
+  "humanCodeSecurity": "pending",
+  "files": [
+    {
+      "path": "src/sdlc/source-capsule.ts",
+      "bytes": 5215,
+      "sha256": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594"
+    },
+    {
+      "path": "tests/source-capsule.test.ts",
+      "bytes": 4108,
+      "sha256": "7cd40d32aee6e6c4d59fe46a94aa9786e755c60dc628ade3f7362a51021dfa16"
+    },
+    {
+      "path": "fixtures/taskboard/src/filter-tasks.mjs",
+      "bytes": 179,
+      "sha256": "4bb9195bd71b860c7296a90fa8fb2e686e90b57b2cb1d2cbf55fc21a0bfad773"
+    },
+    {
+      "path": "fixtures/taskboard/README.md",
+      "bytes": 570,
+      "sha256": "2f25a4fa8c7669f30b205a9b489e070e1e8d0f0c00996b2e7af1d6383c06bd7a"
+    },
+    {
+      "path": "docs/security/source-capsule-review.md",
+      "bytes": 2424,
+      "sha256": "0c9120b97b795d7a27abf8b43ec3360942e7685faf72bbf57a65db9b65a96a56"
+    },
+    {
+      "path": "docs/reviews/source-capsule-checkpoint.md",
+      "bytes": 2673,
+      "sha256": "1719a067f0e2b3080408026e3cd60fa0dadab71fde874da4acc22dbc9d8f68ca"
+    },
+    {
+      "path": "docs/evidence/source-capsule/boundary-tests.log",
+      "bytes": 385,
+      "sha256": "2f12ecb08eed617300e7c6328c908d08cd98c2b335af45f0f47c548e76dbe775"
+    },
+    {
+      "path": "docs/evidence/source-capsule/typecheck.log",
+      "bytes": 57,
+      "sha256": "557bbc87ba003d606d0f5857f39b8dcee84e22600c6449448f38d97ffaa412a5"
+    },
+    {
+      "path": "docs/evidence/source-capsule/remote-run.json",
+      "bytes": 3193,
+      "sha256": "cc06b65ae0db7da60f4de4b937c3e01986bf6c3825c511254a6c45a236e09d56"
+    }
+  ]
+}
