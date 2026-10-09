@@ -49,7 +49,7 @@ async function run(source, input) {
   const capsule = validateSourceCapsule(exported, trustedDigest)
   if (!Buffer.from(capsule.files[0].content, 'base64').equals(Buffer.from(source))) throw new Error('Source binding failed.')
   for (const mutate of [
-    value => { value.files[0].content = Buffer.from('process.exit(0)').toString('base64') },
+    value => { value.files[0].content = Buffer.from(`${source}\n// tampered`).toString('base64') },
     value => { value.files[0].path = '../checks/policy.json' },
     value => { value.sha256 = '0'.repeat(64) },
   ]) {
