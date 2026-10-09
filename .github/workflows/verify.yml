@@ -13,20 +13,6 @@ jobs:
     env:
       # Synthetic credentials for this disposable CI database, never deployment credentials.
       DATABASE_URL: postgresql://cms:ci-only-not-for-deployment@127.0.0.1:55432/cms
-    services:
-      postgres:
-        image: postgres@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f
-        env:
-          POSTGRES_USER: cms
-          POSTGRES_PASSWORD: ci-only-not-for-deployment
-          POSTGRES_DB: cms
-        ports:
-          - 127.0.0.1:55432:5432
-        options: >-
-          --health-cmd "pg_isready -U cms -d cms"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -35,12 +21,14 @@ jobs:
         with:
           node-version: 24.14.0
           cache: npm
-      - run: npm ci
-      - run: npm run setup
       - name: Prepare fresh run evidence
         run: |
           mkdir -p docs/evidence/github-ci
           node --input-type=module -e "import fs from 'node:fs'; fs.writeFileSync('docs/evidence/github-ci/run.json', JSON.stringify({commit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,createdAt:new Date().toISOString()},null,2))"
+      - name: Start pinned CI database with bounded diagnostics
+        run: node scripts/ci-postgres.mjs start
+      - run: npm ci
+      - run: npm run setup
       - run: npm run seed
       - run: npm run typecheck
       - name: Integration tests
@@ -63,6 +51,9 @@ jobs:
           node scripts/sdlc-smoke.mjs --evidence-dir=docs/evidence/github-ci
           node scripts/delivery-browser.mjs --evidence-dir=docs/evidence/github-ci
           node --env-file=.env --import tsx scripts/ownership-browser.ts --evidence-dir=docs/evidence/github-ci
+      - name: Remove owned CI database
+        if: always()
+        run: node scripts/ci-postgres.mjs stop
       - name: Retain check evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
