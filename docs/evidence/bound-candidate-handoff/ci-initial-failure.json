@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-10-09T21:23:42.2387292Z",
+  "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/37993100693",
+  "sourceCommit": "70a11166444af0459caae1c9cabf5b942bf921ca",
+  "status": "Failure",
+  "method": "Unauthenticated public run/job HTML; annotation HTML decoded, detailed logs not retrieved.",
+  "annotations": [
+    "Process completed with exit code 1.",
+    "Docker pull failed with exit code 1",
+    "No files were found with the provided path: docs/evidence/github-ci/\n.local/screenshots/*.png. No artifacts will be uploaded.",
+    "Docker pull failed with exit code 1, back off 9.897 seconds before retry.",
+    "Docker pull failed with exit code 1, back off 4.716 seconds before retry."
+  ],
+  "jobUrl": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/37993100693/job/114032075312",
+  "limitation": "Annotations report Docker pull failure during Initialize containers. Underlying pull cause unavailable; no application validation established."
+}

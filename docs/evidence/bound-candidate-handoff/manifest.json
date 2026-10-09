@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "sourceCommit": "78aee2fa9c5d2569fc0fb9efbe90fc3302ec213e",
+  "scope": "Windows working-file bytes; excludes manifest itself. Local transformed logs and public run-page observation, not authenticated remote logs.",
+  "files": [
+    {
+      "path": "src/sdlc/task-coordinator.ts",
+      "sha256": "730ec42aacc3f75e04f65da83f55d5f4aac9f26a02ec80811e4f8d8e8fba4a20",
+      "bytes": 16998
+    },
+    {
+      "path": "src/sdlc/task-binding.ts",
+      "sha256": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e",
+      "bytes": 6197
+    },
+    {
+      "path": "src/sdlc/source-capsule.ts",
+      "sha256": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594",
+      "bytes": 5215
+    },
+    {
+      "path": "tests/sdlc-binding.test.ts",
+      "sha256": "b87a28a21a08f0b36af06a2aa2479cc965385ab1031c00b0a692b003931b6ed2",
+      "bytes": 14642
+    },
+    {
+      "path": "tests/sdlc-ownership.test.ts",
+      "sha256": "bf47f25272db6a9cda3204a3e79b827db8d12047a63b161d6a684a17e38fa341",
+      "bytes": 9304
+    },
+    {
+      "path": "docs/security/bound-candidate-handoff.md",
+      "sha256": "b6f5a244760e371e0a008763d94361d32a93d21e26d299a5917578f0a6d12e0d",
+      "bytes": 2680
+    },
+    {
+      "path": "docs/reviews/bound-candidate-checkpoint.md",
+      "sha256": "6e4ca317b35f73a5961e540aec6c623c53afe597249d8fb668a5d8ddcc620c05",
+      "bytes": 2648
+    },
+    {
+      "path": "docs/planning/next-build.md",
+      "sha256": "b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82",
+      "bytes": 7852
+    },
+    {
+      "path": "docs/security/next-build-design.md",
+      "sha256": "3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d",
+      "bytes": 5147
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "5cdabc54b20854387192459a663d3be7466376bd299df21545ee026ea15dbfa4",
+      "bytes": 3198
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/binding-test.txt",
+      "sha256": "80e744122c186cd2e0446ffb3a49e9dde63784fcf362983ba28d5ea1da479df4",
+      "bytes": 641
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/build.txt",
+      "sha256": "8b476717b501f7c83ca11f1a7f4102b091e3cda3abbb08e3f68d3799cee175dc",
+      "bytes": 922
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/ci-initial-failure.json",
+      "sha256": "96730cb749e58f0822d2ac592d1e3acbb8f14e0571465f40e3af67fcb3ca7223",
+      "bytes": 997
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/local-smoke.json",
+      "sha256": "f40c18619b6605cc36a3be3a9e878e9c326e9c3fa804f16dc0213b2247064417",
+      "bytes": 288
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/local-validation.json",
+      "sha256": "0d1de31269de88c798d0e7eb3893e3626880af784a9a92a512e8ee8bfce4336f",
+      "bytes": 648
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/platform-public-page.json",
+      "sha256": "c050e25b47c1f28cf075f8ad609bfa4918a9a7d94c599b1e593f0beecf2d287a",
+      "bytes": 600
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/tests.txt",
+      "sha256": "25ce815a75890845058e34777275a1bdddb6ae038806df589628e460b5b252df",
+      "bytes": 5108
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/typecheck.txt",
+      "sha256": "557bbc87ba003d606d0f5857f39b8dcee84e22600c6449448f38d97ffaa412a5",
+      "bytes": 57
+    }
+  ]
+}

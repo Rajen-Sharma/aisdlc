@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-09T21:24:53.442Z",
+  "typecheckExit": 0,
+  "focusedBindingTestExit": 0,
+  "fullSequentialSuiteExit": 0,
+  "productionBuildExit": 0,
+  "transformations": [
+    {
+      "file": "typecheck.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "binding-test.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "tests.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "build.txt",
+      "knownSecretReplacements": 0
+    }
+  ],
+  "limitation": "ANSI removal and known database URL/password/Payload secret redaction only; not general DLP. Raw originals remain ignored locally."
+}

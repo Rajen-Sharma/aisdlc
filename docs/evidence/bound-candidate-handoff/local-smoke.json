@@ -1,0 +1,8 @@
+{
+  "observedAt": "2026-10-09T21:23:57.3508433Z",
+  "rootStatus": 200,
+  "anonymousBindingsStatus": 403,
+  "launcherPid": 8076,
+  "listenerPid": 30472,
+  "note": "Initial root probe preceded listener readiness and was refused; repeated probe returned 200. No credentials used."
+}

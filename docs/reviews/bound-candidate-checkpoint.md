@@ -1,0 +1,13 @@
+# Bound candidate checkpoint
+
+10 October 2026, Australia/Sydney. AI-prepared review; human acceptance pending.
+
+Source branch `build/bound-candidate-handoff` at `78aee2fa9c5d2569fc0fb9efbe90fc3302ec213e` adds an atomic consumer for task artifact bindings. Implementation commit is `70a11166444af0459caae1c9cabf5b942bf921ca`; the final commit is an empty CI retry. An arbitrary candidate evidence hash can no longer complete a current reservation. The trusted coordinator must reload the independently retained binding digest, validate current task/story/gate/lease context, compare independently expected verifier/artifact/recovery material and validate the exact candidate capsule in the same completion transaction. Successful completion links task and event to that binding and enters only `awaiting-verification`.
+
+Concurrent valid submissions yield one committed candidate event; the other becomes stale. Rejection leaves the task reserved and writes no candidate event. Tests cover wrong digest, swapped candidate/verifier, old-attempt binding reuse, expiry, supersession, exact result linkage, stale replay and recovery denial from awaiting-verification. Local typecheck, focused database scenario, full sequential suite and optimized production build passed. The rebuilt app returned root 200 and anonymous bindings 403.
+
+Both remote runs (37993100693 and retry 37993190162) failed during Docker service initialization with public annotations reporting a pull failure. Neither established application validation; the underlying pull cause is unavailable from retrieved metadata. Both public observations are retained. An empty retry commit changes no source bytes. CI acceptance remains outstanding; detailed authenticated remote logs/artifacts were not retrieved. The pinned dependency image was not changed based on these incomplete diagnostics.
+
+See [security review](../security/bound-candidate-handoff.md) and [evidence manifest](../evidence/bound-candidate-handoff/manifest.json). Local logs remove ANSI sequences and redact only known database URL/password/Payload secret values; raw originals remain ignored locally. Manifest hashes cover Windows working-file bytes and exclude the manifest itself.
+
+This is candidate integrity, not trusted verifier-result evidence or human artifact approval. Execution, retry and promotion remain disabled. Independent authenticated supervisor/recovery identity, external durable evidence transport, verifier verdict provenance and whole-job/host/daemon-loss recovery remain incomplete. No taskboard feature, model call, merge or deployment occurred. Accepted plan/design documents are unchanged.
