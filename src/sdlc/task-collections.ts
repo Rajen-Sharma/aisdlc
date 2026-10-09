@@ -20,8 +20,35 @@ export const TaskEvents: CollectionConfig = {
     { name: 'task', type: 'relationship', relationTo: 'sdlc-tasks', required: true },
     { name: 'attempt', type: 'number', required: true }, { name: 'fence', type: 'number', required: true },
     { name: 'owner', type: 'text' },
-    { name: 'kind', type: 'select', required: true, options: ['queued', 'claimed', 'heartbeat', 'uncertain', 'candidate', 'recovered', 'artifacts-bound'] },
+    { name: 'kind', type: 'select', required: true, options: ['queued', 'claimed', 'heartbeat', 'uncertain', 'candidate', 'recovered', 'artifacts-bound', 'verifier-challenge', 'verifier-evidence'] },
     { name: 'evidenceHash', type: 'text' }, { name: 'actor', type: 'relationship', relationTo: 'users' },
+  ],
+}
+const evidenceHooks: CollectionConfig['hooks'] = {
+  beforeChange: [() => { throw new APIError('Verifier evidence requires the internal coordinator.', 403) }],
+  beforeDelete: [() => { throw new APIError('Verifier evidence is immutable.', 403) }],
+}
+export const VerifierChallenges: CollectionConfig = {
+  slug: 'sdlc-verifier-challenges', admin: { group: 'AI delivery', useAsTitle: 'challengeHash' }, access: coordinatorOnly, hooks: evidenceHooks,
+  fields: [
+    { name: 'task', type: 'relationship', relationTo: 'sdlc-tasks', required: true },
+    { name: 'bindingHash', type: 'text', unique: true, required: true },
+    { name: 'challengeHash', type: 'text', unique: true, required: true },
+    { name: 'nonce', type: 'text', unique: true, required: true },
+    { name: 'expiresAt', type: 'date', required: true },
+    { name: 'status', type: 'select', options: ['issued', 'consumed'], required: true },
+    { name: 'record', type: 'json', required: true },
+  ],
+}
+export const VerifierEvidence: CollectionConfig = {
+  slug: 'sdlc-verifier-evidence', admin: { group: 'AI delivery', useAsTitle: 'resultHash' }, access: coordinatorOnly, hooks: evidenceHooks,
+  fields: [
+    { name: 'task', type: 'relationship', relationTo: 'sdlc-tasks', required: true },
+    { name: 'challenge', type: 'relationship', relationTo: 'sdlc-verifier-challenges', unique: true, required: true },
+    { name: 'bindingHash', type: 'text', unique: true, required: true },
+    { name: 'resultHash', type: 'text', unique: true, required: true },
+    { name: 'record', type: 'json', required: true },
+    { name: 'evidenceBase64', type: 'textarea', required: true },
   ],
 }
 export const TaskBindings: CollectionConfig = {

@@ -1,14 +1,15 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createHash, randomUUID } from 'node:crypto'
+import { createHash, randomUUID, generateKeyPairSync, sign } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
 import config from '../src/payload.config'
 import { digest } from '../src/sdlc/contracts'
 import { activeProject } from '../src/sdlc/project'
 import { verifierImage, validateBoundCandidate } from '../src/sdlc/task-binding'
-import { queueReservation, reserveTask, bindReservationArtifacts, inspectReservationBinding, finishReservation, recoverReservation, submitBoundCandidate } from '../src/sdlc/task-coordinator'
+import { queueReservation, reserveTask, bindReservationArtifacts, inspectReservationBinding, finishReservation, recoverReservation, submitBoundCandidate, issueVerifierChallenge, recordVerifierEvidence } from '../src/sdlc/task-coordinator'
+import { verifierSigningBytes, type VerifierClaim } from '../src/sdlc/verifier-evidence'
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 function capsule(text: string) {
@@ -139,9 +140,99 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     assert.equal(events.rows[0].owner, next.owner)
     await assert.rejects(submitBoundCandidate(payload, next, newReceipt.bindingHash, candidate, nextExpected), /stale/)
     await assert.rejects(recoverReservation(payload, taskId, admin.id, hash('not uncertain')), /Only uncertain/)
+    const keys = generateKeyPairSync('ed25519')
+    const policy = { supervisorKey: expected.supervisorKey, keyId: 'synthetic-test-key', publicKey: keys.publicKey, verifierHash: expected.verifierHash, qualificationHash: expected.qualificationHash, image: expected.image }
+    await assert.rejects(issueVerifierChallenge(payload, taskId, receipt.bindingHash, policy), /stale/)
+    await assert.rejects(issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, { ...policy, verifierHash: hash('unqualified verifier') }), /policy/)
+    const challenge = await issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, policy)
+    await assert.rejects(issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, policy), /already/)
+    const proof = Buffer.from('Synthetic signed proof; no verifier execution or human approval.')
+    const claim: VerifierClaim = { version: 1, challengeHash: challenge.challengeHash, evidenceHash: hash(proof.toString()), evidenceBytes: proof.length, verdict: 'pass', syntheticOnly: true, executionAllowed: false }
+    const envelope = JSON.stringify({ claim, signature: sign(null, verifierSigningBytes(claim), keys.privateKey).toString('base64') })
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, hash('wrong challenge'), policy, envelope, proof), /absent/)
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, Buffer.from('swapped')))
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, { ...policy, publicKey: generateKeyPairSync('ed25519').publicKey }, envelope, proof))
+    await payload.db.pool.query("UPDATE sdlc_gates SET actor_id=$2 WHERE story_id=$1 AND kind='design-security'", [story.id, editor.id])
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof), /acceptance required/)
+    await payload.db.pool.query("UPDATE sdlc_gates SET actor_id=$2 WHERE story_id=$1 AND kind='design-security'", [story.id, admin.id])
+    assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_verifier_challenges WHERE challenge_hash=$1', [challenge.challengeHash])).rows[0].status, 'issued')
+    assert.equal((await payload.db.pool.query('SELECT count(*)::int AS count FROM sdlc_verifier_evidence WHERE task_id=$1', [taskId])).rows[0].count, 0)
+    await payload.db.pool.query('UPDATE sdlc_task_bindings SET record=$2 WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify({ ...newReceipt.record, supervisorKey: 'forged-supervisor' })])
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof))
+    await payload.db.pool.query('UPDATE sdlc_task_bindings SET record=$2 WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify(newReceipt.record)])
+    // Test-only shortened challenge exercises database wall clock after a real lock wait.
+    const clock = Number((await payload.db.pool.query('SELECT floor(extract(epoch FROM clock_timestamp()))::bigint AS now')).rows[0].now)
+    const shortRecord = { ...challenge.record, issuedAt: clock, expiresAt: clock + 2 }, shortHash = digest(shortRecord)
+    await payload.db.pool.query('UPDATE sdlc_verifier_challenges SET record=$2,challenge_hash=$3,expires_at=to_timestamp($4) WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify(shortRecord), shortHash, shortRecord.expiresAt])
+    const shortClaim = { ...claim, challengeHash: shortHash }
+    const shortEnvelope = JSON.stringify({ claim: shortClaim, signature: sign(null, verifierSigningBytes(shortClaim), keys.privateKey).toString('base64') })
+    const verifierBlocker = await payload.db.pool.connect()
+    let delayedIntake: Promise<unknown>
+    try {
+      await verifierBlocker.query('BEGIN')
+      await verifierBlocker.query('SELECT id FROM sdlc_tasks WHERE id=$1 FOR UPDATE', [taskId])
+      delayedIntake = recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, shortHash, policy, shortEnvelope, proof).catch(error => error)
+      let waiting = false
+      for (let index = 0; index < 100; index++) {
+        await verifierBlocker.query('SELECT pg_stat_clear_snapshot()')
+        const activity = await verifierBlocker.query("SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query='SELECT * FROM sdlc_tasks WHERE id=$1 FOR UPDATE'")
+        if (activity.rowCount) { waiting = true; break }
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+      assert.ok(waiting, 'Verifier intake must wait on the candidate task lock.')
+      await new Promise(resolve => setTimeout(resolve, 2100))
+      await verifierBlocker.query('COMMIT')
+    } catch (error) { await verifierBlocker.query('ROLLBACK'); throw error } finally { verifierBlocker.release() }
+    const delayed = await delayedIntake!
+    assert.ok(delayed instanceof Error); assert.match(delayed.message, /rejected|expired/)
+    assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_verifier_challenges WHERE binding_hash=$1', [newReceipt.bindingHash])).rows[0].status, 'issued')
+    await payload.db.pool.query('UPDATE sdlc_verifier_challenges SET record=$2,challenge_hash=$3,expires_at=to_timestamp($4) WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify(challenge.record), challenge.challengeHash, challenge.record.expiresAt])
+    // Real transaction, test-only SQL-client fault after consumption but before evidence insertion.
+    const faultyPayload = { db: { pool: { connect: async () => {
+      const client = await payload.db.pool.connect()
+      return {
+        query: (sql: string, parameters?: unknown[]) => sql.startsWith('INSERT INTO sdlc_verifier_evidence') ? Promise.reject(new Error('Synthetic evidence insert failure.')) : client.query(sql, parameters),
+        release: () => client.release(),
+      }
+    } } } } as unknown as Payload
+    await assert.rejects(recordVerifierEvidence(faultyPayload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof), /Synthetic evidence insert failure/)
+    assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_verifier_challenges WHERE binding_hash=$1', [newReceipt.bindingHash])).rows[0].status, 'issued')
+    assert.equal((await payload.db.pool.query('SELECT count(*)::int AS count FROM sdlc_verifier_evidence WHERE task_id=$1', [taskId])).rows[0].count, 0)
+    const intake = await Promise.allSettled([
+      recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof),
+      recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof),
+    ])
+    assert.equal(intake.filter(result => result.status === 'fulfilled').length, 1)
+    assert.equal(intake.filter(result => result.status === 'rejected').length, 1)
+    const accepted = intake.find(result => result.status === 'fulfilled')!
+    assert.equal(accepted.value.authenticated, true)
+    assert.equal(accepted.value.reviewRequired, true)
+    assert.equal(accepted.value.executionAllowed, false)
+    assert.equal(accepted.value.retryAuthorized, false)
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof), /consumed/)
+    const stored = await payload.find({ collection: 'sdlc-verifier-evidence', user: admin, overrideAccess: false, depth: 0, where: { task: { equals: taskId } } })
+    assert.equal(stored.docs.length, 1)
+    assert.equal(Buffer.from(stored.docs[0].evidenceBase64, 'base64').toString(), proof.toString())
+    assert.equal(stored.docs[0].resultHash, accepted.value.resultHash)
+    const persistedCheck = `import {getPayload} from 'payload'; import config from './src/payload.config.ts'; import {createPublicKey} from 'node:crypto'; import {authenticateVerifierEvidence} from './src/sdlc/verifier-evidence.ts'; const payload=await getPayload({config}); const row=(await payload.find({collection:'sdlc-verifier-evidence',overrideAccess:true,depth:0,where:{task:{equals:${taskId}}}})).docs[0]; const policy=${JSON.stringify({ ...policy, publicKey: undefined })}; policy.publicKey=createPublicKey({key:Buffer.from(${JSON.stringify(keys.publicKey.export({ type: 'spki', format: 'der' }).toString('base64'))},'base64'),type:'spki',format:'der'}); const result=authenticateVerifierEvidence(${JSON.stringify(challenge)},policy,JSON.stringify(row.record),Buffer.from(row.evidenceBase64,'base64'),Math.floor(Date.now()/1000)); await payload.destroy(); console.log('EVIDENCE:'+result.resultHash); process.exit(0);`
+    const freshEvidence = await promisify(execFile)(process.execPath, ['--env-file=.env', '--import', 'tsx', '--input-type=module', '-e', persistedCheck], { env: { ...process.env, NODE_ENV: 'production' }, timeout: 60000, maxBuffer: 64000, windowsHide: true })
+    assert.ok(freshEvidence.stdout.includes(`EVIDENCE:${accepted.value.resultHash}`))
+    assert.equal((await payload.db.pool.query("SELECT count(*)::int AS count FROM sdlc_task_events WHERE task_id=$1 AND kind='verifier-evidence'", [taskId])).rows[0].count, 1)
+    assert.equal((await payload.db.pool.query('SELECT status,result_hash FROM sdlc_tasks WHERE id=$1', [taskId])).rows[0].status, 'awaiting-verification')
+    await assert.rejects(payload.find({ collection: 'sdlc-verifier-evidence', user: editor, overrideAccess: false }), /not allowed/)
+    await assert.rejects(payload.find({ collection: 'sdlc-verifier-challenges', overrideAccess: false }), /not allowed/)
+    await assert.rejects(payload.update({ collection: 'sdlc-verifier-evidence', id: stored.docs[0].id, overrideAccess: true, data: { evidenceBase64: 'forged' } }), /internal coordinator/)
+    await assert.rejects(payload.delete({ collection: 'sdlc-verifier-evidence', id: stored.docs[0].id, overrideAccess: true }), /immutable/)
+    const challengeDocument = await payload.find({ collection: 'sdlc-verifier-challenges', user: admin, overrideAccess: false, depth: 0, where: { task: { equals: taskId } } })
+    assert.equal(challengeDocument.docs.length, 1)
+    assert.equal(challengeDocument.docs[0].status, 'consumed')
+    await assert.rejects(payload.update({ collection: 'sdlc-verifier-challenges', id: challengeDocument.docs[0].id, overrideAccess: true, data: { status: 'issued' } }), /internal coordinator/)
+    await assert.rejects(payload.create({ collection: 'sdlc-verifier-evidence', overrideAccess: true, data: { task: taskId, challenge: challengeDocument.docs[0].id, bindingHash: newReceipt.bindingHash, resultHash: hash('forged'), record: JSON.parse(envelope), evidenceBase64: proof.toString('base64') } }), /internal coordinator/)
   } finally {
     if (taskId) {
       // Test-owned synthetic records only. Immutable API hooks intentionally forbid cleanup writes.
+      await payload.db.pool.query('DELETE FROM sdlc_verifier_evidence WHERE task_id=$1', [taskId])
+      await payload.db.pool.query('DELETE FROM sdlc_verifier_challenges WHERE task_id=$1', [taskId])
       await payload.db.pool.query('DELETE FROM sdlc_task_bindings WHERE task_id=$1', [taskId])
       await payload.db.pool.query('DELETE FROM sdlc_task_events WHERE task_id=$1', [taskId])
       await payload.delete({ collection: 'sdlc-tasks', id: taskId, overrideAccess: true })

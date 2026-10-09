@@ -78,6 +78,8 @@ export interface Config {
     'sdlc-tasks': SdlcTask;
     'sdlc-task-events': SdlcTaskEvent;
     'sdlc-task-bindings': SdlcTaskBinding;
+    'sdlc-verifier-challenges': SdlcVerifierChallenge;
+    'sdlc-verifier-evidence': SdlcVerifierEvidence;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -96,6 +98,8 @@ export interface Config {
     'sdlc-tasks': SdlcTasksSelect<false> | SdlcTasksSelect<true>;
     'sdlc-task-events': SdlcTaskEventsSelect<false> | SdlcTaskEventsSelect<true>;
     'sdlc-task-bindings': SdlcTaskBindingsSelect<false> | SdlcTaskBindingsSelect<true>;
+    'sdlc-verifier-challenges': SdlcVerifierChallengesSelect<false> | SdlcVerifierChallengesSelect<true>;
+    'sdlc-verifier-evidence': SdlcVerifierEvidenceSelect<false> | SdlcVerifierEvidenceSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -347,7 +351,16 @@ export interface SdlcTaskEvent {
   attempt: number;
   fence: number;
   owner?: string | null;
-  kind: 'queued' | 'claimed' | 'heartbeat' | 'uncertain' | 'candidate' | 'recovered' | 'artifacts-bound';
+  kind:
+    | 'queued'
+    | 'claimed'
+    | 'heartbeat'
+    | 'uncertain'
+    | 'candidate'
+    | 'recovered'
+    | 'artifacts-bound'
+    | 'verifier-challenge'
+    | 'verifier-evidence';
   evidenceHash?: string | null;
   actor?: (number | null) | User;
   updatedAt: string;
@@ -372,6 +385,53 @@ export interface SdlcTaskBinding {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-verifier-challenges".
+ */
+export interface SdlcVerifierChallenge {
+  id: number;
+  task: number | SdlcTask;
+  bindingHash: string;
+  challengeHash: string;
+  nonce: string;
+  expiresAt: string;
+  status: 'issued' | 'consumed';
+  record:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-verifier-evidence".
+ */
+export interface SdlcVerifierEvidence {
+  id: number;
+  task: number | SdlcTask;
+  challenge: number | SdlcVerifierChallenge;
+  bindingHash: string;
+  resultHash: string;
+  record:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  evidenceBase64: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -442,6 +502,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sdlc-task-bindings';
         value: number | SdlcTaskBinding;
+      } | null)
+    | ({
+        relationTo: 'sdlc-verifier-challenges';
+        value: number | SdlcVerifierChallenge;
+      } | null)
+    | ({
+        relationTo: 'sdlc-verifier-evidence';
+        value: number | SdlcVerifierEvidence;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -669,6 +737,35 @@ export interface SdlcTaskBindingsSelect<T extends boolean = true> {
   bindingHash?: T;
   recoveryKey?: T;
   record?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-verifier-challenges_select".
+ */
+export interface SdlcVerifierChallengesSelect<T extends boolean = true> {
+  task?: T;
+  bindingHash?: T;
+  challengeHash?: T;
+  nonce?: T;
+  expiresAt?: T;
+  status?: T;
+  record?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-verifier-evidence_select".
+ */
+export interface SdlcVerifierEvidenceSelect<T extends boolean = true> {
+  task?: T;
+  challenge?: T;
+  bindingHash?: T;
+  resultHash?: T;
+  record?: T;
+  evidenceBase64?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -5,10 +5,11 @@ import { digest } from './contracts'
 import { activeProject } from './project'
 import { validateTaskContract } from './delivery'
 import { bindArtifacts, validateBinding, validateBoundCandidate, type BindingArtifacts, type BindingGate, type BindingReceipt, type TaskBindingRecord } from './task-binding'
+import { authenticateVerifierEvidence, supervisorIdentity, validateChallenge, type ChallengeReceipt, type SupervisorPolicy, type VerifierChallenge } from './verifier-evidence'
 
 const maxAttempts = 3
 const executionAllowed = false as const // No qualified executor or verifier is attached.
-type Task = { id: number; story_id: number; project_key: string; scope_hash: string; status: string; owner: string | null; fence: number; attempt_count: number }
+type Task = { id: number; story_id: number; project_key: string; scope_hash: string; status: string; owner: string | null; fence: number; attempt_count: number; result_hash?: string | null }
 export type Reservation = { taskId: number; owner: string; fence: number; attempt: number; executionAllowed: false }
 async function transaction<T>(payload: Payload, work: (db: PoolClient) => Promise<T>) {
   const db = await payload.db.pool.connect()
@@ -227,4 +228,66 @@ async function inspectBinding(db: PoolClient, reservation: Reservation, expected
     if (r.taskId !== task.id || r.owner !== reservation.owner || r.fence !== reservation.fence || r.attempt !== reservation.attempt || r.storyId !== story.id || r.storyRevision !== Number(story.revision) || r.projectKey !== task.project_key || r.scopeHash !== task.scope_hash || digest(r.approvalGates) !== digest(story.approvalGates) || r.sourceHash !== story.contract.sourceHash || r.checkPolicyHash !== story.contract.checkPolicyHash) throw new Error('Task binding context mismatch.')
     await bindingStillCurrent(db, reservation)
     return receipt
+}
+
+async function awaitingBinding(db: PoolClient, taskId: number, expectedHash: string, policy: SupervisorPolicy) {
+  const task = await lockedTask(db, taskId)
+  const story = await eligible(db, task.story_id)
+  if (task.status !== 'awaiting-verification' || task.owner !== null || task.result_hash !== expectedHash || task.scope_hash !== story.scope_hash || task.project_key !== story.project_key) throw new Error('Candidate binding is stale.')
+  const result = await db.query('SELECT record,recovery_key FROM sdlc_task_bindings WHERE task_id=$1 AND binding_hash=$2', [taskId, expectedHash])
+  const row = result.rows[0]
+  if (!row || row.recovery_key !== row.record?.recoveryKey) throw new Error('Candidate binding receipt mismatch.')
+  const receipt = validateBinding(row.record, expectedHash), r = receipt.record
+  if (r.taskId !== task.id || r.storyId !== story.id || r.storyRevision !== Number(story.revision) || r.projectKey !== task.project_key || r.scopeHash !== task.scope_hash || r.fence + 1 !== task.fence || r.attempt !== task.attempt_count || digest(r.approvalGates) !== digest(story.approvalGates) || r.sourceHash !== story.contract.sourceHash || r.checkPolicyHash !== story.contract.checkPolicyHash) throw new Error('Candidate binding context mismatch.')
+  const identity = supervisorIdentity(policy)
+  for (const key of ['supervisorKey', 'verifierHash', 'qualificationHash', 'image'] as const) if (identity[key] !== r[key]) throw new Error('Supervisor policy does not match candidate binding.')
+  return { task, receipt, identity }
+}
+async function databaseSeconds(db: PoolClient) {
+  const result = await db.query('SELECT floor(extract(epoch FROM clock_timestamp()))::bigint AS now')
+  return Number(result.rows[0].now)
+}
+
+/** One bounded, synthetic-only challenge per candidate. No launch permission or automatic renewal. */
+export async function issueVerifierChallenge(payload: Payload, taskId: number, bindingHash: string, policy: SupervisorPolicy): Promise<ChallengeReceipt> {
+  if (!Number.isSafeInteger(taskId) || taskId < 1) throw new Error('Invalid task.')
+  evidence(bindingHash)
+  return transaction(payload, async db => {
+    const { task, identity } = await awaitingBinding(db, taskId, bindingHash, policy)
+    const exists = await db.query('SELECT id FROM sdlc_verifier_challenges WHERE binding_hash=$1', [bindingHash])
+    if (exists.rows[0]) throw new Error('Candidate already has a verifier challenge.')
+    const issuedAt = await databaseSeconds(db)
+    const record: VerifierChallenge = { version: 1, nonce: randomUUID(), bindingHash, ...identity, issuedAt, expiresAt: issuedAt + 300, syntheticOnly: true, executionAllowed: false }
+    const receipt = validateChallenge(record, digest(record))
+    await db.query(`INSERT INTO sdlc_verifier_challenges (task_id,binding_hash,challenge_hash,nonce,expires_at,status,record,created_at,updated_at)
+      VALUES ($1,$2,$3,$4,to_timestamp($5),'issued',$6,clock_timestamp(),clock_timestamp())`, [taskId, bindingHash, receipt.challengeHash, record.nonce, record.expiresAt, JSON.stringify(record)])
+    await event(db, task, 'verifier-challenge', receipt.challengeHash)
+    return receipt
+  })
+}
+
+/** Trusted policy and retained hashes are not sender input. Authenticates provenance, not correctness. */
+export async function recordVerifierEvidence(payload: Payload, taskId: number, bindingHash: string, challengeHash: string, policy: SupervisorPolicy, envelope: string, evidenceBytes: Uint8Array) {
+  if (!Number.isSafeInteger(taskId) || taskId < 1) throw new Error('Invalid task.')
+  evidence(bindingHash); evidence(challengeHash)
+  // Bound and snapshot before any lock wait; external transports must bound before allocating too.
+  if (typeof envelope !== 'string' || Buffer.byteLength(envelope) > 4096 || !(evidenceBytes instanceof Uint8Array) || evidenceBytes.byteLength < 1 || evidenceBytes.byteLength > 65536) throw new Error('Verifier evidence rejected.')
+  const bytes = Buffer.from(evidenceBytes)
+  return transaction(payload, async db => {
+    const { task } = await awaitingBinding(db, taskId, bindingHash, policy)
+    const result = await db.query(`SELECT id,record,nonce,status,extract(epoch FROM expires_at)::bigint AS expiry
+      FROM sdlc_verifier_challenges WHERE task_id=$1 AND binding_hash=$2 AND challenge_hash=$3 FOR UPDATE`, [taskId, bindingHash, challengeHash])
+    const row = result.rows[0]
+    if (!row || row.status !== 'issued') throw new Error('Verifier challenge is absent or consumed.')
+    const receipt = validateChallenge(row.record, challengeHash)
+    if (receipt.record.bindingHash !== bindingHash || receipt.record.nonce !== row.nonce || receipt.record.expiresAt !== Number(row.expiry)) throw new Error('Verifier challenge context mismatch.')
+    const authenticated = authenticateVerifierEvidence(receipt, policy, envelope, bytes, await databaseSeconds(db))
+    const consumed = await db.query(`UPDATE sdlc_verifier_challenges SET status='consumed',updated_at=clock_timestamp()
+      WHERE id=$1 AND status='issued' AND expires_at>clock_timestamp() RETURNING id`, [row.id])
+    if (!consumed.rows[0]) throw new Error('Verifier challenge expired.')
+    await db.query(`INSERT INTO sdlc_verifier_evidence (task_id,challenge_id,binding_hash,result_hash,record,evidence_base64,created_at,updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,clock_timestamp(),clock_timestamp())`, [taskId, row.id, bindingHash, authenticated.resultHash, JSON.stringify(authenticated.envelope), authenticated.evidenceBase64])
+    await event(db, task, 'verifier-evidence', authenticated.resultHash)
+    return { resultHash: authenticated.resultHash, authenticated: true as const, reviewRequired: true as const, executionAllowed: false as const, retryAuthorized: false as const }
+  })
 }
