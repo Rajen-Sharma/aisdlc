@@ -1,0 +1,11 @@
+# Qualification controller death and reconciliation
+
+9 October 2026, Australia/Sydney. AI-prepared review; human acceptance pending. Qualification-only extension of NB-003/004, with no task execution or retry authority.
+
+A separate controller process persists and fsyncs a private intent journal before Docker creation. The test kills that process with SIGKILL at three explicit completed-operation boundaries: before creation, after creation but before start, and after observing a running parent/child/grandchild tree. In the running case the outer observer must confirm that the container survived controller death. A fresh recovery OS process reads the bounded journal and reconciles the exact name plus independently supplied random owner token.
+
+Recovery queries the daemon inventory, verifies the immutable container ID, exact name and ownership label, removes by ID, and confirms named-container absence. No candidate code runs in a host process; the container has no host mounts or credentials. A journal remains `uncertain`; recovery returns `retryAuthorized:false` even after confirmed absence. Identity mismatch, failed daemon query/removal or surviving inventory throws. Three local orchestration tests cover absence, foreign ownership and cleanup uncertainty. They test policy using fake daemon responses; actual physical termination is tested separately in Linux CI.
+
+This is not integrated with the PostgreSQL task ledger. The observer supplies recovery identity from its trusted test session; recovery after loss of that observer, tamper-resistant journal storage and production recovery-worker identity are not solved. Crashes during an in-flight Docker create/start call, whole-job cancellation, daemon restart, host loss and remote-daemon reconciliation remain unqualified. The test deliberately kills only after the relevant Docker command has completed, avoiding a false claim about those races. A failed readiness/recovery attempt fails the entire qualification and only attempts best-effort cleanup.
+
+No automatic task retry, lease release, result promotion, source approval or coding-provider access is introduced. Do not attach this helper to the reservation recovery endpoint as physical execution proof without completing the remaining identity, operation-race and task-contract controls.
