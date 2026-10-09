@@ -2,7 +2,7 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, writeFile, readFile, chmod } from 'node:fs/promises'
+import { mkdir, mkdtemp, writeFile, readFile, chmod, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
@@ -37,7 +37,8 @@ export function matches(stdout, expected) {
 
 async function run(source, input) {
   const name = `sdlc-verifier-${randomUUID()}`
-  const directory = await mkdtemp(path.join(tmpdir(), 'sdlc-verifier-'))
+  // Hosted runner /tmp can be a link; exporter deliberately requires canonical roots.
+  const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'sdlc-verifier-'))
   await chmod(directory, 0o755)
   await mkdir(path.join(directory, 'src'), { mode: 0o755 })
   const file = path.join(directory, 'src', 'candidate.mjs')
