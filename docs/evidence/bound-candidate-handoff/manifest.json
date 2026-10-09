@@ -75,13 +75,18 @@
     },
     {
       "path": "docs/evidence/bound-candidate-handoff/local-validation.json",
-      "sha256": "0d1de31269de88c798d0e7eb3893e3626880af784a9a92a512e8ee8bfce4336f",
+      "sha256": "6eb44ef30a55df50bf0bf05c49d4ac660f37aab765bddbbf8e8af46d4ef81683",
       "bytes": 648
     },
     {
-      "path": "docs/evidence/bound-candidate-handoff/platform-public-page.json",
+      "path": "docs/evidence/bound-candidate-handoff/platform-interim-page.json",
       "sha256": "c050e25b47c1f28cf075f8ad609bfa4918a9a7d94c599b1e593f0beecf2d287a",
       "bytes": 600
+    },
+    {
+      "path": "docs/evidence/bound-candidate-handoff/platform-public-page.json",
+      "sha256": "8abb23a30ec975e1b90955022c16abe8e6a8e964027f43562c6945d4f1893964",
+      "bytes": 982
     },
     {
       "path": "docs/evidence/bound-candidate-handoff/tests.txt",
