@@ -1,0 +1,103 @@
+{
+  "observedAt": "2026-10-09T21:55:08.977Z",
+  "method": "Anonymous public Docker Registry V2 manifest fetch, local raw-byte SHA-256 verification and layer HEAD requests; no Docker runtime or layer download.",
+  "image": "postgres@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+  "index": {
+    "url": "https://registry-1.docker.io/v2/library/postgres/manifests/sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+    "status": 200,
+    "contentDigest": "sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+    "computedDigest": "sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f"
+  },
+  "selected": {
+    "digest": "sha256:6e5a6518f9d2ff9e9f4cba2a5a87d8f41b0f067f6f92ac847c344351a6c8d923",
+    "status": 200,
+    "computedDigest": "sha256:6e5a6518f9d2ff9e9f4cba2a5a87d8f41b0f067f6f92ac847c344351a6c8d923",
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    },
+    "annotations": {
+      "com.docker.official-images.bashbrew.arch": "amd64",
+      "org.opencontainers.image.base.digest": "sha256:362e64223cc0da95422b3b13c045186fc0a81250e765d31c025fbddf257f6143",
+      "org.opencontainers.image.base.name": "debian:bookworm-slim",
+      "org.opencontainers.image.created": "2026-08-05T00:36:18Z",
+      "org.opencontainers.image.revision": "4f9ced003ba58a854656ba150d146243d27ae3ac",
+      "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#4f9ced003ba58a854656ba150d146243d27ae3ac:17/bookworm",
+      "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+      "org.opencontainers.image.version": "17.10-bookworm"
+    }
+  },
+  "layers": [
+    {
+      "digest": "sha256:039e6f9f9752f74a3ff4a6a224f64c7c864da16ed98f882107704328f41b9c42",
+      "declaredSize": 28232590,
+      "status": 200
+    },
+    {
+      "digest": "sha256:212b461a616876fb14889d08d480c16322a4008f284f37beb97b680c8356d2af",
+      "declaredSize": 1169,
+      "status": 200
+    },
+    {
+      "digest": "sha256:e4fe44320f3d39f329ff73d987b2f421bb93c5503a692b8bdb0df40366944218",
+      "declaredSize": 4534282,
+      "status": 200
+    },
+    {
+      "digest": "sha256:e4025008f490d0a8be30c0180ab06941ad88bf198ec2182f1a78833b97238d4b",
+      "declaredSize": 1249533,
+      "status": 200
+    },
+    {
+      "digest": "sha256:53d05639bc7726b69cc4f4f0ffb7993291a1d6f5fd81acedaacf395b5ab651e8",
+      "declaredSize": 8066405,
+      "status": 200
+    },
+    {
+      "digest": "sha256:797f0918a00dad1135798e97a843b4f7f1ffdcc10537f566cae22e2e30fc7d3f",
+      "declaredSize": 1196430,
+      "status": 200
+    },
+    {
+      "digest": "sha256:58b64788358273aa4396bb75a74ac8901ea1c98d1e34a9447403a21a7815987e",
+      "declaredSize": 116,
+      "status": 200
+    },
+    {
+      "digest": "sha256:b7e60635068c735d7a35ad902a764dbea0f707663a9989911151662e3620c9f6",
+      "declaredSize": 3143,
+      "status": 200
+    },
+    {
+      "digest": "sha256:c52b9a2e160a3c00e578b6afd97828657c3a3149b6b3df17c10f915aad32ec9e",
+      "declaredSize": 112795112,
+      "status": 200
+    },
+    {
+      "digest": "sha256:bc574a763d9ed4cf582194ce1ad2a42dbdaea2fdecfdbf478e4de0fc39e940dc",
+      "declaredSize": 10291,
+      "status": 200
+    },
+    {
+      "digest": "sha256:74571172a6871c2742736af38d62c2e6e0b5024db2ec0c25d6d1eaeddfdd7fc3",
+      "declaredSize": 128,
+      "status": 200
+    },
+    {
+      "digest": "sha256:3c32b6758a7002608f595e00b3065960c2e05bb5b71eac4c8ea8c2021a3bc61a",
+      "declaredSize": 167,
+      "status": 200
+    },
+    {
+      "digest": "sha256:00b92b3471f0c985913231c195dff4d53bb9e4b1c859f88d42df653d4132cd92",
+      "declaredSize": 6106,
+      "status": 200
+    },
+    {
+      "digest": "sha256:27a102a226b8bb8ab6f0324dff7e1954d31dcc5770cfc5b5f72e2b5ac6512df7",
+      "declaredSize": 185,
+      "status": 200
+    }
+  ],
+  "limitation": "Local registry availability observation is not proof of the cause of earlier GitHub runner pull failures, successful layer download, image safety or runtime behavior."
+}

@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "sourceCommit": "0d3c54a6df51b5b8a6f93c0b4a81f07785295929",
+  "scope": "Windows working-file bytes; excludes manifest itself. Local transformed logs and unauthenticated public CI/registry observations, not authenticated remote logs or signed runtime attestations.",
+  "files": [
+    {
+      "path": "src/sdlc/verifier-evidence.ts",
+      "bytes": 5967,
+      "sha256": "6f2a7f6b76e8ce4def2b8d93b9877876f808aa128332b7c7e25aebfcb3528955"
+    },
+    {
+      "path": "src/sdlc/task-coordinator.ts",
+      "bytes": 22970,
+      "sha256": "0547ae2381c68fa17d86d542a04c4dc1c1942066e13a6d8729b3278214cd7ae8"
+    },
+    {
+      "path": "src/sdlc/task-binding.ts",
+      "bytes": 6197,
+      "sha256": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e"
+    },
+    {
+      "path": "src/sdlc/task-collections.ts",
+      "bytes": 4338,
+      "sha256": "1083a426a12cb25e0ca5896feaeef46c3696d7ac4408b2f67d1dc8dca2ca9a13"
+    },
+    {
+      "path": "src/payload.config.ts",
+      "bytes": 1298,
+      "sha256": "524aced33d50122533963762511b767d3ab16879f1de1c44c692583da686de70"
+    },
+    {
+      "path": "src/payload-types.ts",
+      "bytes": 19187,
+      "sha256": "ae988639d4757ba1d5f1d0b05a17b577372b8603154d564ae5dc34e3e01eb0dc"
+    },
+    {
+      "path": "tests/verifier-evidence.test.ts",
+      "bytes": 5406,
+      "sha256": "378598820d50da8dcd58faa5f16a90b7c9467e869f292db349fff4d99472d2a4"
+    },
+    {
+      "path": "tests/sdlc-binding.test.ts",
+      "bytes": 25812,
+      "sha256": "9dc7efa578c2a07f91f54948b764a02d7abdf0812ef6bd636383c960b4b215ec"
+    },
+    {
+      "path": "tests/sdlc-ownership.test.ts",
+      "bytes": 9304,
+      "sha256": "bf47f25272db6a9cda3204a3e79b827db8d12047a63b161d6a684a17e38fa341"
+    },
+    {
+      "path": "scripts/ci-postgres.mjs",
+      "bytes": 5438,
+      "sha256": "ced0a59582d7afca30b8046686d0bd04e11c66056ed58ea2416681dc72e490ce"
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "bytes": 2957,
+      "sha256": "6ca2ddb845e77b8610eeacbf26a6401ca342b572451431749639b7d3fdaf24de"
+    },
+    {
+      "path": "docs/security/signed-verifier-evidence.md",
+      "bytes": 8193,
+      "sha256": "e32ab2c15822886083575d6513af361e3953e91d38c589fadfffd259baf58e9e"
+    },
+    {
+      "path": "docs/reviews/signed-verifier-checkpoint.md",
+      "bytes": 3859,
+      "sha256": "613b53784a293c1b9a235c805d32ebec2ff9f158f38c50c6d0d09fca60ce0202"
+    },
+    {
+      "path": "docs/planning/next-build.md",
+      "bytes": 7852,
+      "sha256": "b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82"
+    },
+    {
+      "path": "docs/security/next-build-design.md",
+      "bytes": 5147,
+      "sha256": "3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/authentication-tests.txt",
+      "bytes": 434,
+      "sha256": "b05df2a07b5e2a214bf2e72f1380fcb35cd51709115f06db9a3876399825d966"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/binding-test.txt",
+      "bytes": 836,
+      "sha256": "2bf98861a1fcfb3142988d06818311f7c68f2163e407ac1368000a3efc1c0eb5"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/build.txt",
+      "bytes": 923,
+      "sha256": "db8131155ad121861225b0459ea839dd49b4b5cc267e1c95193731457662e7d7"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/ci-diagnostic-platform-public-page.json",
+      "bytes": 666,
+      "sha256": "aeee8b105bf2a017ff0c3adf8a396a44f6d374b996bf9f901f32e769c1b353c8"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/ci-diagnostic-registry-probe.json",
+      "bytes": 4039,
+      "sha256": "2fe38843116b2d640147e69806aacfc4caa5f21ab47ac606e2b9977c96a12e81"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/generate-types.txt",
+      "bytes": 149,
+      "sha256": "5dfde8b3adaaaed16d1fa576df3d49c5e1e7e61c2aac7b44b7ff4b88ef1c46a0"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/local-smoke.json",
+      "bytes": 225,
+      "sha256": "712a179d8761a2a15af008b402a35a806f0389618727eb9d020a260390343a4f"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/local-validation.json",
+      "bytes": 1215,
+      "sha256": "aee7447191ec7ba13290db465ab5f6331d406017866d0ad43296ff03b045402c"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/platform-interim-page.json",
+      "bytes": 365,
+      "sha256": "0155908e7c79ce008a8ce6b8c32e1cc3d7eaa0ab73d209d8d86588a63512467f"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/platform-public-page.json",
+      "bytes": 4933,
+      "sha256": "1ef260cf4292ccf5f4e6e363268bc16c36e0f1f144ea6497de47dd17f20b74da"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/rollback-integration.txt",
+      "bytes": 719,
+      "sha256": "fc81b5f9e9ba5e7fb66e6099879098bcf9a9ca871aba0a5aa197ed45b6029a05"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/tests.txt",
+      "bytes": 5544,
+      "sha256": "252848c6013e6d3d9322a2d070d1b38286c59e9c80bef81e445a86e021b0e1e4"
+    },
+    {
+      "path": "docs/evidence/signed-verifier/typecheck.txt",
+      "bytes": 57,
+      "sha256": "557bbc87ba003d606d0f5857f39b8dcee84e22600c6449448f38d97ffaa412a5"
+    }
+  ]
+}

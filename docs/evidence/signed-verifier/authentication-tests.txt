@@ -1,0 +1,11 @@
+✔ signed verifier evidence authenticates exact bounded bytes without granting acceptance (19.213ms)
+✔ verifier authentication denies forgery, policy substitution, wrong challenge and stale clocks (12.1787ms)
+✔ verifier evidence rejects malformed or oversized transport and challenge material (5.9037ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1122.0177

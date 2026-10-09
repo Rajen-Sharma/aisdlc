@@ -1,0 +1,42 @@
+{
+  "observedAt": "2026-10-09T22:03:41.378Z",
+  "generateTypesExit": 0,
+  "typecheckExit": 0,
+  "authenticationTestsExit": 0,
+  "focusedBindingIntegrationExit": 0,
+  "fullSequentialSuiteExit": 0,
+  "productionBuildExit": 0,
+  "supplementalRollbackIntegrationExit": 0,
+  "note": "Full local suite preceded the added SQL-client rollback fault case; supplemental focused integration and final CI include it. Production code was unchanged by that additional case.",
+  "transformations": [
+    {
+      "file": "generate-types.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "typecheck.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "authentication-tests.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "binding-test.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "tests.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "build.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "rollback-integration.txt",
+      "knownSecretReplacements": 0
+    }
+  ],
+  "limitation": "ANSI removal and known database URL/password/Payload secret redaction only; not general DLP. Raw originals remain ignored locally."
+}
