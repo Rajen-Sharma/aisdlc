@@ -49,9 +49,9 @@
       "sha256": "0a399ecbece0b78918f6d083f87dcff06a44f1b3fea749611105c8af18040f5d"
     },
     {
-      "bytes": 21537,
+      "bytes": 21561,
       "path": "docs/evidence/verifier-checkpoint/run-37913189376.json",
-      "sha256": "157743dec6b679573926a69f0b35ab8a4e7a8adad2266629b41e2d349d61f77b"
+      "sha256": "a336ff1449668233187fec55fe1ead0425ff757af56ab3045201833bb6d28ab3"
     }
   ]
 }
