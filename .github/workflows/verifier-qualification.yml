@@ -1,7 +1,7 @@
 name: Protected verifier qualification
 on:
   push:
-    branches: ['build/verifier-qualification']
+    branches: ['build/verifier-qualification', 'build/verifier-resource-boundaries']
 permissions:
   contents: read
 jobs:
