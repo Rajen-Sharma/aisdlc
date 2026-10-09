@@ -76,9 +76,10 @@ try {
       recovered = true
       evidence.cases.push({ action, phase, signal, operationPendingAtDeath: true, prematureRecoveryDenied: true, emptyInventoryBeforeLateCreate: action === 'create' && phase === 'request', operationDrained: true, liveTree, containerAbsent: true, retryAuthorized: false })
     } finally {
-      await controller.stop()
-      if (client) await client.stop()
-      if (!proxyClosed) { await bounded(proxy.close()); proxyClosed = true }
+      const stopped = await Promise.allSettled([controller.stop(), ...(client ? [client.stop()] : [])])
+      let uncertain = stopped.some(result => result.status === 'rejected')
+      try { if (!proxyClosed) { await bounded(proxy.close()); proxyClosed = true } } catch { uncertain = true }
+      if (uncertain) throw new Error('Operation writer termination remains uncertain.')
       if (!recovered) await reconcileAfterDrain(record, token, docker, { controllerClosed: controller.isClosed(), operationClientsClosed: !client || client.isClosed(), proxyClosed })
     }
   }

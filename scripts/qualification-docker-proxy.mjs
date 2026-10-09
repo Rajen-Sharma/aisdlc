@@ -10,11 +10,11 @@ export async function pausedDockerProxy(socketPath, { action, name, id, phase })
   const released = new Promise(resolve => { releaseResolve = resolve })
   const connections = new Set()
   const handlers = new Set()
-  let closing = false, forwarded = 0, statusCode
+  let closing = false, failed = false, forwarded = 0, statusCode
   const server = http.createServer((incoming, outgoing) => {
     const task = handle(incoming, outgoing)
     handlers.add(task)
-    task.catch(() => { reachedReject(new Error('Controlled proxy failed.')); outgoing.destroy() }).finally(() => handlers.delete(task))
+    task.catch(() => { failed = true; reachedReject(new Error('Controlled proxy failed.')); outgoing.destroy() }).finally(() => handlers.delete(task))
   })
   server.on('connection', socket => { connections.add(socket); socket.once('close', () => connections.delete(socket)) })
   async function handle(incoming, outgoing) {
@@ -62,9 +62,9 @@ export async function pausedDockerProxy(socketPath, { action, name, id, phase })
       const stopped = new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
       for (const socket of connections) socket.destroy()
       // Backend operations must settle, not merely lose their client connection.
-      const results = await Promise.allSettled([...handlers])
       await stopped
-      if (results.some(result => result.status === 'rejected')) throw new Error('Proxy operation remains uncertain.')
+      while (handlers.size) await Promise.allSettled([...handlers])
+      if (failed) throw new Error('Proxy operation remains uncertain.')
     },
   }
 }

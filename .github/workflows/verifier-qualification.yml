@@ -18,7 +18,7 @@ jobs:
       - name: Qualify trusted controller against synthetic adversaries
         run: node scripts/verifier-qualification.mjs
       - name: Check reconciliation fail-closed behavior
-        run: node --test tests/verifier-recovery.test.mjs
+        run: node --test tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs
       - name: Qualify controller death and fresh-process reconciliation
         run: node scripts/verifier-crash-qualification.mjs
       - name: Qualify pending operation drain after controller death
