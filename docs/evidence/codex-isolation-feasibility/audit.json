@@ -1,0 +1,48 @@
+{
+  "observedAt": "2026-10-10T10:23:17.3017846Z",
+  "cliVersion": "0.155.1",
+  "modelCalls": 0,
+  "method": "Installed CLI help/parser checks and previously generated local protocol schema; official configuration reference",
+  "toolsFlagProbe": {
+    "command": "codex exec --tools none --help",
+    "result": "Rejected: unexpected argument --tools",
+    "modelInvocationAttempted": false
+  },
+  "strictConfigProbe": {
+    "command": "codex --strict-config -c tool_choice=\"none\" features list",
+    "result": "Inconclusive: strict-config unsupported for features command",
+    "modelInvocationAttempted": false
+  },
+  "threadStartProperties": [
+    "allowProviderModelFallback",
+    "approvalPolicy",
+    "approvalsReviewer",
+    "baseInstructions",
+    "config",
+    "cwd",
+    "developerInstructions",
+    "dynamicTools",
+    "environments",
+    "ephemeral",
+    "experimentalRawEvents",
+    "historyMode",
+    "mockExperimentalField",
+    "model",
+    "modelProvider",
+    "multiAgentMode",
+    "permissions",
+    "personality",
+    "projectId",
+    "runtimeWorkspaceRoots",
+    "sandbox",
+    "selectedCapabilityRoots",
+    "serviceName",
+    "serviceTier",
+    "sessionStartSource",
+    "threadSource"
+  ],
+  "scope": "No explicit built-in-tool allowlist field found in this schema. Generic config exists; this does not prove a capability is impossible.",
+  "toolBoundaryQualified": false,
+  "executionAllowed": false,
+  "retryAuthorized": false
+}

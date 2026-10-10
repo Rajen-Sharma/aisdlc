@@ -1,0 +1,13 @@
+{
+  "byteBasis": "Windows working-file bytes; manifest excluded",
+  "files": [
+    {
+      "path": "docs/reviews/codex-isolation-feasibility.md",
+      "sha256": "5faa9735e466b6f560150713142d582d0f040a4abe714c12af5a734ce745cf5a"
+    },
+    {
+      "path": "docs/evidence/codex-isolation-feasibility/audit.json",
+      "sha256": "04565c0e6d0c44eeaf06172ce748c69a18393401456670f355cbf53b5e295b7a"
+    }
+  ]
+}
