@@ -1,0 +1,503 @@
+{
+  "observedAt": "2026-10-10T03:05:38.1227683Z",
+  "source": "8a4bd9c475717baa5c52a89d1d62ae8047895f09",
+  "method": "Unauthenticated GitHub jobs API and public job HTML",
+  "jobs": [
+    {
+      "id": 114116215721,
+      "name": "qualify",
+      "conclusion": "success",
+      "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38019207594/job/114116215721",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-10T03:03:28Z",
+          "completed_at": "2026-10-10T03:03:29Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-10T03:03:29Z",
+          "completed_at": "2026-10-10T03:03:30Z"
+        },
+        {
+          "name": "Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-10T03:03:30Z",
+          "completed_at": "2026-10-10T03:03:35Z"
+        },
+        {
+          "name": "Qualify trusted controller against synthetic adversaries",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-10T03:03:35Z",
+          "completed_at": "2026-10-10T03:04:28Z"
+        },
+        {
+          "name": "Check reconciliation fail-closed behavior",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-10T03:04:28Z",
+          "completed_at": "2026-10-10T03:04:28Z"
+        },
+        {
+          "name": "Qualify controller death and fresh-process reconciliation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-10T03:04:28Z",
+          "completed_at": "2026-10-10T03:04:29Z"
+        },
+        {
+          "name": "Qualify pending operation drain after controller death",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-10T03:04:29Z",
+          "completed_at": "2026-10-10T03:04:30Z"
+        },
+        {
+          "name": "Preserve actual qualification evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-10T03:04:30Z",
+          "completed_at": "2026-10-10T03:04:30Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-10T03:04:30Z",
+          "completed_at": "2026-10-10T03:04:31Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-10T03:04:31Z",
+          "completed_at": "2026-10-10T03:04:31Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-10T03:04:31Z",
+          "completed_at": "2026-10-10T03:04:31Z"
+        }
+      ],
+      "notices": [
+        {
+          "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+          "scriptSha256": "4e70fe54b57d0b84a17c68bdd3b944b61ecb8b9bb561ee0743f8b81c1d7c881b",
+          "cases": [
+            {
+              "action": "create",
+              "phase": "request",
+              "signal": "SIGKILL",
+              "operationPendingAtDeath": true,
+              "prematureRecoveryDenied": true,
+              "emptyInventoryBeforeLateCreate": true,
+              "operationDrained": true,
+              "liveTree": false,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            },
+            {
+              "action": "create",
+              "phase": "response",
+              "signal": "SIGKILL",
+              "operationPendingAtDeath": true,
+              "prematureRecoveryDenied": true,
+              "emptyInventoryBeforeLateCreate": false,
+              "operationDrained": true,
+              "liveTree": false,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            },
+            {
+              "action": "start",
+              "phase": "request",
+              "signal": "SIGTERM",
+              "operationPendingAtDeath": true,
+              "prematureRecoveryDenied": true,
+              "emptyInventoryBeforeLateCreate": false,
+              "operationDrained": true,
+              "liveTree": true,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            },
+            {
+              "action": "start",
+              "phase": "response",
+              "signal": "SIGTERM",
+              "operationPendingAtDeath": true,
+              "prematureRecoveryDenied": true,
+              "emptyInventoryBeforeLateCreate": false,
+              "operationDrained": true,
+              "liveTree": true,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            }
+          ],
+          "qualified": true,
+          "retryAuthorized": false
+        },
+        {
+          "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+          "scriptSha256": "2aded32fd76f9eec00e752833913c9eddfd920d995a19654f14c81edcecbc338",
+          "daemonRestart": false,
+          "cases": [
+            {
+              "stage": "before-create",
+              "controllerKilled": true,
+              "liveOrphanObserved": false,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            },
+            {
+              "stage": "created-not-started",
+              "controllerKilled": true,
+              "liveOrphanObserved": false,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            },
+            {
+              "stage": "running-tree",
+              "controllerKilled": true,
+              "liveOrphanObserved": true,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            }
+          ],
+          "qualified": true,
+          "retryAuthorized": false
+        },
+        {
+          "controllerSha256": "9585ff519ebc78b9b5317d253409c14fffb92ea2214479e065d15cc5ec3ebbab",
+          "policySha256": "bf6f3c8a33d714a9e8cadcc48427619dadd50d83035b6cab5176df5c4438299f",
+          "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+          "qualified": true,
+          "hostCanaryUnchanged": true,
+          "columns": [
+            "name",
+            "sourceSha256",
+            "passed",
+            "cases",
+            "removed",
+            "capsuleTamperDenials",
+            "boundaryObserved",
+            "oomKilled",
+            "cancelled"
+          ],
+          "variants": [
+            [
+              "positive-control",
+              "683c4d5af5ca5b5e8d5543ebd81aa0148be8abffe1d22fa441b8564b2ba508a7",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "wrong-result",
+              "9a93992f1f26d15e228dcc5a901a946386c833d135e57eec76a5d4c7a9d40d77",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "early-success-exit",
+              "f711052b4b74b545d1615a64e37b3caef217b2334bddea01deb00a66aaee2a87",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "forged-success",
+              "0fd2db153f1d0d00b862cf6e613647ef0923b1ba9b05f0ab3717ccc79da58a7b",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "output-flood",
+              "e2006457391706537b273bde4ae01b96fcb360e254bf0a599540bae844e4f058",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "cpu-runaway",
+              "3be27a91a59f62fcd5ff9b4b0610461a5cda4f714e048b1de022f0c3ed294047",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "grandchild-runaway",
+              "7878ca2ad584aa1ce1bdc87f0ba98104a278d410760b6d4c046a27e09cc46fe0",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "protected-write",
+              "7273e85346b77cb25b7988cc25d9e41f3f8c51887677969126537b439aa9462d",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "checks-absent",
+              "11d29df32326a96548d0b34ef6d973f02c03d75ad3d68d1bf6c1d95ac43ad85c",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "host-secret-path",
+              "a80cee139818fee5769c122a8af67c4d7b22b1b2d4f6d430392ed3a6d69afdb7",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "socket-absent",
+              "a07135e7cc232e01bb4be3c40ccc1cdb8b0d4e91461d523121cdf556d7ac2149",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "network-egress",
+              "b5ce8b0189740a556c091d68df2ae591aa14f10b1a05e6de2a7e8e79ba141269",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "environment-boundary",
+              "5639bd36f07edb641238b36ff6d932aba47d9211ba7b91481ab766118c26e4be",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "memory-exhaustion",
+              "086d64cc7e1b13bab30eb2f8966917152afaab96d2b7a46a0968706872061c99",
+              true,
+              3,
+              3,
+              9,
+              3,
+              3,
+              0
+            ],
+            [
+              "tmp-storage-ceiling",
+              "271d74c46fc09139ae9bbf1519ad2e12ac36605593f376cfe9517a0770110749",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "pid-ceiling",
+              "4c29f4758ed3160d98879ac63b760b6c1dee4ac980cd80b88ea78b4f1a7a88c8",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ],
+            [
+              "cancel-grandchildren",
+              "93daab829746f7e01c50859203b1a08c880e411982c7d771011df394242907b4",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              3
+            ],
+            [
+              "real-host-canary-denial",
+              "7d8d2561b40ecdacb712f26de6276bc71b0d7be27744318f5118ddeec27e1850",
+              true,
+              3,
+              3,
+              9,
+              3,
+              0,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": 114116215807,
+      "name": "daemon-recovery",
+      "conclusion": "success",
+      "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38019207594/job/114116215807",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-10T03:03:28Z",
+          "completed_at": "2026-10-10T03:03:29Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-10T03:03:29Z",
+          "completed_at": "2026-10-10T03:03:30Z"
+        },
+        {
+          "name": "Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-10T03:03:30Z",
+          "completed_at": "2026-10-10T03:03:35Z"
+        },
+        {
+          "name": "Qualify daemon restart on an isolated disposable runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-10T03:03:35Z",
+          "completed_at": "2026-10-10T03:03:52Z"
+        },
+        {
+          "name": "Preserve daemon recovery evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-10T03:03:52Z",
+          "completed_at": "2026-10-10T03:03:53Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-10T03:03:53Z",
+          "completed_at": "2026-10-10T03:03:53Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-10T03:03:53Z",
+          "completed_at": "2026-10-10T03:03:53Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-10T03:03:53Z",
+          "completed_at": "2026-10-10T03:03:53Z"
+        }
+      ],
+      "notices": [
+        {
+          "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+          "scriptSha256": "2aded32fd76f9eec00e752833913c9eddfd920d995a19654f14c81edcecbc338",
+          "daemonRestart": true,
+          "cases": [
+            {
+              "stage": "running-tree",
+              "controllerKilled": true,
+              "liveOrphanObserved": true,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            }
+          ],
+          "qualified": true,
+          "retryAuthorized": false,
+          "daemonIdentityChanged": true,
+          "ownedContainerRetained": true,
+          "containerRunningAfterRestart": false
+        }
+      ]
+    }
+  ],
+  "limits": "Public summaries only; no authenticated detailed logs or artifact download; synthetic qualification is not production acceptance."
+}

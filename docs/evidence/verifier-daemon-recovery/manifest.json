@@ -1,0 +1,30 @@
+{
+  "source": "8a4bd9c475717baa5c52a89d1d62ae8047895f09",
+  "byteBasis": "Windows working-file bytes; excludes manifest itself",
+  "files": [
+    {
+      "path": "scripts/verifier-crash-qualification.mjs",
+      "sha256": "2aded32fd76f9eec00e752833913c9eddfd920d995a19654f14c81edcecbc338"
+    },
+    {
+      "path": ".github/workflows/verifier-qualification.yml",
+      "sha256": "5af87be0951eee7cd85de478e0b04d112caf0a6a9415e4cb1b08c3f97af63a42"
+    },
+    {
+      "path": "docs/security/verifier-daemon-recovery.md",
+      "sha256": "d3ec0d3148742e663ea448ce79fe360d2fd09fdc325ffe61ffbdc59348958cb2"
+    },
+    {
+      "path": "docs/reviews/verifier-daemon-recovery-checkpoint.md",
+      "sha256": "9c4b388bfb307f8daaefb0c27fab783f78f83c596fa5eb7516ef538ee3fbec8d"
+    },
+    {
+      "path": "docs/evidence/verifier-daemon-recovery/qualification.json",
+      "sha256": "502b81be8e6524f09897ee63febfdf3c3ef6d818627c66de4e1bb6fb5a8386fd"
+    },
+    {
+      "path": "docs/evidence/verifier-daemon-recovery/platform.json",
+      "sha256": "4e640aca75a25fa70b121473c98c007ab244e4aab7485173e054ba46527523d5"
+    }
+  ]
+}
