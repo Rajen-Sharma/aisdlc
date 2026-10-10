@@ -30,7 +30,9 @@ function ownedChild(command, args, ipc = false) {
 const createArgs = name => ['create', '--name', name, '--label', `sdlc.qualification.owner=${name.slice('sdlc-crash-'.length)}`, '--network', 'none', '--read-only', '--user', '65534:65534', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--pids-limit', '32', '--memory', '128m', '--memory-swap', '128m', '--cpus', '1', image, 'node', '-e', `require('node:child_process').spawn('/bin/sh',['-c','sleep 60 & wait'],{stdio:'ignore'}); setInterval(()=>{},1000)`]
 
 if (process.platform !== 'linux' || process.env.GITHUB_ACTIONS !== 'true') throw new Error('Selected disposable Linux CI only.')
-const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex'), cases: [], qualified: false, retryAuthorized: false }
+assert.ok(process.argv.length === 2 || (process.argv.length === 3 && process.argv[2] === '--observer-loss'))
+const observerLoss = process.argv[2] === '--observer-loss'
+const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex'), observerLoss, cases: [], qualified: false, retryAuthorized: false }
 try {
   for (const action of ['create', 'start']) for (const phase of ['request', 'response']) {
     const token = randomUUID()
@@ -43,7 +45,20 @@ try {
     let id
     if (action === 'start') { id = (await docker(createArgs(record.name))).stdout.trim(); assert.match(id, /^[a-f0-9]{64}$/) }
     const proxy = await pausedDockerProxy(path.join(directory, 'api.sock'), { action, phase, id, name: record.name })
-    const controller = ownedChild(process.execPath, ['-e', `process.send({action:${JSON.stringify(action)}}); setInterval(()=>{},1000)`], true)
+    // In observer-loss mode this process owns a separate controller. The outer
+    // operation guardian retains the proxy and CLI, rather than trusting a dead
+    // observer's in-memory drain flags.
+    const observerCode = `
+      const {spawn}=require('node:child_process');
+      const child=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'});
+      child.once('spawn',()=>process.send({action:${JSON.stringify(action)}}));
+      process.once('message',()=>{
+        child.once('close',(_,signal)=>process.send({controllerClosed:signal==='SIGKILL'}));
+        child.kill('SIGKILL');
+      });
+      setInterval(()=>{},1000);
+    `
+    const controller = ownedChild(process.execPath, ['-e', observerLoss ? observerCode : `process.send({action:${JSON.stringify(action)}}); setInterval(()=>{},1000)`], true)
     let client, proxyClosed = false, recovered = false
     try {
       await bounded(new Promise((resolve, reject) => {
@@ -53,7 +68,14 @@ try {
       client = ownedChild('docker', ['--host', `unix://${path.join(directory, 'api.sock')}`, ...(action === 'create' ? createArgs(record.name) : ['start', id])])
       await bounded(proxy.reached)
       assert.equal(client.isClosed(), false, 'Operation client must be pending at controller death.')
-      const signal = action === 'create' ? 'SIGKILL' : 'SIGTERM'
+      if (observerLoss) {
+        await bounded(new Promise((resolve, reject) => {
+          controller.child.once('message', message => message.controllerClosed === true ? resolve() : reject(new Error('Controller termination not confirmed.')))
+          controller.child.send({ stopController: true })
+        }))
+        assert.equal(client.isClosed(), false, 'Operation must still be pending at observer death.')
+      }
+      const signal = observerLoss || action === 'create' ? 'SIGKILL' : 'SIGTERM'
       assert.equal((await controller.stop(signal)).signal, signal)
       const before = (await docker(['ps', '--all', '--quiet', '--filter', `name=^/${record.name}$`])).stdout.trim()
       if (action === 'create' && phase === 'request') assert.equal(before, '')
@@ -74,7 +96,7 @@ try {
       const result = await reconcileAfterDrain(record, token, docker, { controllerClosed: controller.isClosed(), operationClientsClosed: client.isClosed(), proxyClosed })
       assert.deepEqual(result, { containerAbsent: true, retryAuthorized: false })
       recovered = true
-      evidence.cases.push({ action, phase, signal, operationPendingAtDeath: true, prematureRecoveryDenied: true, emptyInventoryBeforeLateCreate: action === 'create' && phase === 'request', operationDrained: true, liveTree, containerAbsent: true, retryAuthorized: false })
+      evidence.cases.push({ action, phase, signal, observerKilled: observerLoss, operationPendingAtDeath: true, prematureRecoveryDenied: true, emptyInventoryBeforeLateCreate: action === 'create' && phase === 'request', operationDrained: true, liveTree, containerAbsent: true, retryAuthorized: false })
     } finally {
       const stopped = await Promise.allSettled([controller.stop(), ...(client ? [client.stop()] : [])])
       let uncertain = stopped.some(result => result.status === 'rejected')
@@ -90,7 +112,7 @@ try {
   process.exitCode = 1
 } finally {
   await mkdir('docs/evidence/verifier', { recursive: true })
-  await writeFile('docs/evidence/verifier/operation-qualification.json', JSON.stringify(evidence, null, 2))
+  await writeFile(`docs/evidence/verifier/${observerLoss ? 'observer-drain' : 'operation'}-qualification.json`, JSON.stringify(evidence, null, 2))
   const summary = JSON.stringify(evidence)
   assert.ok(Buffer.byteLength(summary) < 4000)
   console.log(`::notice title=Trusted operation drain summary::${summary}`)

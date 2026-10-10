@@ -1,7 +1,7 @@
 name: Protected verifier qualification
 on:
   push:
-    branches: ['build/verifier-qualification', 'build/verifier-resource-boundaries', 'build/verifier-operation-drain', 'build/verifier-daemon-recovery', 'build/verifier-daemon-kill', 'build/verifier-observer-loss']
+    branches: ['build/verifier-qualification', 'build/verifier-resource-boundaries', 'build/verifier-operation-drain', 'build/verifier-daemon-recovery', 'build/verifier-daemon-kill', 'build/verifier-observer-loss', 'build/verifier-observer-drain']
 permissions:
   contents: read
 jobs:
@@ -48,6 +48,8 @@ jobs:
         run: node scripts/verifier-operation-qualification.mjs
       - name: Qualify observer death and journal-only fresh-process recovery
         run: node scripts/verifier-observer-qualification.mjs
+      - name: Qualify surviving operation guardian after observer death
+        run: node scripts/verifier-operation-qualification.mjs --observer-loss
       - name: Preserve actual qualification evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
