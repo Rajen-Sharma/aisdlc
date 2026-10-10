@@ -1,0 +1,30 @@
+{
+  "source": "332f7430aaacdbef6ec18b8ff9b46530ef30fd4d",
+  "byteBasis": "Windows working-file bytes; manifest excluded",
+  "files": [
+    {
+      "path": "scripts/codex-transport-guard.mjs",
+      "sha256": "c966f9c38f54eb0fe6ba11bee3155dc9ea40677533380a16fa10a9adfe652e60"
+    },
+    {
+      "path": "tests/codex-transport-guard.test.mjs",
+      "sha256": "d062505677e1ad55ae263438c40a36458763a2cbd5895db4d537e5669c9068f9"
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "963d9681c19cec7d318c06fda2428ec54d70493975bde5db05ad8f2cd925b655"
+    },
+    {
+      "path": "docs/security/codex-transport-guard.md",
+      "sha256": "5239eed4f7e745f0edc8f4ec6300ae6fa31ca06c7e42b365e635d973ebad43c0"
+    },
+    {
+      "path": "docs/reviews/codex-transport-guard-checkpoint.md",
+      "sha256": "29971000d77f38e9bb02adb13cae74d732b057dc46ebc298cfcc13b3ceb42b2f"
+    },
+    {
+      "path": "docs/evidence/codex-transport-guard/platform-run.json",
+      "sha256": "3ba28a6ab1272fdbe196290cf3828c26468b8c4684da0f9f59352d6d18c3f8c1"
+    }
+  ]
+}
