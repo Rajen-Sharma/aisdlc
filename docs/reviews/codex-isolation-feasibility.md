@@ -76,6 +76,11 @@ Required worker properties and verification before any real task:
 
 ## Next action and dependency
 
+The user confirmed no existing private worker and requested hosting options and a
+costed proposal. The [hosting proposal](../planning/private-worker-hosting-proposal.md)
+now provides two provider options, staged budgets and qualification exit criteria.
+No hosting expense or provisioning has been authorized.
+
 Identify an existing private Linux worker/account, or choose where the proposed
 worker should be provisioned. Its identity, isolation capabilities and operational
 owner determine the concrete deployment design. Account credentials must not be
