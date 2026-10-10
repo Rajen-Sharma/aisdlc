@@ -1,0 +1,34 @@
+{
+  "source": "7c1be592a70918a708286b38ad905dacec5b4f78",
+  "byteBasis": "Windows working-file bytes; manifest excluded",
+  "files": [
+    {
+      "path": "scripts/verifier-operation-qualification.mjs",
+      "sha256": "213041edd636d888b68ec0d4c0f5cea73fc5c725e361e6ece025ce4f29b36674"
+    },
+    {
+      "path": ".github/workflows/verifier-qualification.yml",
+      "sha256": "5710e123b9fdbe342bc48b5eb6345aec87ae4efac1db06b2508914d60c6f165f"
+    },
+    {
+      "path": "docs/security/verifier-observer-drain.md",
+      "sha256": "4a66abcbc302dc92e2616f63c15f03540c9a8bbc991481d9ace457a6e4d46419"
+    },
+    {
+      "path": "docs/reviews/verifier-observer-drain-checkpoint.md",
+      "sha256": "d2cd37d3cc536cf427dc53cab17a60ed518f7c09faa924ac1f7700e4e879e9d9"
+    },
+    {
+      "path": "docs/evidence/verifier-observer-drain/observer-drain-summary.json",
+      "sha256": "b6b5ddfa6dd288cb55e9a7eaefd9f0c7f002893bb06ce60df3866e996465b51d"
+    },
+    {
+      "path": "docs/evidence/verifier-observer-drain/qualification-run.json",
+      "sha256": "853dc3d68071ca68decef005b08446224e7e7f9b05c1a11a61c92a7c867e0a22"
+    },
+    {
+      "path": "docs/evidence/verifier-observer-drain/platform-run.json",
+      "sha256": "638a78ba1134a45d6b7857cd1e8138ad2775157aab378cadd678d50d56f92409"
+    }
+  ]
+}
