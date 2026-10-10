@@ -60,10 +60,11 @@ if (process.argv[2] === '--child') {
   const result = await reconcile(await readJournal(journal), token, docker)
   console.log(JSON.stringify(result))
 } else {
-  assert.ok(process.argv.length === 2 || (process.argv.length === 3 && process.argv[2] === '--daemon-restart'))
-  const daemonRestart = process.argv[2] === '--daemon-restart'
+  assert.ok(process.argv.length === 2 || (process.argv.length === 3 && ['--daemon-restart', '--daemon-kill'].includes(process.argv[2])))
+  const daemonKill = process.argv[2] === '--daemon-kill'
+  const daemonRestart = daemonKill || process.argv[2] === '--daemon-restart'
   const stages = daemonRestart ? ['running-tree'] : ['before-create', 'created-not-started', 'running-tree']
-  const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(filename)).digest('hex'), daemonRestart, cases: [], qualified: false, retryAuthorized: false }
+  const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(filename)).digest('hex'), daemonRestart, daemonKill, cases: [], qualified: false, retryAuthorized: false }
   try {
     // This runner owns no production services; pre-pull before killing any controller.
     if (daemonRestart) await docker(['pull', image], { timeout: 180000 })
@@ -102,7 +103,16 @@ if (process.argv[2] === '--child') {
             return value
           }
           const before = await daemonPid()
-          await exec('sudo', ['-n', 'systemctl', 'restart', 'docker.service'], { timeout: 60000, maxBuffer: 16384 })
+          if (daemonKill) {
+            // Signal only the service's main process, never containerd or the runner.
+            // A successful command confirms systemd accepted this SIGKILL request.
+            await exec('sudo', ['-n', 'systemctl', 'kill', '--kill-whom=main', '--signal=SIGKILL', 'docker.service'], { timeout: 15000, maxBuffer: 16384 })
+            evidence.daemonSigkillAccepted = true
+            // systemd may auto-restart the daemon; start is idempotent in that case.
+            await exec('sudo', ['-n', 'systemctl', 'start', 'docker.service'], { timeout: 60000, maxBuffer: 16384 })
+          } else {
+            await exec('sudo', ['-n', 'systemctl', 'restart', 'docker.service'], { timeout: 60000, maxBuffer: 16384 })
+          }
           assert.notEqual(await daemonPid(), before, 'Docker daemon identity did not change.')
           await docker(['info'])
           // Absence alone could hide daemon data loss. Require the original owned ID
@@ -136,7 +146,7 @@ if (process.argv[2] === '--child') {
     process.exitCode = 1
   } finally {
     await mkdir('docs/evidence/verifier', { recursive: true })
-    await open(`docs/evidence/verifier/${daemonRestart ? 'daemon-restart' : 'crash'}-qualification.json`, 'w').then(async file => { try { await file.writeFile(JSON.stringify(evidence, null, 2)) } finally { await file.close() } })
+    await open(`docs/evidence/verifier/${daemonKill ? 'daemon-kill' : daemonRestart ? 'daemon-restart' : 'crash'}-qualification.json`, 'w').then(async file => { try { await file.writeFile(JSON.stringify(evidence, null, 2)) } finally { await file.close() } })
     console.log(JSON.stringify(evidence))
     // Contains only trusted stage names, booleans and pinned hashes, never child diagnostics.
     console.log(`::notice title=Trusted crash recovery summary::${JSON.stringify(evidence)}`)

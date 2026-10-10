@@ -1,13 +1,17 @@
 name: Protected verifier qualification
 on:
   push:
-    branches: ['build/verifier-qualification', 'build/verifier-resource-boundaries', 'build/verifier-operation-drain', 'build/verifier-daemon-recovery']
+    branches: ['build/verifier-qualification', 'build/verifier-resource-boundaries', 'build/verifier-operation-drain', 'build/verifier-daemon-recovery', 'build/verifier-daemon-kill']
 permissions:
   contents: read
 jobs:
   daemon-recovery:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [daemon-restart, daemon-kill]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -15,14 +19,14 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 24.14.0
-      - name: Qualify daemon restart on an isolated disposable runner
-        run: node scripts/verifier-crash-qualification.mjs --daemon-restart
+      - name: Qualify daemon loss on an isolated disposable runner
+        run: node scripts/verifier-crash-qualification.mjs --${{ matrix.mode }}
       - name: Preserve daemon recovery evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: daemon-recovery-${{ github.sha }}-${{ github.run_id }}
-          path: docs/evidence/verifier/daemon-restart-qualification.json
+          name: ${{ matrix.mode }}-${{ github.sha }}-${{ github.run_id }}
+          path: docs/evidence/verifier/${{ matrix.mode }}-qualification.json
           retention-days: 30
   qualify:
     runs-on: ubuntu-24.04
