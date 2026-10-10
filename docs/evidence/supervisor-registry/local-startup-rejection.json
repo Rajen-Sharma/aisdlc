@@ -1,0 +1,11 @@
+{
+  "recordedAt": "2026-10-10T01:40:14.6136541Z",
+  "action": "Combined local production-app startup and loopback HTTP smoke checks",
+  "automaticApprovalResult": "Rejected before process creation",
+  "statedReason": "blocked by policy",
+  "additionalReasonProvided": false,
+  "performed": false,
+  "alternativeLauncherAttempted": false,
+  "localAppState": "Stopped after authorized build preparation; rejected restart not retried",
+  "note": "Source/test/CI work continued independently. This records an earlier tool rejection in this turn, not a new startup attempt."
+}

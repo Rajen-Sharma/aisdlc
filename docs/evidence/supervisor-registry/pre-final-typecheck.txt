@@ -1,0 +1,5 @@
+
+> headless-cms-sdlc@0.1.0 typecheck
+> tsc --noEmit
+
+src/sdlc/supervisor-registry.ts(22,3): error TS2564: Property '#readCurrent' has no initializer and is not definitely assigned in the constructor.

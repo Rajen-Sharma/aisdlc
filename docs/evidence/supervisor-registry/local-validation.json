@@ -1,0 +1,29 @@
+{
+  "observedAt": "2026-10-10T01:41:42.606Z",
+  "finalTypecheckExit": 0,
+  "finalFullSequentialSuiteExit": 0,
+  "productionBuildExit": 0,
+  "preFinalTypecheckExit": 2,
+  "preFinalSourceState": "Uncommitted earlier state; constructor definite-assignment guard later fixed. Not final source evidence.",
+  "note": "Final full suite and typecheck rerun after source settled; preliminary mixed-state suite remains ignored locally.",
+  "localSmoke": "Not performed: combined app startup/smoke command rejected by automatic approval review with reason blocked by policy. App remains stopped; action not retried.",
+  "transformations": [
+    {
+      "file": "typecheck.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "tests.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "build.txt",
+      "knownSecretReplacements": 0
+    },
+    {
+      "file": "pre-final-typecheck.txt",
+      "knownSecretReplacements": 0
+    }
+  ],
+  "limitation": "ANSI removal and known database URL/password/Payload secret redaction only; not general DLP. Raw originals ignored locally."
+}

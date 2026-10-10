@@ -1,0 +1,160 @@
+
+> headless-cms-sdlc@0.1.0 test
+> node scripts/test.mjs
+
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[✓] Pulling schema from database...
+[12:36:01] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+▶ CMS permissions and migration acceptance
+  ✔ editor creates and reloads a private draft; cannot publish or escalate role (101.6778ms)
+  ✔ public reads hide private/draft/revision/nested content; publisher can publish (104.758ms)
+  ✔ fresh import creates two; rerun skips; destination edits conflict; source changes update (139.8976ms)
+  ✔ invalid and hostile samples rejected; injected instructions remain plain text (23.854ms)
+✔ CMS permissions and migration acceptance (4550.0158ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16709.5888
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[✓] Pulling schema from database...
+[12:36:18] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+✔ delivery records enforce human authority, immutable provenance and exact review scope (3026.1549ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15094.9827
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[✓] Pulling schema from database...
+[12:36:33] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+✔ persisted artifact bindings are atomic, immutable and exact to the current gated attempt (31400.792ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 43669.2745
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[✓] Pulling schema from database...
+[12:37:18] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+✔ concurrent database claimers reserve a queued triage run exactly once (2943.1068ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15882.4278
+✔ intake response rejects unknown provenance, lost inputs and fabricated approval (4.6122ms)
+✔ generic project context binds scope without introducing a product or weakening human gates (1.4915ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 517.7407
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[✓] Pulling schema from database...
+[12:37:34] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+✔ versioned delivery rejects forged authority and invalidates earlier approvals (3169.7484ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16302.9559
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[⣽] Pulling schema from database...
+[✓] Pulling schema from database...
+[12:37:50] WARN: No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.
+✔ ownership is atomic, fenced, scope-bound and capped across coordinator calls (17995.8287ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30483.2991
+✔ source export is deterministic and excludes unselected host files (45.1121ms)
+✔ capsule validation denies tampering, ambiguous encoding and bounds violations (6.8548ms)
+✔ export denies directory links, oversized files and aggregate overflow (50.2437ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 615.9521
+✔ operator-anchored registry resolves only signed current active supervisor keys (18.1524ms)
+✔ registry denies old signed catalogs against independent current anchors and wrong roots (4.5464ms)
+✔ registry rejects malformed catalogs, ambiguous entries and invalid validity windows (13.5919ms)
+✔ registry checks key/catalog expiry and lookup freshness on every resolution (8.8138ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 582.5951
+✔ artifact binding preserves approved source and protected dependencies (27.1341ms)
+✔ exact binding denies replaced artifacts, identities and forged execution flags (8.7156ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 545.7993
+✔ signed verifier evidence authenticates exact bounded bytes without granting acceptance (15.1493ms)
+✔ verifier authentication denies forgery, policy substitution, wrong challenge and stale clocks (12.7507ms)
+✔ verifier evidence rejects malformed or oversized transport and challenge material (6.1623ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 555.4949

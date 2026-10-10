@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "sourceCommit": "fb8b780516187a6b740d2a60510005650896d2ea",
+  "scope": "Windows working-file bytes; excludes manifest itself. Local transformed logs and unauthenticated public CI observations, not detailed authenticated logs or signed runtime attestations.",
+  "files": [
+    {
+      "path": "src/sdlc/supervisor-registry.ts",
+      "bytes": 6421,
+      "sha256": "3a16e8b24074be8bccab3c65f5d0505c7af07da2774be5319b778d0b2bfba37c"
+    },
+    {
+      "path": "src/sdlc/verifier-evidence.ts",
+      "bytes": 6334,
+      "sha256": "567b8d6bf729afed07656a3e1fb2416487c7abfa148820b43c41c6c0d1a41fe1"
+    },
+    {
+      "path": "src/sdlc/task-coordinator.ts",
+      "bytes": 23885,
+      "sha256": "2d2c0d23ac532b351cd01fb99f98df98de0b44b3a870a1bc33ebe77348ba05fc"
+    },
+    {
+      "path": "src/sdlc/task-binding.ts",
+      "bytes": 6197,
+      "sha256": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e"
+    },
+    {
+      "path": "tests/supervisor-registry.test.ts",
+      "bytes": 5046,
+      "sha256": "1e01847613fc4b05b50945223250a34168577a2235dd0aa396aafe5f577680de"
+    },
+    {
+      "path": "tests/supervisor-registry-fixture.ts",
+      "bytes": 1827,
+      "sha256": "a6af04fe36571e65adb1448eda66f6189d33bdf58852e862f653057a8efbfee1"
+    },
+    {
+      "path": "tests/verifier-evidence.test.ts",
+      "bytes": 5653,
+      "sha256": "26f9b1b4dc233f91d9ab55ec0b31d4e56215ce01fcfddeb0ee34bf4dd7126b5a"
+    },
+    {
+      "path": "tests/sdlc-binding.test.ts",
+      "bytes": 28315,
+      "sha256": "87bb08f06d455568de9ee4904df9d275308388f3c0df7c74cc6300266321226e"
+    },
+    {
+      "path": "scripts/test.mjs",
+      "bytes": 635,
+      "sha256": "54157fd8e5484b2a3a26ac6e7ab762fd484a741f92d155359b5d6c508f5e2714"
+    },
+    {
+      "path": "scripts/ci-postgres.mjs",
+      "bytes": 5438,
+      "sha256": "ced0a59582d7afca30b8046686d0bd04e11c66056ed58ea2416681dc72e490ce"
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "bytes": 2957,
+      "sha256": "6ca2ddb845e77b8610eeacbf26a6401ca342b572451431749639b7d3fdaf24de"
+    },
+    {
+      "path": "docs/security/supervisor-registry.md",
+      "bytes": 5887,
+      "sha256": "630e1921c1870c2c75bfe9a91516bd3d91030deaed711bcffa363443a5ebdcea"
+    },
+    {
+      "path": "docs/reviews/supervisor-registry-checkpoint.md",
+      "bytes": 3981,
+      "sha256": "c8972d268734f9fdd4089d9231851818dbe075b59f13848710331d7e530a4b57"
+    },
+    {
+      "path": "docs/planning/next-build.md",
+      "bytes": 7852,
+      "sha256": "b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82"
+    },
+    {
+      "path": "docs/security/next-build-design.md",
+      "bytes": 5147,
+      "sha256": "3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/build.txt",
+      "bytes": 923,
+      "sha256": "ff05c424dbd175fe38ad5737d3ed8a172aec8fbdf6fc45b58c22fb8ca6d3d160"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/local-startup-rejection.json",
+      "bytes": 583,
+      "sha256": "de45a860681a09351952049a7743cde9ae5d2b48f1a3d1392ce66e177fcec87e"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/local-validation.json",
+      "bytes": 1096,
+      "sha256": "d6546c31e618c9920122ae69bd3c4340bb779d3c7c9b7c35521fab995a409dfe"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/platform-interim-page.json",
+      "bytes": 383,
+      "sha256": "dc58783016f6d77a39d320aa8cf3c1ddeb11d2c20abdb8488cbdaf5496de2f95"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/platform-public-page.json",
+      "bytes": 4935,
+      "sha256": "ab1b7d555afa66f30ccabb30f3f1deb76415f8ed40f4e104bc7cf77c1deb4634"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/pre-final-typecheck.txt",
+      "bytes": 205,
+      "sha256": "ebbdfb7713e74b5c253752f9896422c4caa50479e4ef24c4bc11aba43c10299c"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/tests.txt",
+      "bytes": 6019,
+      "sha256": "3cc18e5831c3938834aec76a69958ca23dbcedc3019336cb17027813ab6a927c"
+    },
+    {
+      "path": "docs/evidence/supervisor-registry/typecheck.txt",
+      "bytes": 57,
+      "sha256": "557bbc87ba003d606d0f5857f39b8dcee84e22600c6449448f38d97ffaa412a5"
+    }
+  ]
+}
