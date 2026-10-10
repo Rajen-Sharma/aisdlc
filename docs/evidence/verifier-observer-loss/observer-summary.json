@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-10T03:30:03.6067138Z",
+  "source": "c0de240ba0a0208ed597374979fff3fd05d43414",
+  "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38020644998/job/114120676126",
+  "method": "Unauthenticated public job HTML, JSON-decoded trusted observer summary",
+  "limits": "No authenticated logs/artifacts; surviving outer fault injector, host and storage.",
+  "notices": [
+    {
+      "scriptSha256": "905eb9b8d13d719ff5501f7961f0f2416a28b69bef48308a0c633a1cba477aaf",
+      "controllerSha256": "31826b47e1a379231b46abdec46b286c77472d0d84a085b9e8625b0d7ff93c94",
+      "qualified": true,
+      "retryAuthorized": false,
+      "observerKilled": true,
+      "liveOrphanTreeAfterObserverDeath": true,
+      "containerAbsent": true
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "source": "c0de240ba0a0208ed597374979fff3fd05d43414",
+  "byteBasis": "Windows working-file bytes; manifest excluded",
+  "files": [
+    {
+      "path": "scripts/verifier-observer-qualification.mjs",
+      "sha256": "905eb9b8d13d719ff5501f7961f0f2416a28b69bef48308a0c633a1cba477aaf"
+    },
+    {
+      "path": "scripts/verifier-crash-qualification.mjs",
+      "sha256": "31826b47e1a379231b46abdec46b286c77472d0d84a085b9e8625b0d7ff93c94"
+    },
+    {
+      "path": ".github/workflows/verifier-qualification.yml",
+      "sha256": "8d22dd92dc4ddd87f1334917fb15e86ed3781686bb9c94f9ae7828f339e86c79"
+    },
+    {
+      "path": "docs/security/verifier-observer-loss.md",
+      "sha256": "bfc8070ae563908c4d260e57eb450f506d742d973e55196ecd2c0dca0cc9613f"
+    },
+    {
+      "path": "docs/reviews/verifier-observer-loss-checkpoint.md",
+      "sha256": "175295901ce20fa2d3029ca17e41c22a955bd620059916464f7658fdc5086438"
+    },
+    {
+      "path": "docs/evidence/verifier-observer-loss/observer-summary.json",
+      "sha256": "b5e65f230e21ca068426b8c7bc45b21e527603dd80270e5fb0b564ed2ac78445"
+    },
+    {
+      "path": "docs/evidence/verifier-observer-loss/qualification-run.json",
+      "sha256": "c375ee895db447c81af091efdb8fbf8c9ce585450eda166c352454a2b0c680dc"
+    },
+    {
+      "path": "docs/evidence/verifier-observer-loss/platform-run.json",
+      "sha256": "ef99716ba99ff0a706965cf71230a0caff1fe6aa6f8e847faca6f3509b9b30f9"
+    }
+  ]
+}
