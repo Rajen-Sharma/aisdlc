@@ -1,0 +1,46 @@
+{
+  "source": "2e98f5921b6d0cdf3456ebaf06fed4d7963cc032",
+  "byteBasis": "Windows working-file bytes; manifest excluded; readiness/review/evidence updated on review branch",
+  "files": [
+    {
+      "path": "scripts/codex-trial-policy.mjs",
+      "sha256": "68cedcab6447ac551d9466bb02c76ab6c71b46e62878a845b358cb35d96ad3c9"
+    },
+    {
+      "path": "scripts/codex-trial-preflight.mjs",
+      "sha256": "7a001198895f9e48798e32d2d74a1cdcd9a73e9936d3fb75b34103e0c4baf06a"
+    },
+    {
+      "path": "tests/codex-trial-policy.test.mjs",
+      "sha256": "7377298bf33d99d9d4a6c2babe5eec9df6788026e421bc58d0ff338da933f6be"
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "38a3b1a0a95aa1a52262e4de674ba1f87480847a685322cbd860a27a7a586a36"
+    },
+    {
+      "path": "docs/governance/registers.md",
+      "sha256": "6dd85052a4826d7e94021e7417519d7763c5e44ebc1cb3d0325cb5cb6cf0232a"
+    },
+    {
+      "path": "docs/security/codex-subscription-trial.md",
+      "sha256": "6b53e78b5e3dcf6deefb902cd4f2f3a1f0cd70eb6cb4bef6fc8d1c8642bd16d0"
+    },
+    {
+      "path": "docs/reviews/first-delivery-readiness.md",
+      "sha256": "dd4b14052167c54d62bd91dba34444af0a70f500522ae51b48b0b6d4d4b87bcd"
+    },
+    {
+      "path": "docs/reviews/codex-trial-preflight-checkpoint.md",
+      "sha256": "b904f943700a7a4f983750cabf32dbea3d77e1211791108139a7d683a56a9749"
+    },
+    {
+      "path": "docs/evidence/codex-trial-preflight/local-preflight.json",
+      "sha256": "b813510eed7a4548d5bbc218cff30a62fdccb33df1017da5a4e58b6f11b43fc1"
+    },
+    {
+      "path": "docs/evidence/codex-trial-preflight/platform-run.json",
+      "sha256": "546bd53568ef378b670187105053655e9d918f4d0c8380291824018e4d51f7c3"
+    }
+  ]
+}

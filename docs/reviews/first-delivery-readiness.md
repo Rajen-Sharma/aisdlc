@@ -54,8 +54,8 @@ review rather than silently dropping recovery or credential controls.
 
 | Choice | Why implementation depends on it | Current state |
 | --- | --- | --- |
-| Provider route | Determines adapter API, credential isolation, accounting and cancellation | Unselected: trusted broker with provider key, existing approved gateway, or feasibility evaluation of existing login |
-| Total model spend ceiling and currency | Required before paid coding calls; repairs must share the same cap | Not supplied; no paid coding run is authorized |
+| Provider route | Determines adapter API, credential isolation, accounting and cancellation | Selected 10 October: existing local Codex ChatGPT authentication; adapter qualification pending |
+| Total model spend ceiling and currency | Required before paid coding calls; repairs must share the same cap | Subscription-only, no additional API charges; one initial attempt and at most two repairs, selected 10 October |
 | Recovery and signing service/account | Determines authentication, immutable storage, current anchors, fencing and operational ownership | Not provisioned; requirements documented, no endpoint or credentials assumed |
 
 The accepted plan explicitly requires a viable credential strategy and an explicit

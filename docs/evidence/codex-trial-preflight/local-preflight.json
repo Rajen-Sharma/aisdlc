@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-10T10:05:05.072Z",
+  "version": 1,
+  "cliVersion": "0.155.1",
+  "authentication": "chatgpt",
+  "provider": "codex",
+  "subscriptionOnly": true,
+  "additionalChargesAllowed": false,
+  "maxAttempts": 3,
+  "localAuthOnly": true,
+  "publicCIAuthAllowed": false,
+  "authenticationConfirmed": true,
+  "toolBoundaryQualified": false,
+  "modelCallAllowed": false,
+  "executionAllowed": false,
+  "retryAuthorized": false,
+  "remaining": [
+    "qualify-complete-tool-boundary",
+    "qualify-cancellation-and-output-bounds",
+    "bind-exact-task-and-approval-gates"
+  ]
+}
