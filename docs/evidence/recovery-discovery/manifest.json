@@ -1,0 +1,30 @@
+{
+  "source": "9530ca00c7b3fde6de94165b81a721abec1af473",
+  "byteBasis": "Windows working-file bytes; manifest excluded",
+  "files": [
+    {
+      "path": "scripts/recovery-discovery.mjs",
+      "sha256": "fca68676faa214db3f188f39125286784a3258db29746ccdd459018dacf37817"
+    },
+    {
+      "path": "tests/recovery-discovery.test.mjs",
+      "sha256": "0bf812c009493122bbef35f05ed1d83a1c73c5710dab27db1af2a59a698c348a"
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "189d0311a4dae3b09daa39f3a4c4898519d5356a7cf2c9c6c83034242ef00ff4"
+    },
+    {
+      "path": "docs/security/recovery-discovery.md",
+      "sha256": "b29fa323d721886f1d5d0acb4859fed3c740593c6f2b7bb2a711023d4e91305f"
+    },
+    {
+      "path": "docs/reviews/recovery-discovery-checkpoint.md",
+      "sha256": "8e8fe506d7c0d90917c7866991c8949a1f0afe0eb0898fe2cafdc955e0faef86"
+    },
+    {
+      "path": "docs/evidence/recovery-discovery/platform-run.json",
+      "sha256": "03a996fe8b485660551afdec5ab6e186fd85acd79b522f1c9de7a31eb53df10a"
+    }
+  ]
+}
