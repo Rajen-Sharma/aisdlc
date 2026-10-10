@@ -60,9 +60,14 @@ if (process.argv[2] === '--child') {
   const result = await reconcile(await readJournal(journal), token, docker)
   console.log(JSON.stringify(result))
 } else {
-  const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(filename)).digest('hex'), cases: [], qualified: false, retryAuthorized: false }
+  assert.ok(process.argv.length === 2 || (process.argv.length === 3 && process.argv[2] === '--daemon-restart'))
+  const daemonRestart = process.argv[2] === '--daemon-restart'
+  const stages = daemonRestart ? ['running-tree'] : ['before-create', 'created-not-started', 'running-tree']
+  const evidence = { image, scriptSha256: createHash('sha256').update(await readFile(filename)).digest('hex'), daemonRestart, cases: [], qualified: false, retryAuthorized: false }
   try {
-    for (const stage of ['before-create', 'created-not-started', 'running-tree']) {
+    // This runner owns no production services; pre-pull before killing any controller.
+    if (daemonRestart) await docker(['pull', image], { timeout: 180000 })
+    for (const stage of stages) {
       const token = randomUUID()
       const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'sdlc-crash-journal-'))
       const journal = path.join(directory, 'intent.json')
@@ -87,6 +92,30 @@ if (process.argv[2] === '--child') {
           const info = JSON.parse((await docker(['inspect', '--format', '{{json .State}}', state.name])).stdout)
           assert.equal(info.Running, true, 'Controller death did not leave a live orphan for recovery.')
         }
+        if (daemonRestart) {
+          const original = JSON.parse((await docker(['inspect', state.name])).stdout)[0]
+          assert.match(original.Id, /^[a-f0-9]{64}$/)
+          assert.equal(original.Config.Labels['sdlc.qualification.owner'], token)
+          const daemonPid = async () => {
+            const value = (await exec('systemctl', ['show', 'docker.service', '--property=MainPID', '--value'], { timeout: 15000, maxBuffer: 1024 })).stdout.trim()
+            assert.match(value, /^[1-9][0-9]*$/)
+            return value
+          }
+          const before = await daemonPid()
+          await exec('sudo', ['-n', 'systemctl', 'restart', 'docker.service'], { timeout: 60000, maxBuffer: 16384 })
+          assert.notEqual(await daemonPid(), before, 'Docker daemon identity did not change.')
+          await docker(['info'])
+          // Absence alone could hide daemon data loss. Require the original owned ID
+          // to survive the restart before invoking the fresh recovery process.
+          const retained = JSON.parse((await docker(['inspect', state.name])).stdout)[0]
+          assert.equal(retained.Id, original.Id)
+          assert.equal(retained.Name, `/${state.name}`)
+          assert.equal(retained.Config.Labels['sdlc.qualification.owner'], token)
+          assert.match(retained.Id, /^[a-f0-9]{64}$/)
+          evidence.daemonIdentityChanged = true
+          evidence.ownedContainerRetained = true
+          evidence.containerRunningAfterRestart = retained.State.Running === true
+        }
         // Recovery is a fresh OS process, with only trusted journal identity as input.
         const result = await exec(process.execPath, [filename, '--recover', journal, token], { timeout: 45000, maxBuffer: 16384 })
         assert.deepEqual(JSON.parse(result.stdout), { containerAbsent: true, retryAuthorized: false })
@@ -100,14 +129,14 @@ if (process.argv[2] === '--child') {
         }
       }
     }
-    evidence.qualified = evidence.cases.length === 3
+    evidence.qualified = evidence.cases.length === stages.length
   } catch {
     evidence.failure = 'Crash or reconciliation qualification failed; task execution stays disabled.'
     console.log('::error::Crash or reconciliation qualification failed.')
     process.exitCode = 1
   } finally {
     await mkdir('docs/evidence/verifier', { recursive: true })
-    await open('docs/evidence/verifier/crash-qualification.json', 'w').then(async file => { try { await file.writeFile(JSON.stringify(evidence, null, 2)) } finally { await file.close() } })
+    await open(`docs/evidence/verifier/${daemonRestart ? 'daemon-restart' : 'crash'}-qualification.json`, 'w').then(async file => { try { await file.writeFile(JSON.stringify(evidence, null, 2)) } finally { await file.close() } })
     console.log(JSON.stringify(evidence))
     // Contains only trusted stage names, booleans and pinned hashes, never child diagnostics.
     console.log(`::notice title=Trusted crash recovery summary::${JSON.stringify(evidence)}`)
