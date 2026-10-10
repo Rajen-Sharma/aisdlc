@@ -32,7 +32,7 @@ jobs:
       - run: npm run seed
       - run: npm run typecheck
       - name: Recovery discovery and fail-closed checks
-        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs
+        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs
       - name: Integration tests
         run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
       - name: Publish safe integration diagnostics

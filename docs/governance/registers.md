@@ -51,3 +51,13 @@ CR-ENG-001 records the user's request to make the platform generic and add CMS/D
 ## Continuation acceptance, 8 October 2026
 
 Chat user said 'lets get building' after the full review and proposed continuation. This context authorizes BUILD-ENG-002 v1 (SHA-256 b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82) and SEC-DES-ENG-002 v1 (SHA-256 3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d) for local implementation. IDs APP-BUILD-ENG-002 and APP-DES-ENG-002. Reviewed files remain unchanged. This records implementation/design acceptance; it grants no code-security, outcome, MVP or production-release acceptance. Exact message time and legal identity were not supplied.
+
+## Codex trial provider selection, 10 October 2026
+
+The chat user said "yes use codex" in response to the proposed existing-subscription
+trial with no additional API charges, one initial attempt and at most two repairs.
+This selects the provider and trial limits; it does not waive isolation, exact-task
+approval, code-security, outcome or MVP gates. See
+[the concrete trial boundary](../security/codex-subscription-trial.md).
+Exact message time and legal identity were not supplied. No account credentials
+are recorded here and no production execution is authorized by this entry.
