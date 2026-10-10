@@ -9,7 +9,7 @@ const hash = (bytes: string | Buffer) => createHash('sha256').update(bytes).dige
 function fixture() {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519')
   const policy: SupervisorPolicy = { supervisorKey: 'synthetic-supervisor', keyId: 'test-key-one', publicKey, verifierHash: hash('verifier'), qualificationHash: hash('qualification'), image: verifierImage }
-  const record: VerifierChallenge = { version: 1, nonce: randomUUID(), bindingHash: hash('binding'), ...supervisorIdentity(policy), issuedAt: 1000, expiresAt: 1300, syntheticOnly: true, executionAllowed: false }
+  const record: VerifierChallenge = { version: 2, nonce: randomUUID(), bindingHash: hash('binding'), registryHash: hash('catalog'), registryRevision: 1, ...supervisorIdentity(policy), issuedAt: 1000, expiresAt: 1300, syntheticOnly: true, executionAllowed: false }
   const receipt = validateChallenge(record, digest(record)), bytes = Buffer.from('Synthetic evidence only; no code was executed.')
   const claim: VerifierClaim = { version: 1, challengeHash: receipt.challengeHash, evidenceHash: hash(bytes), evidenceBytes: bytes.length, verdict: 'pass', syntheticOnly: true, executionAllowed: false }
   const signed = (body: VerifierClaim = claim) => JSON.stringify({ claim: body, signature: sign(null, verifierSigningBytes(body), privateKey).toString('base64') })
@@ -46,4 +46,7 @@ test('verifier evidence rejects malformed or oversized transport and challenge m
   for (const signature of ['a'.repeat(88), Buffer.alloc(63).toString('base64'), Buffer.alloc(64).toString('base64'), JSON.parse(f.signed()).signature.replace(/=$/, '')]) assert.throws(() => authenticateVerifierEvidence(f.receipt, f.policy, JSON.stringify({ claim: f.claim, signature }), f.bytes, 1200))
   for (const record of [{ ...f.record, expiresAt: 1301 }, { ...f.record, executionAllowed: true }, { ...f.record, nonce: randomUUID(), extra: 1 }]) assert.throws(() => validateChallenge(record, digest(record)))
   assert.throws(() => validateChallenge(f.record, hash('not retained digest')))
+  const { registryHash: _hash, registryRevision: _revision, ...previous } = f.record
+  const legacy = { ...previous, version: 1 }
+  assert.throws(() => validateChallenge(legacy, digest(legacy)))
 })

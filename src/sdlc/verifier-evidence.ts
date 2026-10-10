@@ -12,20 +12,22 @@ const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('h
 // Supplied only by trusted operator code. No sender-selected keys or default trust anchor.
 export type SupervisorPolicy = { supervisorKey: string; keyId: string; publicKey: KeyObject; verifierHash: string; qualificationHash: string; image: string }
 export type VerifierChallenge = {
-  version: 1; nonce: string; bindingHash: string; supervisorKey: string; keyId: string; keyFingerprint: string
+  version: 2; nonce: string; bindingHash: string; registryHash: string; registryRevision: number; supervisorKey: string; keyId: string; keyFingerprint: string
   verifierHash: string; qualificationHash: string; image: string; issuedAt: number; expiresAt: number
   syntheticOnly: true; executionAllowed: false
 }
 export type ChallengeReceipt = { challengeHash: string; record: VerifierChallenge }
 export type VerifierClaim = { version: 1; challengeHash: string; evidenceHash: string; evidenceBytes: number; verdict: 'pass' | 'fail' | 'error'; syntheticOnly: true; executionAllowed: false }
 export function supervisorIdentity(policy: SupervisorPolicy) {
+  for (const key of ['supervisorKey', 'keyId', 'verifierHash', 'qualificationHash', 'image'] as const) if (typeof policy[key] !== 'string') return reject()
   if (!slug.test(policy.supervisorKey) || !slug.test(policy.keyId) || !sha.test(policy.verifierHash) || !sha.test(policy.qualificationHash) || policy.image !== verifierImage || !(policy.publicKey instanceof KeyObject) || policy.publicKey.type !== 'public' || policy.publicKey.asymmetricKeyType !== 'ed25519') return reject()
   return { supervisorKey: policy.supervisorKey, keyId: policy.keyId, keyFingerprint: hash(policy.publicKey.export({ type: 'spki', format: 'der' })), verifierHash: policy.verifierHash, qualificationHash: policy.qualificationHash, image: policy.image }
 }
 export function validateChallenge(input: unknown, expectedHash: string): ChallengeReceipt {
-  if (!sha.test(expectedHash) || !exact(input, ['version', 'nonce', 'bindingHash', 'supervisorKey', 'keyId', 'keyFingerprint', 'verifierHash', 'qualificationHash', 'image', 'issuedAt', 'expiresAt', 'syntheticOnly', 'executionAllowed'])) return reject()
-  if (input.version !== 1 || input.syntheticOnly !== true || input.executionAllowed !== false || typeof input.nonce !== 'string' || !uuid.test(input.nonce) || typeof input.supervisorKey !== 'string' || !slug.test(input.supervisorKey) || typeof input.keyId !== 'string' || !slug.test(input.keyId) || input.image !== verifierImage) return reject()
-  for (const key of ['bindingHash', 'keyFingerprint', 'verifierHash', 'qualificationHash']) if (typeof input[key] !== 'string' || !sha.test(input[key] as string)) return reject()
+  if (!sha.test(expectedHash) || !exact(input, ['version', 'nonce', 'bindingHash', 'registryHash', 'registryRevision', 'supervisorKey', 'keyId', 'keyFingerprint', 'verifierHash', 'qualificationHash', 'image', 'issuedAt', 'expiresAt', 'syntheticOnly', 'executionAllowed'])) return reject()
+  if (!Number.isSafeInteger(input.registryRevision) || (input.registryRevision as number) < 1) return reject()
+  if (input.version !== 2 || input.syntheticOnly !== true || input.executionAllowed !== false || typeof input.nonce !== 'string' || !uuid.test(input.nonce) || typeof input.supervisorKey !== 'string' || !slug.test(input.supervisorKey) || typeof input.keyId !== 'string' || !slug.test(input.keyId) || input.image !== verifierImage) return reject()
+  for (const key of ['bindingHash', 'registryHash', 'keyFingerprint', 'verifierHash', 'qualificationHash']) if (typeof input[key] !== 'string' || !sha.test(input[key] as string)) return reject()
   if (!Number.isSafeInteger(input.issuedAt) || !Number.isSafeInteger(input.expiresAt) || (input.issuedAt as number) < 1 || (input.expiresAt as number) <= (input.issuedAt as number) || (input.expiresAt as number) - (input.issuedAt as number) > 300 || digest(input) !== expectedHash) return reject()
   return { challengeHash: expectedHash, record: JSON.parse(JSON.stringify(input)) as VerifierChallenge }
 }

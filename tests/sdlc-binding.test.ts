@@ -10,6 +10,7 @@ import { activeProject } from '../src/sdlc/project'
 import { verifierImage, validateBoundCandidate } from '../src/sdlc/task-binding'
 import { queueReservation, reserveTask, bindReservationArtifacts, inspectReservationBinding, finishReservation, recoverReservation, submitBoundCandidate, issueVerifierChallenge, recordVerifierEvidence } from '../src/sdlc/task-coordinator'
 import { verifierSigningBytes, type VerifierClaim } from '../src/sdlc/verifier-evidence'
+import { syntheticRegistry } from './supervisor-registry-fixture'
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 function capsule(text: string) {
@@ -142,23 +143,33 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     await assert.rejects(recoverReservation(payload, taskId, admin.id, hash('not uncertain')), /Only uncertain/)
     const keys = generateKeyPairSync('ed25519')
     const policy = { supervisorKey: expected.supervisorKey, keyId: 'synthetic-test-key', publicKey: keys.publicKey, verifierHash: expected.verifierHash, qualificationHash: expected.qualificationHash, image: expected.image }
-    await assert.rejects(issueVerifierChallenge(payload, taskId, receipt.bindingHash, policy), /stale/)
-    await assert.rejects(issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, { ...policy, verifierHash: hash('unqualified verifier') }), /policy/)
-    const challenge = await issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, policy)
-    await assert.rejects(issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, policy), /already/)
+    const registryFixture = syntheticRegistry(policy), registry = registryFixture.registry
+    await assert.rejects(issueVerifierChallenge(payload, taskId, receipt.bindingHash, registry), /stale/)
+    await assert.rejects(issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, syntheticRegistry({ ...policy, verifierHash: hash('unqualified verifier') }).registry), /policy/)
+    const challenge = await issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, registry)
+    assert.equal(challenge.record.registryHash, registryFixture.current.anchor.catalogHash)
+    assert.equal(challenge.record.registryRevision, 1)
+    await assert.rejects(issueVerifierChallenge(payload, taskId, newReceipt.bindingHash, registry), /already/)
     const proof = Buffer.from('Synthetic signed proof; no verifier execution or human approval.')
     const claim: VerifierClaim = { version: 1, challengeHash: challenge.challengeHash, evidenceHash: hash(proof.toString()), evidenceBytes: proof.length, verdict: 'pass', syntheticOnly: true, executionAllowed: false }
     const envelope = JSON.stringify({ claim, signature: sign(null, verifierSigningBytes(claim), keys.privateKey).toString('base64') })
-    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, hash('wrong challenge'), policy, envelope, proof), /absent/)
-    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, Buffer.from('swapped')))
-    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, { ...policy, publicKey: generateKeyPairSync('ed25519').publicKey }, envelope, proof))
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, hash('wrong challenge'), registry, envelope, proof), /absent/)
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, Buffer.from('swapped')))
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, syntheticRegistry({ ...policy, publicKey: generateKeyPairSync('ed25519').publicKey }).registry, envelope, proof))
+    const oldRegistry = registryFixture.current
+    registryFixture.replace([{ ...registryFixture.entry, status: 'revoked' }])
+    const revokedRegistry = registryFixture.current
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof), /registry rejected/)
+    registryFixture.supply({ anchor: revokedRegistry.anchor, document: oldRegistry.document })
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof), /registry rejected/)
+    registryFixture.replace([registryFixture.entry])
     await payload.db.pool.query("UPDATE sdlc_gates SET actor_id=$2 WHERE story_id=$1 AND kind='design-security'", [story.id, editor.id])
-    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof), /acceptance required/)
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof), /acceptance required/)
     await payload.db.pool.query("UPDATE sdlc_gates SET actor_id=$2 WHERE story_id=$1 AND kind='design-security'", [story.id, admin.id])
     assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_verifier_challenges WHERE challenge_hash=$1', [challenge.challengeHash])).rows[0].status, 'issued')
     assert.equal((await payload.db.pool.query('SELECT count(*)::int AS count FROM sdlc_verifier_evidence WHERE task_id=$1', [taskId])).rows[0].count, 0)
     await payload.db.pool.query('UPDATE sdlc_task_bindings SET record=$2 WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify({ ...newReceipt.record, supervisorKey: 'forged-supervisor' })])
-    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof))
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof))
     await payload.db.pool.query('UPDATE sdlc_task_bindings SET record=$2 WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify(newReceipt.record)])
     // Test-only shortened challenge exercises database wall clock after a real lock wait.
     const clock = Number((await payload.db.pool.query('SELECT floor(extract(epoch FROM clock_timestamp()))::bigint AS now')).rows[0].now)
@@ -171,7 +182,7 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     try {
       await verifierBlocker.query('BEGIN')
       await verifierBlocker.query('SELECT id FROM sdlc_tasks WHERE id=$1 FOR UPDATE', [taskId])
-      delayedIntake = recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, shortHash, policy, shortEnvelope, proof).catch(error => error)
+      delayedIntake = recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, shortHash, registry, shortEnvelope, proof).catch(error => error)
       let waiting = false
       for (let index = 0; index < 100; index++) {
         await verifierBlocker.query('SELECT pg_stat_clear_snapshot()')
@@ -187,6 +198,27 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     assert.ok(delayed instanceof Error); assert.match(delayed.message, /rejected|expired/)
     assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_verifier_challenges WHERE binding_hash=$1', [newReceipt.bindingHash])).rows[0].status, 'issued')
     await payload.db.pool.query('UPDATE sdlc_verifier_challenges SET record=$2,challenge_hash=$3,expires_at=to_timestamp($4) WHERE binding_hash=$1', [newReceipt.bindingHash, JSON.stringify(challenge.record), challenge.challengeHash, challenge.record.expiresAt])
+    // Revocation occurring during a row-lock wait must be read after the wait, not cached.
+    const registryBlocker = await payload.db.pool.connect()
+    let revokedIntake: Promise<unknown>
+    try {
+      await registryBlocker.query('BEGIN')
+      await registryBlocker.query('SELECT id FROM sdlc_tasks WHERE id=$1 FOR UPDATE', [taskId])
+      revokedIntake = recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof).catch(error => error)
+      let waiting = false
+      for (let index = 0; index < 100; index++) {
+        await registryBlocker.query('SELECT pg_stat_clear_snapshot()')
+        const activity = await registryBlocker.query("SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query='SELECT * FROM sdlc_tasks WHERE id=$1 FOR UPDATE'")
+        if (activity.rowCount) { waiting = true; break }
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+      assert.ok(waiting, 'Registry-backed intake must wait on the candidate task lock.')
+      registryFixture.replace([{ ...registryFixture.entry, status: 'revoked' }])
+      await registryBlocker.query('COMMIT')
+    } catch (error) { await registryBlocker.query('ROLLBACK'); throw error } finally { registryBlocker.release() }
+    const revoked = await revokedIntake!
+    assert.ok(revoked instanceof Error); assert.match(revoked.message, /registry rejected/)
+    registryFixture.replace([registryFixture.entry])
     // Real transaction, test-only SQL-client fault after consumption but before evidence insertion.
     const faultyPayload = { db: { pool: { connect: async () => {
       const client = await payload.db.pool.connect()
@@ -195,12 +227,12 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
         release: () => client.release(),
       }
     } } } } as unknown as Payload
-    await assert.rejects(recordVerifierEvidence(faultyPayload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof), /Synthetic evidence insert failure/)
+    await assert.rejects(recordVerifierEvidence(faultyPayload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof), /Synthetic evidence insert failure/)
     assert.equal((await payload.db.pool.query('SELECT status FROM sdlc_verifier_challenges WHERE binding_hash=$1', [newReceipt.bindingHash])).rows[0].status, 'issued')
     assert.equal((await payload.db.pool.query('SELECT count(*)::int AS count FROM sdlc_verifier_evidence WHERE task_id=$1', [taskId])).rows[0].count, 0)
     const intake = await Promise.allSettled([
-      recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof),
-      recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof),
+      recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof),
+      recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof),
     ])
     assert.equal(intake.filter(result => result.status === 'fulfilled').length, 1)
     assert.equal(intake.filter(result => result.status === 'rejected').length, 1)
@@ -209,7 +241,7 @@ test('persisted artifact bindings are atomic, immutable and exact to the current
     assert.equal(accepted.value.reviewRequired, true)
     assert.equal(accepted.value.executionAllowed, false)
     assert.equal(accepted.value.retryAuthorized, false)
-    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, policy, envelope, proof), /consumed/)
+    await assert.rejects(recordVerifierEvidence(payload, taskId, newReceipt.bindingHash, challenge.challengeHash, registry, envelope, proof), /consumed/)
     const stored = await payload.find({ collection: 'sdlc-verifier-evidence', user: admin, overrideAccess: false, depth: 0, where: { task: { equals: taskId } } })
     assert.equal(stored.docs.length, 1)
     assert.equal(Buffer.from(stored.docs[0].evidenceBase64, 'base64').toString(), proof.toString())
