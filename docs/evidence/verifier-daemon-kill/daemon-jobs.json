@@ -1,0 +1,197 @@
+{
+  "observedAt": "2026-10-10T03:21:17.5741150Z",
+  "source": "ccbdc88368854189a07cd8e798df3b9405061313",
+  "method": "Unauthenticated public GitHub job HTML and jobs API",
+  "limits": "No authenticated logs or artifact downloads; synthetic checks are not human acceptance.",
+  "jobs": [
+    {
+      "id": 114119262390,
+      "name": "daemon-recovery (daemon-restart)",
+      "conclusion": "success",
+      "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38020188253/job/114119262390",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-10T03:20:08Z",
+          "completed_at": "2026-10-10T03:20:09Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-10T03:20:09Z",
+          "completed_at": "2026-10-10T03:20:10Z"
+        },
+        {
+          "name": "Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-10T03:20:10Z",
+          "completed_at": "2026-10-10T03:20:15Z"
+        },
+        {
+          "name": "Qualify daemon loss on an isolated disposable runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-10T03:20:15Z",
+          "completed_at": "2026-10-10T03:20:33Z"
+        },
+        {
+          "name": "Preserve daemon recovery evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-10T03:20:33Z",
+          "completed_at": "2026-10-10T03:20:34Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-10T03:20:34Z",
+          "completed_at": "2026-10-10T03:20:34Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-10T03:20:34Z",
+          "completed_at": "2026-10-10T03:20:35Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-10T03:20:35Z",
+          "completed_at": "2026-10-10T03:20:35Z"
+        }
+      ],
+      "notices": [
+        {
+          "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+          "scriptSha256": "31826b47e1a379231b46abdec46b286c77472d0d84a085b9e8625b0d7ff93c94",
+          "daemonRestart": true,
+          "daemonKill": false,
+          "cases": [
+            {
+              "stage": "running-tree",
+              "controllerKilled": true,
+              "liveOrphanObserved": true,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            }
+          ],
+          "qualified": true,
+          "retryAuthorized": false,
+          "daemonIdentityChanged": true,
+          "ownedContainerRetained": true,
+          "containerRunningAfterRestart": false
+        }
+      ]
+    },
+    {
+      "id": 114119262516,
+      "name": "daemon-recovery (daemon-kill)",
+      "conclusion": "success",
+      "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38020188253/job/114119262516",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-10T03:20:08Z",
+          "completed_at": "2026-10-10T03:20:09Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-10T03:20:09Z",
+          "completed_at": "2026-10-10T03:20:10Z"
+        },
+        {
+          "name": "Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-10T03:20:10Z",
+          "completed_at": "2026-10-10T03:20:15Z"
+        },
+        {
+          "name": "Qualify daemon loss on an isolated disposable runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-10T03:20:15Z",
+          "completed_at": "2026-10-10T03:20:41Z"
+        },
+        {
+          "name": "Preserve daemon recovery evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-10T03:20:41Z",
+          "completed_at": "2026-10-10T03:20:42Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-10T03:20:42Z",
+          "completed_at": "2026-10-10T03:20:42Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-10T03:20:42Z",
+          "completed_at": "2026-10-10T03:20:42Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-10T03:20:42Z",
+          "completed_at": "2026-10-10T03:20:42Z"
+        }
+      ],
+      "notices": [
+        {
+          "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+          "scriptSha256": "31826b47e1a379231b46abdec46b286c77472d0d84a085b9e8625b0d7ff93c94",
+          "daemonRestart": true,
+          "daemonKill": true,
+          "cases": [
+            {
+              "stage": "running-tree",
+              "controllerKilled": true,
+              "liveOrphanObserved": true,
+              "containerAbsent": true,
+              "retryAuthorized": false
+            }
+          ],
+          "qualified": true,
+          "retryAuthorized": false,
+          "daemonSigkillAccepted": true,
+          "daemonIdentityChanged": true,
+          "ownedContainerRetained": true,
+          "containerRunningAfterRestart": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "source": "ccbdc88368854189a07cd8e798df3b9405061313",
+  "byteBasis": "Windows working-file bytes; manifest excluded",
+  "files": [
+    {
+      "path": "scripts/verifier-crash-qualification.mjs",
+      "sha256": "31826b47e1a379231b46abdec46b286c77472d0d84a085b9e8625b0d7ff93c94"
+    },
+    {
+      "path": ".github/workflows/verifier-qualification.yml",
+      "sha256": "464dca0fb3733f0c738699e6e5651ef7aa2187a2d5092f05a6158b78aafe991e"
+    },
+    {
+      "path": "docs/security/verifier-daemon-kill.md",
+      "sha256": "b2044981e61668fdde28e76867e58a084406e8a49a343b35be09158a5b1ae7ad"
+    },
+    {
+      "path": "docs/reviews/verifier-daemon-kill-checkpoint.md",
+      "sha256": "49a3e89e4911fe87b4f5cf9fe1c0c220bd8694c2f9973a32621007381a658199"
+    },
+    {
+      "path": "docs/evidence/verifier-daemon-kill/daemon-jobs.json",
+      "sha256": "393fcbdda0388b347259a85c829b4fc3e93563ee2a5e5caf9060276dc53ee0fd"
+    },
+    {
+      "path": "docs/evidence/verifier-daemon-kill/qualification-run.json",
+      "sha256": "bd2c535f61f0d174e4e9e023c62372dc4af4ddaed19ee173a2b3793bcb059355"
+    },
+    {
+      "path": "docs/evidence/verifier-daemon-kill/platform-run.json",
+      "sha256": "6d046e2592291e3dadbd189a2f85eab10718d69289e33d836baa01b6af37f0a1"
+    }
+  ]
+}
