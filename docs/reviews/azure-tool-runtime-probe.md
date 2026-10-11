@@ -54,6 +54,11 @@ The profile is a prototype test harness, not an installed production executor.
 
 The platform workflow runs the same root-administered synthetic probe on its
 disposable Linux runner. No account authentication or cloud access is required.
+Frozen source `9455e2db160a2073a4a1deba3c0b340faada34d2` passed
+[platform CI 38121964465](https://github.com/Rajen-Sharma/aisdlc/actions/runs/38121964465),
+including that probe, 19 recovery/Codex/template tests, integration tests, dependency
+audit, optimized build, browser journeys and owned-database cleanup. The same 19
+Node tests passed locally. CI step metadata is retained alongside the Azure results.
 
 Before a Codex model call, qualify **every actual capability** as disabled or routed
 through the separate runtime. App-server environment support offers a possible
