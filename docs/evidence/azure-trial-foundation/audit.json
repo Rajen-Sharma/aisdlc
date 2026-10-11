@@ -38,5 +38,55 @@
   "expiryTagIsAutomaticCleanup": false,
   "modelCalls": 0,
   "resourceGroup": "rg-aisdlc-trial-aue",
-  "templateValidation": "Succeeded"
+  "templateValidation": "Succeeded",
+  "liveNetworkRulesVerified": true,
+  "localTestsPassed": 19,
+  "sourceCommit": "91f0d05208cf5221a7e111512a5d9a7fc3fda3de",
+  "cleanupDeadlineUtc": "2026-10-13T03:24:58.0783852Z",
+  "resourceInventory": [
+    {
+      "name": "vnet-aisdlc-trial",
+      "type": "Microsoft.Network/virtualNetworks"
+    },
+    {
+      "name": "nsg-aisdlc-client",
+      "type": "Microsoft.Network/networkSecurityGroups"
+    },
+    {
+      "name": "nsg-aisdlc-tools",
+      "type": "Microsoft.Network/networkSecurityGroups"
+    },
+    {
+      "name": "pip-aisdlc-client",
+      "type": "Microsoft.Network/publicIPAddresses"
+    },
+    {
+      "name": "pip-aisdlc-tools",
+      "type": "Microsoft.Network/publicIPAddresses"
+    },
+    {
+      "name": "nic-aisdlc-tools",
+      "type": "Microsoft.Network/networkInterfaces"
+    },
+    {
+      "name": "nic-aisdlc-client",
+      "type": "Microsoft.Network/networkInterfaces"
+    },
+    {
+      "name": "vm-aisdlc-client",
+      "type": "Microsoft.Compute/virtualMachines"
+    },
+    {
+      "name": "vm-aisdlc-tools",
+      "type": "Microsoft.Compute/virtualMachines"
+    },
+    {
+      "name": "disk-aisdlc-client",
+      "type": "Microsoft.Compute/disks"
+    },
+    {
+      "name": "disk-aisdlc-tools",
+      "type": "Microsoft.Compute/disks"
+    }
+  ]
 }

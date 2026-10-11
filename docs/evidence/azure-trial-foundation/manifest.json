@@ -1,0 +1,37 @@
+{
+  "description": "SHA256 of working file bytes; not authority or signed attestation",
+  "files": [
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "cf454dbe8a612a45443549c43947ff3d9076fd1fcab3ea6184beb794d9b6be88"
+    },
+    {
+      "path": "infra/azure/trial.json",
+      "sha256": "866985967d3b277b1e35944f5ca6b557792d7192310afdcccc8a836c369bf959"
+    },
+    {
+      "path": "tests/azure-trial-template.test.mjs",
+      "sha256": "a33c0943194f377d6110f09fbe0a658bce311e0a727b46f4eb29b47436e41b30"
+    },
+    {
+      "path": "docs/planning/private-worker-hosting-proposal.md",
+      "sha256": "1d4dcc946aa138154c8765ff861dceac7de9e2c1007f8883f2191df24746331f"
+    },
+    {
+      "path": "docs/reviews/azure-trial-foundation.md",
+      "sha256": "ca82decd7276a45e185334938ba55d6c7addd4dd8358de1449c9c38822433fc8"
+    },
+    {
+      "path": "docs/evidence/azure-trial-foundation/audit.json",
+      "sha256": "7432add61c44a8eb68d953d002f0e50c8dfa66827925e4974a8d59df544df12d"
+    },
+    {
+      "path": "docs/evidence/azure-trial-foundation/pricing.json",
+      "sha256": "a2b493b8d89486d726cc8c4dbacddda58c8266a1fb5149e3794f524357074830"
+    },
+    {
+      "path": "docs/evidence/azure-trial-foundation/platform-ci.json",
+      "sha256": "fe93056aab16b79155795a370619f97d16cb4b97ac3bdd63ab254fbed5a8b01b"
+    }
+  ]
+}

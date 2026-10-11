@@ -74,8 +74,13 @@ and no modification/deletion of existing resources. Deployment succeeded. Two lo
 template security tests pass (identity/password/setup absence and network boundaries).
 SSH verified Linux/x86-64/Ubuntu 24.04 and approximately 4 GiB RAM on both hosts.
 All 19 local recovery, Codex guard and template tests pass. The new template tests
-are included in the platform workflow; its standard build-branch checks run after
-push. No local app startup is needed, and coordinator execution/retries stay disabled.
+are included in the platform workflow. Frozen source commit
+`91f0d05208cf5221a7e111512a5d9a7fc3fda3de` passed
+[platform CI 38108575260](https://github.com/Rajen-Sharma/aisdlc/actions/runs/38108575260),
+including integration, dependency audit, optimized build, browser journeys and
+owned database cleanup. Live NSG inspection also confirmed operator-only SSH and
+explicit deny rules on both hosts. No local app startup was needed, and coordinator
+execution/retries stay disabled.
 
 Before any model call:
 
