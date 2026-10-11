@@ -26,13 +26,14 @@ stderr_buffer = b''
 sequence = 0
 last_method = 'startup'
 config_warnings = 0
+remote_disabled_notifications = 0
 
 def send(message):
     server.stdin.write(json.dumps(message).encode() + b'\n')
     server.stdin.flush()
 
 def rpc(method, params):
-    global buffer, stderr_buffer, total, sequence, last_method, config_warnings
+    global buffer, stderr_buffer, total, sequence, last_method, config_warnings, remote_disabled_notifications
     assert method in allowed, 'method outside the model-free allowlist'
     sequence += 1
     last_method = method
@@ -48,6 +49,11 @@ def rpc(method, params):
                 config_warnings += 1
                 if config_warnings > 4:
                     raise RuntimeError('configuration warning limit exceeded')
+                continue
+            if message.get('method') == 'remoteControl/status/changed' and 'id' not in message:
+                remote_disabled_notifications += 1
+                if remote_disabled_notifications > 4 or message.get('params', {}).get('status') != 'disabled':
+                    raise RuntimeError('remote control is not disabled or notification limit exceeded')
                 continue
             if message.get('id') == sequence:
                 return message
