@@ -27,6 +27,8 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs'; fs.writeFileSync('docs/evidence/github-ci/run.json', JSON.stringify({commit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,createdAt:new Date().toISOString()},null,2))"
       - name: Start pinned CI database with bounded diagnostics
         run: node scripts/ci-postgres.mjs start
+      - name: Qualify synthetic Linux tool runtime
+        run: sudo timeout 60 bash scripts/qualify-linux-tool-runtime.sh > docs/evidence/github-ci/linux-tool-runtime-probe.jsonl
       - run: npm ci
       - run: npm run setup
       - run: npm run seed

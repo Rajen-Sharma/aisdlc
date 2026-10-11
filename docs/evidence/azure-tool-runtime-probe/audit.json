@@ -1,0 +1,21 @@
+{
+  "codexToolBoundaryQualified": false,
+  "kernel": "6.17.0-1022-azure",
+  "systemd": "255.4-1ubuntu8.17",
+  "vmStates": [
+    {
+      "name": "vm-aisdlc-client",
+      "state": "VM deallocated"
+    },
+    {
+      "name": "vm-aisdlc-tools",
+      "state": "VM deallocated"
+    }
+  ],
+  "checkedDate": "2026-10-11",
+  "executionAllowed": false,
+  "retryAllowed": false,
+  "modelCalls": 0,
+  "host": "vm-aisdlc-tools",
+  "credentialFree": true
+}

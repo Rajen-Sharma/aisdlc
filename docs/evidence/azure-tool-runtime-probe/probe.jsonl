@@ -1,0 +1,3 @@
+{"checks": {"nonRoot": true, "hostCanaryDenied": true, "procRootEscapeDenied": true, "homeCanaryDenied": true, "runCanaryDenied": true, "systemWriteDenied": true, "hostLoopbackDenied": true, "metadataDenied": true, "internetDenied": true, "noNewPrivileges": true, "capabilitiesEmpty": true}}
+{"descendantStopped": true, "descendantState": null}
+{"syntheticRuntimeProbePassed":true,"codexToolBoundaryQualified":false,"executionAllowed":false,"retryAllowed":false}
