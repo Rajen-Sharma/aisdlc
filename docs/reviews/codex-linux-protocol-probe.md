@@ -57,19 +57,22 @@ Source `dabd3b697d7bcc290ce7f79a27ebd18d47e5fb58` passed the credential-free Cod
 protocol step in [CI run 38126979706](https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126979706).
 The complete platform workflow passed: both Linux probes, 19 guard/recovery/template
 checks, integration tests, dependency audit, optimized build, browser journeys and
-owned-database cleanup. Step metadata is retained in the accompanying evidence.
+owned-database cleanup. Final run metadata is retained in the accompanying evidence.
 The required checks are an exact temporary-file write/read positive control,
 denial of a host canary and `/proc/1/root` escape, denial of an `/etc` write,
 non-root fixed command execution with canary/metadata/internet denials, and denial
 of a symlink pointing to the host canary. The host first demonstrates that an
 ordinary unprivileged UID can read the exact world-readable canary.
 
-Evidence retains the package pin, public CI step metadata, bounded failure
+Evidence retains the package pin, public CI run metadata, bounded failure
 annotations and an audit summary. Raw CI artifacts were not downloaded; the
 passing step plus its frozen assertion-bearing source is the retained basis for
 the containment result. The working-byte hash manifest is an inventory, not
 signed or immutable execution authority. The 19 local Node guard/recovery/template
-tests and Python syntax parsing passed.
+tests and Python syntax parsing passed. Individual steps were inspected during
+execution; the final jobs endpoint became rate limited during evidence capture,
+so a final per-step inventory is not retained. No authenticated retrieval was
+attempted.
 
 Even successful RPC containment would prove only these explicit calls under this
 profile. It would not prove that every model-facing tool is disabled or routed to

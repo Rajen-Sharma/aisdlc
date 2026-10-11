@@ -16,7 +16,7 @@
     },
     {
       "path": "docs/reviews/codex-linux-protocol-probe.md",
-      "sha256": "e95c3d19ad8ed015c43ce0f90d057c2a36c82167ef1eea3772c5f7639a9631c5"
+      "sha256": "24604b9deb7913963f37e24dd02bf4ab1ff5d9fc1fe66d9097314c6095177af3"
     },
     {
       "path": "docs/evidence/codex-linux-protocol-probe/audit.json",
@@ -32,7 +32,7 @@
     },
     {
       "path": "docs/evidence/codex-linux-protocol-probe/platform-ci.json",
-      "sha256": "c9ba5ca6133b972c26f9bc535ba0a9e7016ec40bd8448b9d31f421e7bb365d92"
+      "sha256": "de7df24236c3692c6adaf542f0278eacc79f3ec8c358fa5979889b5a15744a2f"
     }
   ]
 }

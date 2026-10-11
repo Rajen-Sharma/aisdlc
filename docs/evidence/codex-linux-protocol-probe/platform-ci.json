@@ -4,11 +4,5 @@
   "status": "completed",
   "conclusion": "success",
   "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126979706",
-  "jobs": [
-    {
-      "name": null,
-      "conclusion": null,
-      "steps": []
-    }
-  ]
+  "finalJobMetadata": "Not retained: public jobs endpoint rate limited during final capture. No authenticated retrieval attempted."
 }
