@@ -53,7 +53,7 @@ systemd-run --quiet --unit="$unit" --wait --pipe \
   -p CapabilityBoundingSet= -p AmbientCapabilities= \
   -p 'InaccessiblePaths=/var/lib /proc/1' -p TemporaryFileSystem=/run:ro \
   -p ReadOnlyPaths=/opt -p 'RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6' \
-  -p MemoryMax=128M -p TasksMax=16 -p CPUQuota=50% \
+  -p MemoryMax=128M -p TasksMax=64 -p CPUQuota=50% \
   -p KillMode=control-group -p SendSIGKILL=yes -p TimeoutStopSec=1s \
   -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary"
 status=$?
