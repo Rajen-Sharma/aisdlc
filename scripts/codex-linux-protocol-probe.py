@@ -25,13 +25,14 @@ total = 0
 stderr_buffer = b''
 sequence = 0
 last_method = 'startup'
+config_warnings = 0
 
 def send(message):
     server.stdin.write(json.dumps(message).encode() + b'\n')
     server.stdin.flush()
 
 def rpc(method, params):
-    global buffer, stderr_buffer, total, sequence, last_method
+    global buffer, stderr_buffer, total, sequence, last_method, config_warnings
     assert method in allowed, 'method outside the model-free allowlist'
     sequence += 1
     last_method = method
@@ -43,6 +44,11 @@ def rpc(method, params):
             if len(line) > 16384:
                 raise RuntimeError('oversized protocol record')
             message = json.loads(line.decode('utf-8', errors='strict'))
+            if message.get('method') == 'configWarning' and 'id' not in message:
+                config_warnings += 1
+                if config_warnings > 4:
+                    raise RuntimeError('configuration warning limit exceeded')
+                continue
             if message.get('id') == sequence:
                 return message
             # Unexpected server requests/notifications cannot silently pass.
@@ -116,7 +122,7 @@ sys.exit(0 if all(checks.values()) else 1)
     checks['commandExecutionConfined'] = True
     checks['symlinkReadDenied'] = denied(rpc('fs/readFile', {'path': '/tmp/escape-link'}))
     assert all(checks.values()), 'a containment check did not pass'
-    print(json.dumps({'checks': checks, 'modelCalls': 0, 'credentialFree': True,
+    print(json.dumps({'checks': checks, 'configWarnings': config_warnings, 'modelCalls': 0, 'credentialFree': True,
                       'codexToolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
 except Exception as error:
     # Only probe-owned stages/types and bounded exception diagnostics; no RPC
