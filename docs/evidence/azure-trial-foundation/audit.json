@@ -1,0 +1,42 @@
+{
+  "subscriptionPolicy": {
+    "explicitSubscriptionTargeting": true,
+    "spendingLimit": "On",
+    "quotaId": "FreeTrial_2014-09-01"
+  },
+  "executionAllowed": false,
+  "retryAllowed": false,
+  "sshSmoke": {
+    "os": "Ubuntu 24.04.4 LTS",
+    "hostKeyTrust": "accept-new, independent attestation pending",
+    "architecture": "x86_64",
+    "hostCount": 2,
+    "codexHomeAbsent": true
+  },
+  "checkedDate": "2026-10-11",
+  "hosts": [
+    {
+      "name": "vm-aisdlc-client",
+      "provisioning": "Succeeded",
+      "state": "VM deallocated"
+    },
+    {
+      "name": "vm-aisdlc-tools",
+      "provisioning": "Succeeded",
+      "state": "VM deallocated"
+    }
+  ],
+  "deployment": "Succeeded",
+  "toolBoundaryQualified": false,
+  "whatIf": {
+    "deleteCount": 0,
+    "status": "Succeeded",
+    "createCount": 9,
+    "modifyCount": 0
+  },
+  "region": "australiaeast",
+  "expiryTagIsAutomaticCleanup": false,
+  "modelCalls": 0,
+  "resourceGroup": "rg-aisdlc-trial-aue",
+  "templateValidation": "Succeeded"
+}

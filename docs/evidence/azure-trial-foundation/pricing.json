@@ -1,0 +1,33 @@
+{
+  "checkedDate": "2026-10-11",
+  "meters": [
+    {
+      "productName": "Virtual Machines Basv2 Series",
+      "meterName": "B2als v2",
+      "armRegionName": "australiaeast",
+      "retailPrice": 0.0475,
+      "currencyCode": "USD",
+      "unitOfMeasure": "1 Hour",
+      "effectiveStartDate": "2023-09-01T00:00:00Z"
+    },
+    {
+      "productName": "IP Addresses",
+      "meterName": "Standard IPv4 Static Public IP",
+      "armRegionName": "australiaeast",
+      "retailPrice": 0.005,
+      "currencyCode": "USD",
+      "unitOfMeasure": "1 Hour",
+      "effectiveStartDate": "2018-06-01T00:00:00Z"
+    },
+    {
+      "productName": "Standard SSD Managed Disks",
+      "meterName": "E4 LRS Disk",
+      "armRegionName": "australiaeast",
+      "retailPrice": 3.264,
+      "currencyCode": "USD",
+      "unitOfMeasure": "1/Month",
+      "effectiveStartDate": "2019-01-01T00:00:00Z"
+    }
+  ],
+  "source": "https://prices.azure.com/api/retail/prices"
+}

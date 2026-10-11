@@ -4,6 +4,11 @@ Prepared 10 October 2026 following the user's confirmation that no private worke
 exists. This is a costed proposal, not authorization to purchase or provision.
 It supports NB-003 without changing the accepted build/design documents.
 
+Update 11 October 2026: the user selected an existing protected Azure trial and
+authorized starting it. The [Azure foundation checkpoint](../reviews/azure-trial-foundation.md)
+records the deployed scope and Azure-specific costs. The AWS/DigitalOcean comparison
+below remains the original proposal, not the selected deployment.
+
 ## Recommendation and options
 
 Prefer AWS Lightsail in Sydney for the eventual trial because recovery storage,
