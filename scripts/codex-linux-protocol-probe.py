@@ -21,6 +21,7 @@ selector.register(server.stdout, selectors.EVENT_READ, 'stdout')
 selector.register(server.stderr, selectors.EVENT_READ, 'stderr')
 buffer = b''
 total = 0
+stderr_buffer = b''
 sequence = 0
 last_method = 'startup'
 
@@ -29,7 +30,7 @@ def send(message):
     server.stdin.flush()
 
 def rpc(method, params):
-    global buffer, total, sequence, last_method
+    global buffer, stderr_buffer, total, sequence, last_method
     assert method in allowed, 'method outside the model-free allowlist'
     sequence += 1
     last_method = method
@@ -59,6 +60,8 @@ def rpc(method, params):
                 buffer += chunk
                 if len(buffer) > 16384 and b'\n' not in buffer:
                     raise RuntimeError('oversized protocol record')
+            else:
+                stderr_buffer += chunk
     raise RuntimeError('bounded RPC deadline exceeded')
 
 def successful(message):
@@ -117,7 +120,19 @@ sys.exit(0 if all(checks.values()) else 1)
 except Exception as error:
     # Only probe-owned stages/types and bounded exception diagnostics; no RPC
     # payloads, server stderr or environment values are published.
-    diagnostic = f'stage={last_method}; request={sequence}; {type(error).__name__}: {error}'
+    # Classify only fixed markers. Never emit server-controlled text.
+    diagnostic_text = stderr_buffer.decode('utf-8', errors='replace').lower()
+    markers = {
+        'threadLimit': ('resource temporarily unavailable', 'failed to spawn thread'),
+        'memoryLimit': ('memory allocation', 'out of memory'),
+        'missingFile': ('no such file or directory',),
+        'permission': ('permission denied', 'operation not permitted'),
+        'panic': ('panicked at',),
+        'argument': ('unexpected argument', 'invalid value'),
+    }
+    classified = [name for name, values in markers.items() if any(value in diagnostic_text for value in values)]
+    diagnostic = (f'stage={last_method}; request={sequence}; childExit={server.poll()}; '
+                  f'stderrBytes={len(stderr_buffer)}; classes={classified}; {type(error).__name__}: {error}')
     diagnostic = diagnostic[:512].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
     print('::error title=Credential-free Codex protocol probe::' + diagnostic, file=sys.stderr)
     raise
