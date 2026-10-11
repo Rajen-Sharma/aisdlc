@@ -12,7 +12,8 @@ binary, canary = sys.argv[1:3]
 home = Path('/tmp/aisdlc-protocol-home')
 home.mkdir(mode=0o700)
 allowed = {'initialize', 'fs/readFile', 'fs/writeFile', 'command/exec'}
-environment = {'HOME': str(home), 'CODEX_HOME': str(home), 'PATH': '/usr/bin:/bin', 'RUST_LOG': 'error'}
+environment = {'HOME': str(home), 'CODEX_HOME': str(home), 'PATH': '/usr/bin:/bin',
+               'RUST_LOG': 'error', 'TOKIO_WORKER_THREADS': '2'}
 server = subprocess.Popen([binary, 'app-server', '--listen', 'stdio://'],
                           stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE, env=environment, cwd='/tmp')
