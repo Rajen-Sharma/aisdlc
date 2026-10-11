@@ -22,15 +22,17 @@ selector.register(server.stderr, selectors.EVENT_READ, 'stderr')
 buffer = b''
 total = 0
 sequence = 0
+last_method = 'startup'
 
 def send(message):
     server.stdin.write(json.dumps(message).encode() + b'\n')
     server.stdin.flush()
 
 def rpc(method, params):
-    global buffer, total, sequence
+    global buffer, total, sequence, last_method
     assert method in allowed, 'method outside the model-free allowlist'
     sequence += 1
+    last_method = method
     send({'id': sequence, 'method': method, 'params': params})
     deadline = time.monotonic() + 8
     while time.monotonic() < deadline:
@@ -42,7 +44,7 @@ def rpc(method, params):
             if message.get('id') == sequence:
                 return message
             # Unexpected server requests/notifications cannot silently pass.
-            raise RuntimeError('unexpected protocol record')
+            raise RuntimeError('unexpected protocol record type=' + str(message.get('method', 'response'))[:64])
         for key, _ in selector.select(min(0.25, max(0, deadline - time.monotonic()))):
             chunk = os.read(key.fileobj.fileno(), 4096)
             if not chunk:
@@ -61,7 +63,7 @@ def rpc(method, params):
 
 def successful(message):
     if 'error' in message or 'result' not in message:
-        raise RuntimeError('expected successful RPC result')
+        raise RuntimeError('expected successful RPC result; errorCode=' + str(message.get('error', {}).get('code')))
     return message['result']
 
 def denied(message):
@@ -112,6 +114,13 @@ sys.exit(0 if all(checks.values()) else 1)
     assert all(checks.values()), 'a containment check did not pass'
     print(json.dumps({'checks': checks, 'modelCalls': 0, 'credentialFree': True,
                       'codexToolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
+except Exception as error:
+    # Only probe-owned stages/types and bounded exception diagnostics; no RPC
+    # payloads, server stderr or environment values are published.
+    diagnostic = f'stage={last_method}; request={sequence}; {type(error).__name__}: {error}'
+    diagnostic = diagnostic[:512].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+    print('::error title=Credential-free Codex protocol probe::' + diagnostic, file=sys.stderr)
+    raise
 finally:
     server.stdin.close()
     try:

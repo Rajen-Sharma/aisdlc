@@ -35,6 +35,7 @@ printf 'synthetic-host-canary\n' > "$canary_dir/canary"
 chmod 644 "$canary_dir/canary"
 setpriv --reuid=65534 --regid=65534 --clear-groups cat "$canary_dir/canary" >/dev/null
 [[ $("$install_dir/codex" --version) == 'codex-cli 0.155.1' ]]
+set +e
 systemd-run --quiet --unit="$unit" --wait --pipe \
   -p DynamicUser=yes -p NoNewPrivileges=yes -p ProtectSystem=strict \
   -p ProtectHome=yes -p PrivateTmp=yes -p PrivateNetwork=yes \
@@ -47,3 +48,10 @@ systemd-run --quiet --unit="$unit" --wait --pipe \
   -p MemoryMax=128M -p TasksMax=16 -p CPUQuota=50% \
   -p KillMode=control-group -p SendSIGKILL=yes -p TimeoutStopSec=1s \
   -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary"
+status=$?
+set -e
+if [[ $status != 0 ]]; then
+  result=$(systemctl show "$unit" -p Result --value)
+  printf '::error title=Codex protocol service::result=%s; exit=%s\n' "$result" "$status" >&2
+fi
+exit "$status"
