@@ -1,0 +1,21 @@
+{
+  "checkedDate": "2026-10-11",
+  "sourceCommit": "dabd3b697d7bcc290ce7f79a27ebd18d47e5fb58",
+  "qualificationHost": "disposable GitHub Ubuntu 24.04 runner",
+  "credentialFree": true,
+  "modelCalls": 0,
+  "codexToolBoundaryQualified": false,
+  "executionAllowed": false,
+  "retryAllowed": false,
+  "localApp": "stopped",
+  "azureRun": "not performed: VM start rejected by automatic approval review (blocked by policy)",
+  "azureVmState": "last confirmed both deallocated at previous checkpoint; not reobserved this checkpoint",
+  "cleanupDeadlineUtc": "2026-10-13T03:24:58Z",
+  "cleanupScheduled": false,
+  "rawCiArtifactDownloaded": false,
+  "memoryMaxMiB": 128,
+  "tasksMax": 64,
+  "cpuQuotaPercent": 50,
+  "serviceRuntimeMaxSeconds": 45,
+  "localNodeTestsPassed": 19
+}

@@ -1,0 +1,116 @@
+[
+  {
+    "runId": 38126240694,
+    "sourceCommit": "62b72508a2fce2532b4a145905f45f58564bc52d",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126240694",
+    "diagnostics": []
+  },
+  {
+    "runId": 38126343434,
+    "sourceCommit": "24e49d52807732847784f69f8f7cb550fcc4b5f0",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126343434",
+    "diagnostics": []
+  },
+  {
+    "runId": 38126434303,
+    "sourceCommit": "d8e70a80ccc7d193297497ab104cd0bb20f2ef13",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126434303",
+    "diagnostics": [
+      {
+        "title": "Codex protocol harness",
+        "message": "stage=protocol; exit=1"
+      },
+      {
+        "title": "Codex protocol service",
+        "message": "result=exit-code; exit=1"
+      },
+      {
+        "title": "Credential-free Codex protocol probe",
+        "message": "stage=initialize; request=1; RuntimeError: protocol ended before response"
+      }
+    ]
+  },
+  {
+    "runId": 38126598841,
+    "sourceCommit": "600398dae48cacd104093d1a6fed28bac948154a",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126598841",
+    "diagnostics": [
+      {
+        "title": "Codex protocol harness",
+        "message": "stage=protocol; exit=1"
+      },
+      {
+        "title": "Codex protocol service",
+        "message": "result=exit-code; exit=1"
+      },
+      {
+        "title": "Credential-free Codex protocol probe",
+        "message": "stage=initialize; request=1; childExit=1; stderrBytes=574; classes=['threadLimit']; RuntimeError: protocol ended before response"
+      }
+    ]
+  },
+  {
+    "runId": 38126713030,
+    "sourceCommit": "2c330135d4dc248b07caca56e4ba53906b018cd0",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126713030",
+    "diagnostics": [
+      {
+        "title": "Codex protocol harness",
+        "message": "stage=protocol; exit=1"
+      },
+      {
+        "title": "Codex protocol service",
+        "message": "result=exit-code; exit=1"
+      },
+      {
+        "title": "Credential-free Codex protocol probe",
+        "message": "stage=initialize; request=1; childExit=1; stderrBytes=574; classes=['threadLimit']; RuntimeError: protocol ended before response"
+      }
+    ]
+  },
+  {
+    "runId": 38126776038,
+    "sourceCommit": "982b90210ac80b5b319d72df9dc22b0dca547903",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126776038",
+    "diagnostics": [
+      {
+        "title": "Codex protocol harness",
+        "message": "stage=protocol; exit=1"
+      },
+      {
+        "title": "Codex protocol service",
+        "message": "result=exit-code; exit=1"
+      },
+      {
+        "title": "Credential-free Codex protocol probe",
+        "message": "stage=fs/writeFile; request=2; childExit=None; stderrBytes=520; classes=[]; RuntimeError: unexpected protocol record type=configWarning"
+      }
+    ]
+  },
+  {
+    "runId": 38126871863,
+    "sourceCommit": "1515b0c74144e0a26bd091e69b4fbd69c705ed73",
+    "conclusion": "failure",
+    "url": "https://github.com/Rajen-Sharma/aisdlc/actions/runs/38126871863",
+    "diagnostics": [
+      {
+        "title": "Codex protocol harness",
+        "message": "stage=protocol; exit=1"
+      },
+      {
+        "title": "Codex protocol service",
+        "message": "result=exit-code; exit=1"
+      },
+      {
+        "title": "Credential-free Codex protocol probe",
+        "message": "stage=fs/writeFile; request=2; childExit=None; stderrBytes=520; classes=[]; RuntimeError: unexpected protocol record type=remoteControl/status/changed"
+      }
+    ]
+  }
+]

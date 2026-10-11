@@ -1,0 +1,38 @@
+{
+  "description": "Working-byte SHA256 inventory, not signed authority",
+  "sourceCommit": "dabd3b697d7bcc290ce7f79a27ebd18d47e5fb58",
+  "files": [
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "0aa816384d391f876bbf42dc2117141ea2b6fd7916a87a9337f8b9026bcd2bb9"
+    },
+    {
+      "path": "scripts/codex-linux-protocol-probe.py",
+      "sha256": "75c9f0629fa78b5eb4e69ceddf2a0c81d85a51128377c544b68d744525aa8fcd"
+    },
+    {
+      "path": "scripts/qualify-codex-linux-protocol.sh",
+      "sha256": "eda2d703dd71b678dc0cb9c686e13dd3500689c9dea7e72b858ddb870bcccafc"
+    },
+    {
+      "path": "docs/reviews/codex-linux-protocol-probe.md",
+      "sha256": "e95c3d19ad8ed015c43ce0f90d057c2a36c82167ef1eea3772c5f7639a9631c5"
+    },
+    {
+      "path": "docs/evidence/codex-linux-protocol-probe/audit.json",
+      "sha256": "dd26649e2c1b077358ceae2d34980d952fa6a16ef31622b1d792d772ce0a8067"
+    },
+    {
+      "path": "docs/evidence/codex-linux-protocol-probe/failed-runs.json",
+      "sha256": "8817ff3f157b3231a74a9cb9d0b4dad40406155cb4db15e76777b0107d8b5a0c"
+    },
+    {
+      "path": "docs/evidence/codex-linux-protocol-probe/package-pin.json",
+      "sha256": "bd91834de09418f3156a85e5c2ec224f47234806a82810e57be6846d58b7c532"
+    },
+    {
+      "path": "docs/evidence/codex-linux-protocol-probe/platform-ci.json",
+      "sha256": "c9ba5ca6133b972c26f9bc535ba0a9e7016ec40bd8448b9d31f421e7bb365d92"
+    }
+  ]
+}
