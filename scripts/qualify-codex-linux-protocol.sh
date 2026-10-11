@@ -6,7 +6,12 @@ script_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 install_dir=$(mktemp -d /opt/aisdlc-codex-probe.XXXXXX)
 canary_dir=$(mktemp -d /var/lib/aisdlc-codex-probe.XXXXXX)
 unit="aisdlc-codex-probe-$$"
+stage=install
 cleanup() {
+  local status=$?
+  if [[ $status != 0 ]]; then
+    printf '::error title=Codex protocol harness::stage=%s; exit=%s\n' "$stage" "$status" >&2
+  fi
   systemctl stop "$unit.service" >/dev/null 2>&1 || true
   systemctl reset-failed "$unit.service" >/dev/null 2>&1 || true
   rm -f "$canary_dir/canary" "$install_dir/codex" "$install_dir/probe.py"
@@ -25,7 +30,7 @@ assert len(data) <= 160 * 1024 * 1024, 'archive exceeds bound'
 assert hashlib.sha256(data).hexdigest() == expected, 'archive integrity mismatch'
 with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as archive:
     member = archive.getmember('package/vendor/x86_64-unknown-linux-musl/bin/codex')
-    assert member.isfile() and member.size < 256 * 1024 * 1024
+    assert member.isfile() and member.size == 269273536, 'unexpected pinned executable size'
     pathlib.Path(sys.argv[1]).write_bytes(archive.extractfile(member).read())
 PY
 cp "$script_dir/codex-linux-protocol-probe.py" "$install_dir/probe.py"
@@ -33,8 +38,11 @@ chmod 755 "$install_dir" "$install_dir/codex" "$canary_dir"
 chmod 644 "$install_dir/probe.py"
 printf 'synthetic-host-canary\n' > "$canary_dir/canary"
 chmod 644 "$canary_dir/canary"
+stage=positive-control
 setpriv --reuid=65534 --regid=65534 --clear-groups cat "$canary_dir/canary" >/dev/null
+stage=version
 [[ $("$install_dir/codex" --version) == 'codex-cli 0.155.1' ]]
+stage=protocol
 set +e
 systemd-run --quiet --unit="$unit" --wait --pipe \
   -p DynamicUser=yes -p NoNewPrivileges=yes -p ProtectSystem=strict \
