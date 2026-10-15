@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import selectors
+import socket
 import subprocess
 import sys
 import time
@@ -11,7 +12,9 @@ import time
 binary, canary = sys.argv[1:3]
 home = Path('/tmp/aisdlc-protocol-home')
 home.mkdir(mode=0o700)
-allowed = {'initialize', 'fs/readFile', 'fs/writeFile', 'command/exec'}
+allowed = {'initialize', 'fs/readFile', 'fs/writeFile', 'command/exec',
+           'environment/add', 'environment/info', 'environment/status'}
+executor = None
 environment = {'HOME': str(home), 'CODEX_HOME': str(home), 'PATH': '/usr/bin:/bin',
                'RUST_LOG': 'error', 'TOKIO_WORKER_THREADS': '2'}
 server = subprocess.Popen([binary, 'app-server', '--listen', 'stdio://'],
@@ -127,6 +130,51 @@ sys.exit(0 if all(checks.values()) else 1)
     assert all(json.loads(command['stdout']).values())
     checks['commandExecutionConfined'] = True
     checks['symlinkReadDenied'] = denied(rpc('fs/readFile', {'path': '/tmp/escape-link'}))
+    # A separate credential-free exec-server shares this disposable sandbox.
+    # This qualifies connection/status only, not distinct-host tool routing.
+    remote_home = Path('/tmp/aisdlc-executor-home')
+    remote_home.mkdir(mode=0o700)
+    remote_cwd = Path('/tmp/aisdlc-executor-workspace')
+    remote_cwd.mkdir(mode=0o700)
+    with socket.socket() as reservation:
+        reservation.bind(('127.0.0.1', 0))
+        port = reservation.getsockname()[1]
+    endpoint = f'ws://127.0.0.1:{port}'
+    remote_environment = dict(environment, HOME=str(remote_home), CODEX_HOME=str(remote_home))
+    executor = subprocess.Popen([binary, 'exec-server', '--listen', endpoint, '--exit-on-stdin-close'],
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                env=remote_environment, cwd=remote_cwd)
+    selector.register(executor.stdout, selectors.EVENT_READ, 'executorStdout')
+    selector.register(executor.stderr, selectors.EVENT_READ, 'executorStderr')
+    startup_deadline = time.monotonic() + 3
+    while True:
+        assert executor.poll() is None, 'exec-server exited before readiness'
+        try:
+            with socket.create_connection(('127.0.0.1', port), timeout=0.1):
+                break
+        except OSError:
+            if time.monotonic() >= startup_deadline:
+                raise RuntimeError('exec-server startup deadline exceeded')
+            time.sleep(0.05)
+    successful(rpc('environment/add', {'environmentId': 'synthetic-remote',
+                                     'execServerUrl': endpoint, 'connectTimeoutMs': 1500}))
+    info = successful(rpc('environment/info', {'environmentId': 'synthetic-remote'}))
+    checks['remoteEnvironmentCwdMatches'] = info.get('cwd') == remote_cwd.as_uri()
+    checks['remoteEnvironmentReady'] = successful(rpc(
+        'environment/status', {'environmentId': 'synthetic-remote'})).get('status') == 'ready'
+    checks['unknownEnvironmentDenied'] = successful(rpc(
+        'environment/status', {'environmentId': 'synthetic-unknown'})).get('status') == 'unknown'
+    executor.stdin.close()
+    executor.wait(timeout=2)
+    loss_deadline = time.monotonic() + 3
+    while True:
+        status = successful(rpc('environment/status', {'environmentId': 'synthetic-remote'}))
+        if status.get('status') == 'disconnected':
+            checks['lostRemoteEnvironmentDisconnected'] = True
+            break
+        if time.monotonic() >= loss_deadline:
+            raise RuntimeError('lost exec-server did not become disconnected')
+        time.sleep(0.05)
     assert all(checks.values()), 'a containment check did not pass'
     print(json.dumps({'checks': checks, 'configWarnings': config_warnings, 'modelCalls': 0, 'credentialFree': True,
                       'codexToolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
@@ -150,6 +198,14 @@ except Exception as error:
     print('::error title=Credential-free Codex protocol probe::' + diagnostic, file=sys.stderr)
     raise
 finally:
+    if executor is not None:
+        if not executor.stdin.closed:
+            executor.stdin.close()
+        try:
+            executor.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            executor.kill()
+            executor.wait(timeout=2)
     server.stdin.close()
     try:
         server.wait(timeout=2)
