@@ -1,0 +1,34 @@
+{
+  "description": "Working-byte SHA256 inventory, not signed authority",
+  "sourceCommit": "147e3a7cab39c90d3c88b04e3161d37f21c1db7a",
+  "files": [
+    {
+      "path": ".github/workflows/verify.yml",
+      "sha256": "0aa816384d391f876bbf42dc2117141ea2b6fd7916a87a9337f8b9026bcd2bb9"
+    },
+    {
+      "path": "scripts/qualify-codex-linux-protocol.sh",
+      "sha256": "eda2d703dd71b678dc0cb9c686e13dd3500689c9dea7e72b858ddb870bcccafc"
+    },
+    {
+      "path": "scripts/codex-linux-protocol-probe.py",
+      "sha256": "0977a73fc68b58c53af3f7eba6e3daeba200fa6619479de7f4dfc3010f72b1ec"
+    },
+    {
+      "path": "docs/reviews/codex-remote-environment-probe.md",
+      "sha256": "8aa4598714a164a55f119d4de3ddc3e9c168da08adaa0427de797e3f47e1cc50"
+    },
+    {
+      "path": "docs/evidence/codex-remote-environment/audit.json",
+      "sha256": "157d13346bff5e644b7fadf5bafb55da37f3c9de35922ec0449544cd4ee7d93a"
+    },
+    {
+      "path": "docs/evidence/codex-remote-environment/failed-runs.json",
+      "sha256": "a3f18a0e2ee74874cbbe781db906ddb13cc201c25161bfb28254fd1b635b5ff6"
+    },
+    {
+      "path": "docs/evidence/codex-remote-environment/platform-ci.json",
+      "sha256": "18a0c9d5750e90487a16f4edeaebe4580b2a7efcf5dbf64886546af88f16ffad"
+    }
+  ]
+}

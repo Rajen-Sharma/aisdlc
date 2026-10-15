@@ -1,0 +1,14 @@
+[
+  {
+    "runId": 38721550141,
+    "sourceCommit": "4232862973fa60cb9b5df2043517e8f834a8810b",
+    "conclusion": "failure",
+    "diagnostic": "exec-server exited before readiness; initial diagnostic did not capture executor exit"
+  },
+  {
+    "runId": 38721711069,
+    "sourceCommit": "da6937ed8dd37cad2db992a82d2c3299c33fa0e8",
+    "conclusion": "failure",
+    "diagnostic": "stage=exec-server/startup; executorExit=2; stderrBytes=945; classes=[transport]; exec-server exited before readiness"
+  }
+]

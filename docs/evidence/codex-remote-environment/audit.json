@@ -1,0 +1,36 @@
+{
+  "checkedDate": "2026-10-15",
+  "sourceCommit": "147e3a7cab39c90d3c88b04e3161d37f21c1db7a",
+  "qualificationHost": "disposable GitHub Ubuntu 24.04 runner",
+  "credentialFree": true,
+  "modelCalls": 0,
+  "codexToolBoundaryQualified": false,
+  "executionAllowed": false,
+  "retryAllowed": false,
+  "localApp": "stopped",
+  "memoryMaxMiB": 128,
+  "tasksMax": 64,
+  "cpuQuotaPercent": 50,
+  "runtimeMaxSeconds": 45,
+  "separateProcess": true,
+  "separateHost": false,
+  "lossMethod": "explicit exec-server termination",
+  "observerLossQualified": false,
+  "localCodexGuardTestsPassed": 7,
+  "rawCiArtifactDownloaded": false,
+  "azureVmStates": [
+    {
+      "name": "vm-aisdlc-client",
+      "state": "PowerState/deallocated"
+    },
+    {
+      "name": "vm-aisdlc-tools",
+      "state": "PowerState/deallocated"
+    }
+  ],
+  "azureResourceCount": 11,
+  "cleanupDeadlineUtc": "2026-10-13T03:24:58Z",
+  "cleanupScheduled": false,
+  "cleanupApproval": "requested; no answer received",
+  "azureStartupRetried": false
+}
