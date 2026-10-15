@@ -140,6 +140,7 @@ sys.exit(0 if all(checks.values()) else 1)
         reservation.bind(('127.0.0.1', 0))
         port = reservation.getsockname()[1]
     endpoint = f'ws://127.0.0.1:{port}'
+    last_method = 'exec-server/startup'
     remote_environment = dict(environment, HOME=str(remote_home), CODEX_HOME=str(remote_home))
     executor = subprocess.Popen([binary, 'exec-server', '--listen', endpoint, '--exit-on-stdin-close'],
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -148,7 +149,10 @@ sys.exit(0 if all(checks.values()) else 1)
     selector.register(executor.stderr, selectors.EVENT_READ, 'executorStderr')
     startup_deadline = time.monotonic() + 3
     while True:
-        assert executor.poll() is None, 'exec-server exited before readiness'
+        if executor.poll() is not None:
+            os.set_blocking(executor.stderr.fileno(), False)
+            stderr_buffer += os.read(executor.stderr.fileno(), 4096)
+            raise RuntimeError('exec-server exited before readiness')
         try:
             with socket.create_connection(('127.0.0.1', port), timeout=0.1):
                 break
@@ -190,9 +194,12 @@ except Exception as error:
         'permission': ('permission denied', 'operation not permitted'),
         'panic': ('panicked at',),
         'argument': ('unexpected argument', 'invalid value'),
+        'authentication': ('api key', 'authentication', 'not logged', 'access token'),
+        'transport': ('websocket', 'listen', 'bind'),
     }
     classified = [name for name, values in markers.items() if any(value in diagnostic_text for value in values)]
-    diagnostic = (f'stage={last_method}; request={sequence}; childExit={server.poll()}; '
+    executor_exit = executor.poll() if executor is not None else 'not-started'
+    diagnostic = (f'stage={last_method}; request={sequence}; childExit={server.poll()}; executorExit={executor_exit}; '
                   f'stderrBytes={len(stderr_buffer)}; classes={classified}; {type(error).__name__}: {error}')
     diagnostic = diagnostic[:512].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
     print('::error title=Credential-free Codex protocol probe::' + diagnostic, file=sys.stderr)
