@@ -142,7 +142,7 @@ sys.exit(0 if all(checks.values()) else 1)
     endpoint = f'ws://127.0.0.1:{port}'
     last_method = 'exec-server/startup'
     remote_environment = dict(environment, HOME=str(remote_home), CODEX_HOME=str(remote_home))
-    executor = subprocess.Popen([binary, 'exec-server', '--listen', endpoint, '--exit-on-stdin-close'],
+    executor = subprocess.Popen([binary, 'exec-server', '--listen', endpoint],
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 env=remote_environment, cwd=remote_cwd)
     selector.register(executor.stdout, selectors.EVENT_READ, 'executorStdout')
@@ -168,7 +168,7 @@ sys.exit(0 if all(checks.values()) else 1)
         'environment/status', {'environmentId': 'synthetic-remote'})).get('status') == 'ready'
     checks['unknownEnvironmentDenied'] = successful(rpc(
         'environment/status', {'environmentId': 'synthetic-unknown'})).get('status') == 'unknown'
-    executor.stdin.close()
+    executor.terminate()
     executor.wait(timeout=2)
     loss_deadline = time.monotonic() + 3
     while True:
@@ -193,7 +193,7 @@ except Exception as error:
         'missingFile': ('no such file or directory',),
         'permission': ('permission denied', 'operation not permitted'),
         'panic': ('panicked at',),
-        'argument': ('unexpected argument', 'invalid value'),
+        'argument': ('unexpected argument', 'invalid value', 'required arguments', 'cannot be used', 'only supported'),
         'authentication': ('api key', 'authentication', 'not logged', 'access token'),
         'transport': ('websocket', 'listen', 'bind'),
     }
