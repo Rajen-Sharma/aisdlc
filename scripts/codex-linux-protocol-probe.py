@@ -168,6 +168,24 @@ sys.exit(0 if all(checks.values()) else 1)
         'environment/status', {'environmentId': 'synthetic-remote'})).get('status') == 'ready'
     checks['unknownEnvironmentDenied'] = successful(rpc(
         'environment/status', {'environmentId': 'synthetic-unknown'})).get('status') == 'unknown'
+    # Registration must not be mistaken for routing authority. This RPC has no
+    # environment selector: measure its default cwd while the remote is ready.
+    # Both servers share a filesystem, so this is not host-separation evidence.
+    routing_code = """
+import json, os
+from pathlib import Path
+Path('routing-marker.txt').write_bytes(b'synthetic-local-routing\\n')
+print(json.dumps({'cwd': os.getcwd()}))
+"""
+    routed = successful(rpc('command/exec', {
+        'command': ['/usr/bin/python3', '-c', routing_code], 'timeoutMs': 2000,
+        'sandboxPolicy': {'type': 'externalSandbox', 'networkAccess': 'restricted'}}))
+    assert routed['exitCode'] == 0
+    checks['registeredRemoteDoesNotRedirectDefaultCommand'] = json.loads(routed['stdout']).get('cwd') == '/tmp'
+    marker = successful(rpc('fs/readFile', {'path': '/tmp/routing-marker.txt'}))
+    checks['commandMarkerReadableAtLocalCwd'] = base64.b64decode(
+        marker['dataBase64'], validate=True) == b'synthetic-local-routing\n'
+    checks['commandMarkerAbsentAtRemoteCwd'] = not (remote_cwd / 'routing-marker.txt').exists()
     executor.terminate()
     executor.wait(timeout=2)
     loss_deadline = time.monotonic() + 3
