@@ -2,8 +2,8 @@
 
 17 October 2026. Prepared continuation of NB-003 following the
 [remote environment checkpoint](codex-remote-environment-probe.md).
-Linux runtime qualification is pending; this document records prepared checks,
-not observed routing results.
+Source `e0d4c62df4d5be71fec1b84b07d3d991ef4f7ced` passed the credential-free
+protocol step in [CI run 38973532251](https://github.com/Rajen-Sharma/aisdlc/actions/runs/38973532251).
 
 The credential-free protocol driver now issues a fixed `command/exec` request
 while the registered exec-server is ready, omitting `cwd`. The app-server starts
@@ -20,12 +20,18 @@ isolation. No environment selector, model-facing tool routing, credentials,
 thread, turn or model request is introduced.
 
 Local validation: Python AST parsing and all seven Codex transport/policy tests
-passed. The actual probe requires the existing disposable Linux systemd CI
-harness; it was not run on this Windows workspace. No CI result is claimed for
-these new assertions.
+passed. The actual probe ran in the existing disposable Linux systemd CI harness,
+not on this Windows workspace. The passing step establishes that the command
+used `/tmp`, its exact marker was readable there, and no marker appeared in the
+exec-server working directory. Public step metadata plus the frozen assertions
+are the retained basis; raw CI artifacts have not been downloaded.
+The complete workflow passed, including both Linux probes, type checking,
+guard/recovery checks, integration tests, dependency audit, optimized build,
+browser journeys and owned-database cleanup. Final run and step metadata and
+the audit are retained in `docs/evidence/codex-default-routing/`.
 
-Next: run the extended Linux protocol qualification and retain its exact source
-and result. If it passes, continue investigating an explicit, enforceable tool
-routing boundary before introducing authentication. Execution and retries remain
+Next: investigate an explicit, enforceable tool routing boundary before
+introducing authentication. Registration and ready status cannot authorize tool
+execution on a separate host. Execution and retries remain
 disabled. The outstanding Azure disk deletion proposal still requires the user's
 answer; this continuation does not authorize permanent resource deletion.

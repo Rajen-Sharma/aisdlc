@@ -1,0 +1,19 @@
+{
+  "checkedDate": "2026-10-17",
+  "sourceCommit": "e0d4c62df4d5be71fec1b84b07d3d991ef4f7ced",
+  "qualificationHost": "disposable GitHub Ubuntu 24.04 runner",
+  "credentialFree": true,
+  "modelCalls": 0,
+  "defaultCommandCwd": "/tmp",
+  "remoteCwd": "/tmp/aisdlc-executor-workspace",
+  "commandMarkerReadableAtLocalCwd": true,
+  "commandMarkerAbsentAtRemoteCwd": true,
+  "separateHost": false,
+  "filesystemRoutingQualified": false,
+  "codexToolBoundaryQualified": false,
+  "executionAllowed": false,
+  "retryAllowed": false,
+  "rawCiArtifactDownloaded": false,
+  "evidenceBasis": "Public CI run and step metadata plus frozen assertion-bearing source",
+  "localCodexGuardTestsPassed": 7
+}
