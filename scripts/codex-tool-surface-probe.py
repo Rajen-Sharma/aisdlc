@@ -18,6 +18,7 @@ def main():
     failures = []
     output = queue.Queue(maxsize=128)
     diagnostics = {'bytes': 0}
+    stage = 'startup'
 
     class Provider(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -140,24 +141,31 @@ def main():
                 return message['result']
 
     try:
+        stage = 'initialize'
         rpc('initialize', {'clientInfo': {'name': 'aisdlc_synthetic_surface', 'version': '1'},
                            'capabilities': {'experimentalApi': True}})
         send({'method': 'initialized'})
+        stage = 'thread-start'
         thread = rpc('thread/start', {'model': 'synthetic-probe', 'modelProvider': 'synthetic',
                      'cwd': '/tmp', 'ephemeral': True, 'environments': [], 'dynamicTools': [],
                      'approvalPolicy': 'never', 'sandbox': 'read-only', 'allowProviderModelFallback': False})
         thread_id = thread['thread']['id']
+        stage = 'turn-start'
         rpc('turn/start', {'threadId': thread_id, 'input': [{'type': 'text',
                           'text': 'Return the synthetic fixture response.', 'text_elements': []}]})
+        stage = 'turn-completion'
         while not any(n.get('method') == 'turn/completed' for n in notifications):
             receive()
         completed = next(n for n in notifications if n.get('method') == 'turn/completed')
         assert completed['params']['turn']['status'] == 'completed', 'turn-failed'
+        stage = 'inspect-tools'
         assert len(requests) == 1 and not failures, 'provider-request-count-or-failure'
         tools = requests[0].get('tools', [])
         names = [tool.get('name', tool.get('type', 'unknown')) for tool in tools]
         # Names are bounded diagnostics from a credential-free synthetic request.
         assert len(names) <= 64 and all(isinstance(n, str) and len(n) <= 128 for n in names)
+        safe_names = ','.join(names).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+        print('::notice title=Synthetic Codex tool inventory::count=' + str(len(names)) + '; names=' + safe_names)
         print(json.dumps({'syntheticProviderPositiveControl': True, 'offeredToolNames': names,
                           'offeredToolCount': len(tools), 'realModelCalls': 0, 'credentialFree': True,
                           'toolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
@@ -166,6 +174,8 @@ def main():
         print(json.dumps({'failureType': type(error).__name__, 'requestCount': len(requests),
                           'lastRpc': sequence, 'serverExit': server.poll(), 'diagnosticBytes': diagnostics['bytes']}),
               file=sys.stderr)
+        print(f'::error title=Synthetic Codex tool probe::stage={stage}; type={type(error).__name__}; '
+              f'requests={len(requests)}; rpc={sequence}; exit={server.poll()}', file=sys.stderr)
         raise SystemExit(1) from None
     finally:
         server.stdin.close()
