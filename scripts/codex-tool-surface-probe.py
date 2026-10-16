@@ -84,8 +84,6 @@ def main():
         'apps = false',
         'hooks = false',
         'multi_agent = false',
-        '[tools]',
-        'view_image = false',
     ]) + '\n'
     (probe_home / 'config.toml').write_text(config)
     environment = {'HOME': str(probe_home), 'CODEX_HOME': str(probe_home),

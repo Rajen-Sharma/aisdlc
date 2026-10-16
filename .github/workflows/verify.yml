@@ -32,6 +32,7 @@ jobs:
       - name: Qualify credential-free Codex protocol
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh > docs/evidence/github-ci/codex-linux-protocol-probe.jsonl
       - name: Inspect credential-free Codex tool surface
+        shell: bash
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh tool-surface | tee docs/evidence/github-ci/codex-tool-surface-probe.jsonl
       - run: npm ci
       - run: npm run setup
