@@ -3,6 +3,12 @@
 set -euo pipefail
 [[ $(id -u) == 0 && $(ps -p 1 -o comm=) == systemd ]]
 script_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+probe_script=codex-linux-protocol-probe.py
+if [[ ${1:-} == tool-surface ]]; then
+  probe_script=codex-tool-surface-probe.py
+elif [[ $# != 0 ]]; then
+  exit 2
+fi
 install_dir=$(mktemp -d /opt/aisdlc-codex-probe.XXXXXX)
 canary_dir=$(mktemp -d /var/lib/aisdlc-codex-probe.XXXXXX)
 unit="aisdlc-codex-probe-$$"
@@ -33,7 +39,7 @@ with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as archive:
     assert member.isfile() and member.size == 269273536, 'unexpected pinned executable size'
     pathlib.Path(sys.argv[1]).write_bytes(archive.extractfile(member).read())
 PY
-cp "$script_dir/codex-linux-protocol-probe.py" "$install_dir/probe.py"
+cp "$script_dir/$probe_script" "$install_dir/probe.py"
 chmod 755 "$install_dir" "$install_dir/codex" "$canary_dir"
 chmod 644 "$install_dir/probe.py"
 printf 'synthetic-host-canary\n' > "$canary_dir/canary"
