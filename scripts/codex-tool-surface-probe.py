@@ -19,6 +19,9 @@ def main():
     output = queue.Queue(maxsize=128)
     diagnostics = {'bytes': 0}
     stage = 'startup'
+    current_case = {'item': None, 'requests': 0}
+    marker = Path('/tmp/aisdlc-forbidden-tool-marker')
+    assert not marker.exists()
 
     class Provider(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -33,16 +36,19 @@ def main():
                 assert 0 < size <= 262144
                 request = json.loads(self.rfile.read(size))
                 assert request.get('model') == 'synthetic-probe'
-                assert len(requests) < 4
+                assert len(requests) < 32
                 requests.append(request)
+                current_case['requests'] += 1
+                assert current_case['requests'] <= 2
                 item = {'id': 'msg_probe', 'type': 'message', 'role': 'assistant',
                         'status': 'completed', 'content': [{'type': 'output_text',
                         'text': 'synthetic-provider-positive', 'annotations': []}]}
+                injected = current_case['item'] is not None and current_case['requests'] == 1
+                if injected:
+                    item = current_case['item']
                 events = [
                     {'type': 'response.created', 'response': {'id': 'resp_probe', 'status': 'in_progress'}},
                     {'type': 'response.output_item.added', 'output_index': 0, 'item': item},
-                    {'type': 'response.output_text.delta', 'item_id': 'msg_probe', 'output_index': 0,
-                     'content_index': 0, 'delta': 'synthetic-provider-positive'},
                     {'type': 'response.output_item.done', 'output_index': 0, 'item': item},
                     {'type': 'response.completed', 'response': {'id': 'resp_probe', 'status': 'completed',
                      'output': [item], 'usage': {'input_tokens': 1, 'output_tokens': 1, 'total_tokens': 2}}},
@@ -104,7 +110,7 @@ def main():
         thread.start()
     sequence = 0
     notifications = []
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + 35
 
     def send(message):
         server.stdin.write(json.dumps(message).encode() + b'\n')
@@ -150,23 +156,66 @@ def main():
                      'cwd': '/tmp', 'ephemeral': True, 'environments': [], 'dynamicTools': [],
                      'approvalPolicy': 'never', 'sandbox': 'read-only', 'allowProviderModelFallback': False})
         thread_id = thread['thread']['id']
-        stage = 'turn-start'
-        rpc('turn/start', {'threadId': thread_id, 'input': [{'type': 'text',
-                          'text': 'Return the synthetic fixture response.', 'text_elements': []}]})
-        stage = 'turn-completion'
-        while not any(n.get('method') == 'turn/completed' for n in notifications):
-            receive()
-        completed = next(n for n in notifications if n.get('method') == 'turn/completed')
-        assert completed['params']['turn']['status'] == 'completed', 'turn-failed'
-        stage = 'inspect-tools'
-        assert len(requests) == 1 and not failures, 'provider-request-count-or-failure'
-        tools = requests[0].get('tools', [])
+        def turn(item=None):
+            notifications.clear()
+            current_case.update(item=item, requests=0)
+            start = len(requests)
+            rpc('turn/start', {'threadId': thread_id, 'input': [{'type': 'text',
+                              'text': 'Return the synthetic fixture response.', 'text_elements': []}]})
+            while not any(n.get('method') == 'turn/completed' for n in notifications):
+                receive()
+            completed = next(n for n in notifications if n.get('method') == 'turn/completed')
+            assert completed['params']['turn']['status'] == 'completed', 'turn-failed'
+            assert not failures, 'provider-failed'
+            assert any(n.get('method') == 'item/completed' and
+                       n.get('params', {}).get('item', {}).get('type') == 'agentMessage' and
+                       n['params']['item'].get('text') == 'synthetic-provider-positive'
+                       for n in notifications), 'positive-text-missing'
+            return requests[start:]
+
+        stage = 'positive-turn'
+        positive = turn()
+        assert len(positive) == 1
+        tools = positive[0].get('tools', [])
         names = [tool.get('name', tool.get('type', 'unknown')) for tool in tools]
         # Names are bounded diagnostics from a credential-free synthetic request.
         assert len(names) <= 64 and all(isinstance(n, str) and len(n) <= 128 for n in names)
         safe_names = ','.join(names).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
         print('::notice title=Synthetic Codex tool inventory::count=' + str(len(names)) + '; names=' + safe_names)
+        attacks = [
+            ('exec_command', {'cmd': f'touch {marker}'}),
+            ('shell_command', {'command': f'touch {marker}'}),
+            ('shell', {'command': ['/bin/sh', '-c', f'touch {marker}']}),
+            ('view_image', {'path': '/etc/hosts'}),
+        ]
+        rejected = []
+        for name, arguments in attacks:
+            stage = 'inject-' + name
+            attack = {'id': 'fc_probe', 'type': 'function_call', 'call_id': 'call_' + name,
+                      'name': name, 'arguments': json.dumps(arguments)}
+            captured = turn(attack)
+            assert len(captured) == 2, 'missing-tool-rejection-roundtrip'
+            results = [item for item in captured[-1].get('input', []) if
+                       item.get('type') == 'function_call_output' and item.get('call_id') == 'call_' + name]
+            assert len(results) == 1, 'missing-tool-rejection'
+            result = json.dumps(results[0].get('output', '')).lower()
+            assert any(text in result for text in ('unsupported', 'unknown tool', 'not available', 'not found')), 'tool-not-rejected'
+            assert not marker.exists(), 'forbidden-tool-effect'
+            rejected.append(name)
+        stage = 'inject-apply-patch'
+        captured = turn({'id': 'patch_probe', 'type': 'custom_tool_call', 'call_id': 'call_patch',
+                         'name': 'apply_patch', 'input': '*** Begin Patch\n*** Add File: ' + str(marker) +
+                         '\n+forbidden\n*** End Patch'})
+        assert len(captured) == 2 and not marker.exists(), 'patch-effect-or-missing-rejection'
+        results = [item for item in captured[-1].get('input', []) if
+                   item.get('type') == 'custom_tool_call_output' and item.get('call_id') == 'call_patch']
+        assert len(results) == 1
+        assert any(text in json.dumps(results[0].get('output', '')).lower() for text in
+                   ('unsupported', 'unknown tool', 'not available', 'not found')), 'patch-not-rejected'
+        rejected.append('apply_patch')
+        print('::notice title=Synthetic Codex rejected tools::' + ','.join(rejected))
         print(json.dumps({'syntheticProviderPositiveControl': True, 'offeredToolNames': names,
+                          'injectedToolsRejected': rejected,
                           'offeredToolCount': len(tools), 'realModelCalls': 0, 'credentialFree': True,
                           'toolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
     except Exception as error:
