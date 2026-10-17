@@ -180,6 +180,17 @@ def main():
         assert len(names) <= 64 and all(isinstance(n, str) and len(n) <= 128 for n in names)
         safe_names = ','.join(names).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
         print('::notice title=Synthetic Codex tool inventory::count=' + str(len(names)) + '; names=' + safe_names)
+        def schema_summary(value):
+            if isinstance(value, dict):
+                return {key: schema_summary(item) for key, item in value.items() if key != 'description'}
+            if isinstance(value, list):
+                return [schema_summary(item) for item in value]
+            return value
+        for tool in tools:
+            summary = json.dumps(schema_summary(tool), separators=(',', ':'))
+            assert len(summary) <= 12000
+            print('::notice title=Synthetic Codex remaining tool schema::' +
+                  summary.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))
         attacks = [
             ('exec_command', {'cmd': f'touch {marker}'}),
             ('shell_command', {'command': f'touch {marker}'}),
