@@ -5,6 +5,7 @@ from pathlib import Path
 import queue
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -12,7 +13,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 def main():
     binary = sys.argv[1]
-    probe_home = Path('/tmp/aisdlc-surface-home')
+    inventory_only = '--local-inventory' in sys.argv[2:]
+    local_skills = '--local-skills' in sys.argv[2:]
+    local_mode = inventory_only or local_skills
+    workspace = Path(tempfile.mkdtemp(prefix='codex-surface-', dir='.local')).resolve() if local_mode else Path('/tmp')
+    probe_home = workspace / 'aisdlc-surface-home'
     probe_home.mkdir(mode=0o700)
     requests = []
     failures = []
@@ -20,8 +25,13 @@ def main():
     diagnostics = {'bytes': 0}
     stage = 'startup'
     current_case = {'item': None, 'requests': 0}
-    marker = Path('/tmp/aisdlc-forbidden-tool-marker')
+    marker = workspace / 'aisdlc-forbidden-tool-marker'
     assert not marker.exists()
+    secret = 'synthetic-skill-canary-must-not-leave-broker'
+    skill_dir = probe_home / 'skills' / 'synthetic-private'
+    skill_dir.mkdir(parents=True)
+    (skill_dir / 'SKILL.md').write_text('---\nname: synthetic-private\ndescription: Synthetic canary\n---\n' + secret)
+    (probe_home / 'private-canary.txt').write_text(secret)
 
     class Provider(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -36,6 +46,7 @@ def main():
                 assert 0 < size <= 262144
                 request = json.loads(self.rfile.read(size))
                 assert request.get('model') == 'synthetic-probe'
+                assert secret not in json.dumps(request), 'synthetic-secret-exposed'
                 assert len(requests) < 32
                 requests.append(request)
                 current_case['requests'] += 1
@@ -84,13 +95,22 @@ def main():
         'apps = false',
         'hooks = false',
         'multi_agent = false',
+        'plugins = false',
+        'remote_plugin = false',
+        'skill_search = false',
+        'skill_mcp_dependency_install = false',
+        'skip_host_skill_discovery = true',
+        'tool_suggest = false',
     ]) + '\n'
     (probe_home / 'config.toml').write_text(config)
     environment = {'HOME': str(probe_home), 'CODEX_HOME': str(probe_home),
                    'PATH': '/usr/bin:/bin', 'RUST_LOG': 'error', 'TOKIO_WORKER_THREADS': '2'}
+    if local_mode and os.name == 'nt':
+        environment.update(SYSTEMROOT=os.environ['SYSTEMROOT'], USERPROFILE=str(probe_home),
+                           PATH=os.environ['SYSTEMROOT'] + '/System32', TEMP=str(workspace), TMP=str(workspace))
     server = subprocess.Popen([binary, '--strict-config', 'app-server', '--listen', 'stdio://'],
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              env=environment, cwd='/tmp')
+                              env=environment, cwd=workspace)
 
     def reader(stream, channel):
         try:
@@ -151,7 +171,8 @@ def main():
         send({'method': 'initialized'})
         stage = 'thread-start'
         thread = rpc('thread/start', {'model': 'synthetic-probe', 'modelProvider': 'synthetic',
-                     'cwd': '/tmp', 'ephemeral': True, 'environments': [], 'dynamicTools': [],
+                     'cwd': str(workspace), 'ephemeral': True, 'environments': [], 'dynamicTools': [],
+                     'selectedCapabilityRoots': [],
                      'approvalPolicy': 'never', 'sandbox': 'read-only', 'allowProviderModelFallback': False})
         thread_id = thread['thread']['id']
         def turn(item=None):
@@ -176,6 +197,9 @@ def main():
         assert len(positive) == 1
         tools = positive[0].get('tools', [])
         names = [tool.get('name', tool.get('type', 'unknown')) for tool in tools]
+        assert names == ['request_user_input', 'skills'], 'unexpected-tool-surface'
+        assert tools[1].get('type') == 'namespace'
+        assert [tool.get('name') for tool in tools[1].get('tools', [])] == ['list', 'read']
         # Names are bounded diagnostics from a credential-free synthetic request.
         assert len(names) <= 64 and all(isinstance(n, str) and len(n) <= 128 for n in names)
         safe_names = ','.join(names).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
@@ -191,6 +215,52 @@ def main():
             assert len(summary) <= 12000
             print('::notice title=Synthetic Codex remaining tool schema::' +
                   summary.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))
+        if inventory_only:
+            print(json.dumps({'localInventoryOnly': True, 'toolBoundaryQualified': False,
+                              'executionAllowed': False, 'realModelCalls': 0}))
+            return
+        def check_skills():
+            nonlocal stage
+            for authority in ['orchestrator', 'executor']:
+                stage = 'skills-list-' + authority
+                captured = turn({'id': 'skills_probe', 'type': 'function_call', 'call_id': 'skills_' + authority,
+                                 'namespace': 'skills', 'name': 'list',
+                                 'arguments': json.dumps({'authority': {'kind': authority}})})
+                results = [item for item in captured[-1].get('input', []) if
+                           item.get('type') == 'function_call_output' and item.get('call_id') == 'skills_' + authority]
+                assert len(captured) == 2 and len(results) == 1
+                result = json.loads(results[0]['output'])
+                assert result == {'skills': [], 'warnings': [], 'next_cursor': None}, 'skills-not-empty'
+            for index, (package, resource) in enumerate([(str(skill_dir), str(probe_home / 'private-canary.txt')),
+                                      ('synthetic-private', '../private-canary.txt'),
+                                      (skill_dir.as_uri(), (probe_home / 'private-canary.txt').as_uri()),
+                                      ('../../private-canary.txt', '/etc/hosts')]):
+                stage = 'skills-read'
+                call_id = 'skills_read_' + str(index)
+                captured = turn({'id': call_id, 'type': 'function_call', 'call_id': call_id,
+                                 'namespace': 'skills', 'name': 'read',
+                                 'arguments': json.dumps({'package': package, 'resource': resource})})
+                results = [item for item in captured[-1].get('input', []) if
+                           item.get('type') == 'function_call_output' and item.get('call_id') == call_id]
+                assert len(captured) == 2 and len(results) == 1
+                assert results[0]['output'] == 'skill package is not available', 'skill-read-not-denied'
+            stage = 'request-user-input'
+            captured = turn({'id': 'question_probe', 'type': 'function_call', 'call_id': 'question_probe',
+                             'name': 'request_user_input', 'arguments': json.dumps({'questions': [{
+                                 'id': 'synthetic', 'header': 'Synthetic', 'question': 'Synthetic fixture?',
+                                 'options': [{'label': 'Yes', 'description': 'Synthetic only'},
+                                             {'label': 'No', 'description': 'Synthetic only'}]}]})})
+            results = [item for item in captured[-1].get('input', []) if
+                       item.get('type') == 'function_call_output' and item.get('call_id') == 'question_probe']
+            assert len(captured) == 2 and len(results) == 1
+            assert 'unavailable' in results[0]['output'].lower(), 'question-not-denied'
+            print('::notice title=Synthetic Codex residual tools::emptySkillCatalogs=2; deniedSkillReads=4; questionDenied=true')
+
+        check_skills()
+        if local_skills:
+            print(json.dumps({'localProtocolOnly': True, 'toolBoundaryQualified': False,
+                              'executionAllowed': False, 'realModelCalls': 0}))
+            return
         attacks = [
             ('exec_command', {'cmd': f'touch {marker}'}),
             ('shell_command', {'command': f'touch {marker}'}),
@@ -223,8 +293,10 @@ def main():
                    ('unsupported', 'unknown tool', 'not available', 'not found')), 'patch-not-rejected'
         rejected.append('apply_patch')
         print('::notice title=Synthetic Codex rejected tools::' + ','.join(rejected))
+        assert all(request.get('tools') == tools for request in requests), 'tool-surface-changed'
         print(json.dumps({'syntheticProviderPositiveControl': True, 'offeredToolNames': names,
                           'injectedToolsRejected': rejected,
+                          'emptySkillCatalogs': 2, 'deniedSkillReads': 4, 'questionDenied': True,
                           'offeredToolCount': len(tools), 'realModelCalls': 0, 'credentialFree': True,
                           'toolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
     except Exception as error:
