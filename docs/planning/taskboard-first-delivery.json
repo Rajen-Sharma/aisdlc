@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "proposalOnly": true,
+  "executionAllowed": false,
+  "sourceRevision": "750f54d08ddcccd8b9d71e3a5a2a4ec3755a349d",
+  "sourceByteConvention": "Exact Git blob bytes, not platform checkout newline conversion.",
+  "proposedStory": {
+    "projectKey": "software-project",
+    "contextHash": "07e8c57ca3c8cf66ad0777ec36e9dd549677102679e9260b0899ae2e350038a2",
+    "storyKey": "taskboard-filter",
+    "revision": 1,
+    "title": "Filter synthetic tasks by status",
+    "contract": {
+      "sourceHash": "f76e88c8164c18a55c824be6ac809b4cdc5958da9ce4db18f24e9a6d0ab3047e",
+      "checkPolicyHash": "b86dac3e8ed4ab4330ff03373edcf326f029a3da4f7883ba707598dbbe0e7614",
+      "designHash": "3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d",
+      "sprintHash": "b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82",
+      "allowedPaths": [
+        "src/filter-tasks.mjs"
+      ],
+      "acceptanceCriteria": [
+        "Provide a synchronous named export filterTasks(tasks, status) in src/filter-tasks.mjs without imports or external dependencies.",
+        "Return all tasks whose status exactly matches the requested todo, doing or done status.",
+        "Preserve matching task order, duplicates, object identity and all task field values.",
+        "Leave the input array and its task objects unchanged.",
+        "Return a new empty array for empty input or no matching tasks.",
+        "Throw TypeError for any requested status other than todo, doing or done."
+      ]
+    },
+    "supersedes": null
+  },
+  "proposedScopeHash": "9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb",
+  "sourceCapsule": {
+    "version": 1,
+    "files": [
+      {
+        "path": "src/filter-tasks.mjs",
+        "bytes": 179,
+        "sha256": "4bb9195bd71b860c7296a90fa8fb2e686e90b57b2cb1d2cbf55fc21a0bfad773",
+        "content": "Ly8gSW50ZW50aW9uYWxseSBpbmNvbXBsZXRlLiBUaGUgaXNvbGF0ZWQgQUkgdHJpYWwgbXVzdCBpbXBsZW1lbnQgdGhlIGFwcHJvdmVkIHN0b3J5LgpleHBvcnQgZnVuY3Rpb24gZmlsdGVyVGFza3MoKSB7CiAgdGhyb3cgbmV3IEVycm9yKCdBd2FpdGluZyBhbiBhcHByb3ZlZCBBSSBjb2RpbmcgdHJpYWwuJykKfQo="
+      }
+    ],
+    "sha256": "f76e88c8164c18a55c824be6ac809b4cdc5958da9ce4db18f24e9a6d0ab3047e"
+  },
+  "checkPolicy": "{\"version\":1,\"exportName\":\"filterTasks\",\"statuses\":[\"todo\",\"doing\",\"done\"],\"inputContract\":\"An array of JSON task objects with a status field; malformed task objects are outside this first story.\",\"requirements\":[\"Provide a synchronous named export filterTasks(tasks, status) in src/filter-tasks.mjs without imports or external dependencies.\",\"Return all tasks whose status exactly matches the requested todo, doing or done status.\",\"Preserve matching task order, duplicates, object identity and all task field values.\",\"Leave the input array and its task objects unchanged.\",\"Return a new empty array for empty input or no matching tasks.\",\"Throw TypeError for any requested status other than todo, doing or done.\"],\"cases\":[{\"id\":\"mixed-order\",\"tasks\":[{\"id\":\"c\",\"status\":\"todo\",\"title\":\"Third\"},{\"id\":\"b\",\"status\":\"done\"},{\"id\":\"a\",\"status\":\"todo\",\"metadata\":{\"priority\":2}}],\"status\":\"todo\",\"expectedIndexes\":[0,2]},{\"id\":\"doing\",\"tasks\":[{\"id\":\"a\",\"status\":\"done\"},{\"id\":\"b\",\"status\":\"doing\"},{\"id\":\"c\",\"status\":\"todo\"}],\"status\":\"doing\",\"expectedIndexes\":[1]},{\"id\":\"done\",\"tasks\":[{\"id\":\"a\",\"status\":\"done\"},{\"id\":\"b\",\"status\":\"todo\"},{\"id\":\"c\",\"status\":\"done\"}],\"status\":\"done\",\"expectedIndexes\":[0,2]},{\"id\":\"duplicates\",\"tasks\":[{\"id\":\"same\",\"status\":\"todo\"},{\"id\":\"same\",\"status\":\"todo\"}],\"status\":\"todo\",\"expectedIndexes\":[0,1]},{\"id\":\"empty\",\"tasks\":[],\"status\":\"todo\",\"expectedIndexes\":[]},{\"id\":\"no-match\",\"tasks\":[{\"id\":\"a\",\"status\":\"done\"}],\"status\":\"doing\",\"expectedIndexes\":[]}],\"invalidStatuses\":[\"\",\"all\",\"TODO\",\"blocked\",null,0,{},[]],\"verificationRules\":[\"The verifier owns this policy outside the candidate filesystem.\",\"Run returned code only in the independently qualified disposable verifier.\",\"Compare actual results with expected task indexes and inspect input preservation and reference identity.\",\"Check unsupported status rejection even when the input array is empty.\",\"Nonzero exit, missing result, output overflow, timeout, changed source, or uncertain cleanup cannot pass.\",\"Policy preparation is not evidence that the task-specific verifier has been implemented or qualified.\"]}\n",
+  "checkPolicyByteConvention": "UTF-8 JSON.stringify(policy) followed by one LF.",
+  "humanDecisions": {
+    "sprint": "pending",
+    "designSecurity": "pending",
+    "codeSecurity": "not-yet-eligible",
+    "outcome": "not-yet-eligible",
+    "mvp": "not-yet-eligible"
+  },
+  "provider": {
+    "selected": "Codex ChatGPT subscription",
+    "additionalChargesAllowed": false,
+    "maxAttempts": 3,
+    "runtimeQualification": "incomplete",
+    "actualInvocationAllowed": false
+  },
+  "limitations": [
+    "No story or approval was created in the coordinator.",
+    "The proposed scope hash must be recomputed by the authenticated coordinator for its actual revision.",
+    "The policy cases are prepared; a task-specific isolated verifier still needs implementation and qualification.",
+    "Actual authenticated provider lifecycle and independent recovery/signing authority remain required."
+  ]
+}

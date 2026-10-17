@@ -42,6 +42,8 @@ jobs:
         run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs
       - name: Integration tests
         run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
+      - name: Qualify synthetic taskboard verifier
+        run: node --import tsx scripts/taskboard-verifier-qualification.mjs
       - name: Publish safe integration diagnostics
         if: failure()
         run: node scripts/ci-test-summary.mjs

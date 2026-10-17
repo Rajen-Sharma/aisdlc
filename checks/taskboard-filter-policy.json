@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exportName": "filterTasks",
+  "statuses": ["todo", "doing", "done"],
+  "inputContract": "An array of JSON task objects with a status field; malformed task objects are outside this first story.",
+  "requirements": [
+    "Provide a synchronous named export filterTasks(tasks, status) in src/filter-tasks.mjs without imports or external dependencies.",
+    "Return all tasks whose status exactly matches the requested todo, doing or done status.",
+    "Preserve matching task order, duplicates, object identity and all task field values.",
+    "Leave the input array and its task objects unchanged.",
+    "Return a new empty array for empty input or no matching tasks.",
+    "Throw TypeError for any requested status other than todo, doing or done."
+  ],
+  "cases": [
+    {"id": "mixed-order", "tasks": [{"id": "c", "status": "todo", "title": "Third"}, {"id": "b", "status": "done"}, {"id": "a", "status": "todo", "metadata": {"priority": 2}}], "status": "todo", "expectedIndexes": [0, 2]},
+    {"id": "doing", "tasks": [{"id": "a", "status": "done"}, {"id": "b", "status": "doing"}, {"id": "c", "status": "todo"}], "status": "doing", "expectedIndexes": [1]},
+    {"id": "done", "tasks": [{"id": "a", "status": "done"}, {"id": "b", "status": "todo"}, {"id": "c", "status": "done"}], "status": "done", "expectedIndexes": [0, 2]},
+    {"id": "duplicates", "tasks": [{"id": "same", "status": "todo"}, {"id": "same", "status": "todo"}], "status": "todo", "expectedIndexes": [0, 1]},
+    {"id": "empty", "tasks": [], "status": "todo", "expectedIndexes": []},
+    {"id": "no-match", "tasks": [{"id": "a", "status": "done"}], "status": "doing", "expectedIndexes": []}
+  ],
+  "invalidStatuses": ["", "all", "TODO", "blocked", null, 0, {}, []],
+  "verificationRules": [
+    "The verifier owns this policy outside the candidate filesystem.",
+    "Run returned code only in the independently qualified disposable verifier.",
+    "Compare actual results with expected task indexes and inspect input preservation and reference identity.",
+    "Check unsupported status rejection even when the input array is empty.",
+    "Nonzero exit, missing result, output overflow, timeout, changed source, or uncertain cleanup cannot pass.",
+    "Policy preparation is not evidence that the task-specific verifier has been implemented or qualified."
+  ]
+}
