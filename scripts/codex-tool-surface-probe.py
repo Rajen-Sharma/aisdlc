@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -13,9 +14,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 def main():
     binary = sys.argv[1]
+    # A catalog model id exercises its tool selection, but the endpoint is always
+    # the local synthetic provider. This is not an entitlement or inference test.
+    model_name = 'gpt-6.1-sol'
     inventory_only = '--local-inventory' in sys.argv[2:]
     local_skills = '--local-skills' in sys.argv[2:]
-    local_mode = inventory_only or local_skills
+    local_mode = inventory_only or local_skills or '--local-protocol' in sys.argv[2:]
     workspace = Path(tempfile.mkdtemp(prefix='codex-surface-', dir='.local')).resolve() if local_mode else Path('/tmp')
     probe_home = workspace / 'aisdlc-surface-home'
     probe_home.mkdir(mode=0o700)
@@ -45,7 +49,7 @@ def main():
                 size = int(self.headers.get('Content-Length', '0'))
                 assert 0 < size <= 262144
                 request = json.loads(self.rfile.read(size))
-                assert request.get('model') == 'synthetic-probe'
+                assert request.get('model') == model_name
                 assert secret not in json.dumps(request), 'synthetic-secret-exposed'
                 assert len(requests) < 32
                 requests.append(request)
@@ -78,7 +82,7 @@ def main():
     provider_thread = threading.Thread(target=provider.serve_forever, daemon=True)
     provider_thread.start()
     config = '\n'.join([
-        'model = "synthetic-probe"',
+        'model = ' + json.dumps(model_name),
         'model_provider = "synthetic"',
         'web_search = "disabled"',
         '[model_providers.synthetic]',
@@ -170,7 +174,7 @@ def main():
                            'capabilities': {'experimentalApi': True}})
         send({'method': 'initialized'})
         stage = 'thread-start'
-        thread = rpc('thread/start', {'model': 'synthetic-probe', 'modelProvider': 'synthetic',
+        thread = rpc('thread/start', {'model': model_name, 'modelProvider': 'synthetic',
                      'cwd': str(workspace), 'ephemeral': True, 'environments': [], 'dynamicTools': [],
                      'selectedCapabilityRoots': [],
                      'approvalPolicy': 'never', 'sandbox': 'read-only', 'allowProviderModelFallback': False})
@@ -261,10 +265,12 @@ def main():
             print(json.dumps({'localProtocolOnly': True, 'toolBoundaryQualified': False,
                               'executionAllowed': False, 'realModelCalls': 0}))
             return
+        marker_command = [sys.executable, '-c', 'from pathlib import Path; Path(' + repr(str(marker)) + ').write_text("forbidden")']
+        shell_command = subprocess.list2cmdline(marker_command) if os.name == 'nt' else shlex.join(marker_command)
         attacks = [
-            ('exec_command', {'cmd': f'touch {marker}'}),
-            ('shell_command', {'command': f'touch {marker}'}),
-            ('shell', {'command': ['/bin/sh', '-c', f'touch {marker}']}),
+            ('exec_command', {'cmd': shell_command}),
+            ('shell_command', {'command': shell_command}),
+            ('shell', {'command': marker_command}),
             ('view_image', {'path': '/etc/hosts'}),
         ]
         rejected = []
@@ -277,8 +283,7 @@ def main():
             results = [item for item in captured[-1].get('input', []) if
                        item.get('type') == 'function_call_output' and item.get('call_id') == 'call_' + name]
             assert len(results) == 1, 'missing-tool-rejection'
-            result = json.dumps(results[0].get('output', '')).lower()
-            assert any(text in result for text in ('unsupported', 'unknown tool', 'not available', 'not found')), 'tool-not-rejected'
+            assert results[0].get('output', '').lower() == 'unsupported call: ' + name, 'tool-not-rejected'
             assert not marker.exists(), 'forbidden-tool-effect'
             rejected.append(name)
         stage = 'inject-apply-patch'
@@ -289,12 +294,12 @@ def main():
         results = [item for item in captured[-1].get('input', []) if
                    item.get('type') == 'custom_tool_call_output' and item.get('call_id') == 'call_patch']
         assert len(results) == 1
-        assert any(text in json.dumps(results[0].get('output', '')).lower() for text in
-                   ('unsupported', 'unknown tool', 'not available', 'not found')), 'patch-not-rejected'
+        assert results[0].get('output') == 'unsupported custom tool call: apply_patch', 'patch-not-rejected'
         rejected.append('apply_patch')
         print('::notice title=Synthetic Codex rejected tools::' + ','.join(rejected))
         assert all(request.get('tools') == tools for request in requests), 'tool-surface-changed'
         print(json.dumps({'syntheticProviderPositiveControl': True, 'offeredToolNames': names,
+                          'catalogModelId': model_name, 'localProtocolOnly': local_mode,
                           'injectedToolsRejected': rejected,
                           'emptySkillCatalogs': 2, 'deniedSkillReads': 4, 'questionDenied': True,
                           'offeredToolCount': len(tools), 'realModelCalls': 0, 'credentialFree': True,
