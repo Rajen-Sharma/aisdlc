@@ -18,7 +18,10 @@ const policy = JSON.parse(await readFile('checks/taskboard-filter-policy.json', 
 const source = await exportSourceCapsule(await realpath('fixtures/taskboard'), ['src/filter-tasks.mjs'])
 const cases = [
   ...policy.cases,
-  ...policy.invalidStatuses.map((status, index) => ({ id: `invalid-${index}`, tasks: [], status, invalid: true })),
+  ...policy.invalidStatuses.flatMap((status, index) => [
+    { id: `invalid-empty-${index}`, tasks: [], status, invalid: true },
+    { id: `invalid-populated-${index}`, tasks: policy.cases[0].tasks, status, invalid: true },
+  ]),
 ]
 const expected = cases.map(entry => ({ id: entry.id, thrown: !!entry.invalid, typeError: !!entry.invalid,
   inputUnchanged: true, result: entry.invalid ? null : entry.expectedIndexes.map(index => entry.tasks[index]),
@@ -33,6 +36,7 @@ const variants = [
   ['clone-items', reference.replace('task.status===status)', 'task.status===status).map(task=>({...task}))'), false],
   ['mutate-task', reference.replace('return tasks.filter', 'if(tasks.length)tasks[0].title="changed";return tasks.filter'), false],
   ['invalid-status-accepted', 'export function filterTasks(tasks,status){return tasks.filter(task=>task.status===status)}', false],
+  ['invalid-only-empty', reference.replace('if(![', 'if(!tasks.length&&!['), false],
   ['wrong-error-type', reference.replace('new TypeError', 'new Error'), false],
   ['early-exit', 'process.exit(0)', false],
   ['forged-success', 'console.log("passed");export function filterTasks(){return []}', false],
