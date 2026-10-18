@@ -1,0 +1,50 @@
+{
+  "sourceRevision": "b6d170e69299e9a450d06e587f672bc6a7553a53",
+  "byteConvention": "Exact Git blob bytes at sourceRevision.",
+  "files": [
+    {
+      "path": "scripts/taskboard-isolated-runner.mjs",
+      "bytes": 5631,
+      "sha256": "b292d2424fd40b0569b82f63ef159ce344bcf999343d19cb4f70ed9c899b0068"
+    },
+    {
+      "path": "scripts/taskboard-verifier-qualification.mjs",
+      "bytes": 9317,
+      "sha256": "b7a1692f82d95b0338f2fb1b8e6dbe674202e70336fc3165c11e9e216128e1b2"
+    },
+    {
+      "path": "scripts/codex-tool-surface-probe.py",
+      "bytes": 17880,
+      "sha256": "ae66e3b2155d823f4ea0cd66ac6f326cf7bd3c234e3f6391f5df8d47b984aaa7"
+    },
+    {
+      "path": "src/sdlc/codex-candidate.ts",
+      "bytes": 2886,
+      "sha256": "661d4b46113aefa04f8659f5407e55837bbf0053574c37ee58654bbb96288533"
+    },
+    {
+      "path": "checks/taskboard-filter-policy.json",
+      "bytes": 2349,
+      "sha256": "5789a217de8215e3a16c2fb17b370a0979a108cef941ebfb8e2a90413e979f99"
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "bytes": 3974,
+      "sha256": "1ef7755dae81c82f5faad27970e1c2379036d23c00387c7660316c4910e90a42"
+    },
+    {
+      "path": "fixtures/taskboard/src/filter-tasks.mjs",
+      "bytes": 179,
+      "sha256": "4bb9195bd71b860c7296a90fa8fb2e686e90b57b2cb1d2cbf55fc21a0bfad773"
+    },
+    {
+      "path": "scripts/prepare-taskboard-contract.ts",
+      "bytes": 3594,
+      "sha256": "4264f6f1a0e218397b1e301584519b585e012639b2adf911d9815a824f349ce4"
+    }
+  ],
+  "syntheticOnly": true,
+  "realModelCalls": 0,
+  "executionAllowed": false,
+  "retryAuthorized": false
+}

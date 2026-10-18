@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T09:58:44.788Z",
+  "byteConvention": "Working file bytes; manifest excludes itself. Git blob inventory is separate.",
+  "sourceRevision": "b6d170e69299e9a450d06e587f672bc6a7553a53",
+  "immutableAuthority": false,
+  "files": [
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/run-39009564077.json",
+      "bytes": 6885,
+      "sha256": "5ba1450c471c77c4a70326e64b5572643496b6b061d75d7de4c885facb37d28a"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/run-39116869420.json",
+      "bytes": 6895,
+      "sha256": "079105569e589c91701a533157d7f5bbb99080d1fb8e0d16ac68e4623786c014"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/run-39116909001.json",
+      "bytes": 6895,
+      "sha256": "2311d6540d8e82b37e8b99341d9440ec750d064f0c9af3835d384c69ba76e18c"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/run-39117001262.json",
+      "bytes": 6417,
+      "sha256": "578991a4587255b7564fbcd647dca33fa2f525bb6a1b7c6ed2a6eb038bfad7a2"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/run-39117001262-public-page.json",
+      "bytes": 5153,
+      "sha256": "9f6b4325af6bd5d41db13970f28bbd7ae65f8810e23348a863c06dff5d589a24"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/run-39117182433-public-page.json",
+      "bytes": 5153,
+      "sha256": "79fe2c8e4706abdeeff9a6982e781c104e7ee0ee61b313fdf34a511306a42626"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/source-inventory.json",
+      "bytes": 1614,
+      "sha256": "ef119fa79992b2bcfb40cf21c05887e414d476a3cb58b20458d5235eb4be0f8e"
+    },
+    {
+      "path": "docs/evidence/taskboard-verifier-integrity/local-checks.json",
+      "bytes": 1013,
+      "sha256": "69f479f333352d59227d370817658dc46dc5c60d86d14254d9afd21c6875a4cc"
+    },
+    {
+      "path": "docs/reviews/taskboard-verifier-integrity.md",
+      "bytes": 5313,
+      "sha256": "3e19297574f8866d3b89868b275487860ae954eaf0f0616b651fff199fabe5ac"
+    },
+    {
+      "path": "docs/planning/taskboard-first-delivery.json",
+      "bytes": 5526,
+      "sha256": "dde4e919183f33c12666200b180328e4f337d5ff63b685623e23a9dda5e137ea"
+    },
+    {
+      "path": "docs/reviews/first-delivery-readiness.md",
+      "bytes": 6682,
+      "sha256": "3b9c60ad7e6293b7e390baa8148184752ac8e66d45acd7c149fa5826bb60e3e7"
+    }
+  ]
+}

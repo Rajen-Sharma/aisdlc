@@ -1,5 +1,13 @@
 # First real AI delivery: readiness and remaining work
 
+Latest continuation, 18 October 2026: the [taskboard verifier integrity
+checkpoint](taskboard-verifier-integrity.md) records candidate-decoder preparation,
+the credential-free tool-surface checks and the strengthened synthetic verifier.
+The [exact proposed task](../planning/taskboard-first-delivery.json) is reviewable;
+its real human decisions remain pending. Authenticated provider execution and
+independent recovery/signing authority are still required. The historical
+worklist below remains a description of the complete-cycle dependencies.
+
 Prepared 10 October 2026. This is a status and implementation worklist under the
 accepted BUILD-ENG-002 continuation, not a changed sprint, acceptance record or
 permission to execute. The accepted plan and security design remain unchanged.

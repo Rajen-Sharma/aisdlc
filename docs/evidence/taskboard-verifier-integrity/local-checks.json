@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-18",
+  "timezone": "Australia/Sydney",
+  "basis": "Coordinator-observed command completion; raw local stdout was not retained as files.",
+  "checks": [
+    { "command": "node --check scripts/taskboard-isolated-runner.mjs", "exitCode": 0 },
+    { "command": "node --check scripts/taskboard-verifier-qualification.mjs", "exitCode": 0 },
+    { "command": "git diff --check", "exitCode": 0 },
+    { "command": "npm run typecheck", "exitCode": 0 },
+    {
+      "command": "node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs",
+      "exitCode": 0,
+      "passed": 19,
+      "failed": 0
+    },
+    { "command": "node --import tsx scripts/prepare-taskboard-contract.ts", "exitCode": 0 }
+  ],
+  "generatedCandidateCodeExecutedLocally": false,
+  "realModelCalls": 0,
+  "executionAllowed": false,
+  "retryAuthorized": false
+}

@@ -2,7 +2,7 @@
   "version": 1,
   "proposalOnly": true,
   "executionAllowed": false,
-  "sourceRevision": "750f54d08ddcccd8b9d71e3a5a2a4ec3755a349d",
+  "sourceRevision": "b6d170e69299e9a450d06e587f672bc6a7553a53",
   "sourceByteConvention": "Exact Git blob bytes, not platform checkout newline conversion.",
   "proposedStory": {
     "projectKey": "software-project",
@@ -61,7 +61,7 @@
   "limitations": [
     "No story or approval was created in the coordinator.",
     "The proposed scope hash must be recomputed by the authenticated coordinator for its actual revision.",
-    "The policy cases are prepared; a task-specific isolated verifier still needs implementation and qualification.",
+    "The task-specific verifier has synthetic Linux qualification only; real execution requires the reviewed verifier revision and independent lifecycle authority.",
     "Actual authenticated provider lifecycle and independent recovery/signing authority remain required."
   ]
 }
