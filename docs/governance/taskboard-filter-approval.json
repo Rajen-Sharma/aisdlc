@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "recordType": "human-task-scope-decision",
+  "date": "2026-10-18",
+  "timezone": "Australia/Sydney",
+  "actor": "chat user",
+  "statement": "Approve this task's sprint/design scope",
+  "projectKey": "software-project",
+  "storyKey": "taskboard-filter",
+  "revision": 1,
+  "scopeHash": "9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb",
+  "approvedProposal": {
+    "gitRevision": "5c9848f",
+    "path": "docs/planning/taskboard-first-delivery.json",
+    "sourceHash": "f76e88c8164c18a55c824be6ac809b4cdc5958da9ce4db18f24e9a6d0ab3047e",
+    "checkPolicyHash": "b86dac3e8ed4ab4330ff03373edcf326f029a3da4f7883ba707598dbbe0e7614",
+    "designHash": "3053d9e151ccd7ebe9b4a12644fa2c2d33071019534aa3b6bdab75a508121e4d",
+    "sprintHash": "b017bbf09986e3a0c51adf9c7feda2ed467af9d975218e07603fd20f1a0d4d82"
+  },
+  "decisions": {
+    "sprint": { "id": "APP-SP-TASKBOARD-001", "decision": "accepted" },
+    "designSecurity": { "id": "APP-DES-TASKBOARD-001", "decision": "accepted" },
+    "codeSecurity": "not-yet-eligible",
+    "outcome": "not-yet-eligible",
+    "mvp": "not-yet-eligible"
+  },
+  "coordinatorRecorded": false,
+  "executionAllowed": false,
+  "actualInvocationAllowed": false,
+  "limitations": [
+    "Documentary human decision, not an authenticated coordinator gate receipt.",
+    "The coordinator must bind actual current story/project revision and scope before creating gates.",
+    "Runtime qualification and independent recovery/signing authority remain required.",
+    "No exact message time or legal identity was supplied."
+  ]
+}

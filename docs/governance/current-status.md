@@ -1,5 +1,12 @@
 # Current governance status GOV-STATUS-001
 
+Update, 18 October 2026: the human accepted taskboard-filter revision 1 sprint/design
+scope (APP-SP-TASKBOARD-001 / APP-DES-TASKBOARD-001). See the
+[exact decision](taskboard-filter-approval.json) and
+[readiness addendum](../reviews/taskboard-approved-readiness.md). This resolves
+the task-scope decision; authenticated coordinator registration and execution
+qualification remain outstanding. The historical index below is dated separately.
+
 As of 8 October 2026, Australia/Sydney. This index reconciles current decisions with preserved historical review artifacts. The [approval register](registers.md) records actual human statements and scopes; an old artifact's preparation status is not a new rejection or acceptance. Reviewed files are not edited merely to change their labels or hashes.
 
 | Scope | Current decision | Evidence / boundary |

@@ -61,3 +61,20 @@ approval, code-security, outcome or MVP gates. See
 [the concrete trial boundary](../security/codex-subscription-trial.md).
 Exact message time and legal identity were not supplied. No account credentials
 are recorded here and no production execution is authorized by this entry.
+
+## First task scope acceptance, 18 October 2026
+
+The chat user answered "Approve this task's sprint/design scope" to the explicit
+question about taskboard-filter revision 1, scope hash
+`9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb`.
+This accepts both the sprint and design scope of that exact task. Approval IDs
+are APP-SP-TASKBOARD-001 and APP-DES-TASKBOARD-001. The
+[decision record](taskboard-filter-approval.json) binds the approved contract;
+the [readiness addendum](../reviews/taskboard-approved-readiness.md) supersedes
+earlier pending task-scope notes without changing their frozen evidence.
+
+This human decision is documented in source control; no authenticated coordinator
+story/gate records were created by the assistant. Runtime/provider qualification,
+independent recovery/signing authority and later exact-artifact code-security,
+outcome, MVP and production decisions remain required. Exact message time and
+legal identity were not supplied.
