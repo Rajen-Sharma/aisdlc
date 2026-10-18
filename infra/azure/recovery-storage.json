@@ -1,0 +1,73 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": { "type": "string", "minLength": 3, "maxLength": 24 },
+    "allowedIpRules": { "type": "array", "minLength": 1, "maxLength": 3 },
+    "expiresUtc": { "type": "string" }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2025-06-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "StorageV2",
+      "sku": { "name": "Standard_LRS" },
+      "tags": { "purpose": "aisdlc-protected-trial-authority", "expiresUtc": "[parameters('expiresUtc')]" },
+      "properties": {
+        "accessTier": "Hot",
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": false,
+        "defaultToOAuthAuthentication": true,
+        "publicNetworkAccess": "Enabled",
+        "networkAcls": {
+          "bypass": "None",
+          "defaultAction": "Deny",
+          "ipRules": "[parameters('allowedIpRules')]",
+          "virtualNetworkRules": []
+        },
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": { "blob": { "enabled": true, "keyType": "Account" } }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2025-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/default')]",
+      "dependsOn": ["[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"],
+      "properties": {
+        "isVersioningEnabled": true,
+        "deleteRetentionPolicy": { "enabled": true, "days": 2, "allowPermanentDelete": false },
+        "containerDeleteRetentionPolicy": { "enabled": true, "days": 2 }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2025-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/default/authority')]",
+      "dependsOn": ["[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"],
+      "properties": { "publicAccess": "None" }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers/immutabilityPolicies",
+      "apiVersion": "2025-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/default/authority/default')]",
+      "dependsOn": ["[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccountName'), 'default', 'authority')]"],
+      "properties": {
+        "allowProtectedAppendWrites": true,
+        "allowProtectedAppendWritesAll": false,
+        "immutabilityPeriodSinceCreationInDays": 2
+      }
+    }
+  ],
+  "outputs": {
+    "storageAccountId": { "type": "string", "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]" },
+    "authorityContainerId": { "type": "string", "value": "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccountName'), 'default', 'authority')]" },
+    "ledgerUrl": { "type": "string", "value": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/authority/ledger-v1.jsonl')]" }
+  }
+}
