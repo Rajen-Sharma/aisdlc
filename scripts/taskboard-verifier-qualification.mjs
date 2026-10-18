@@ -10,7 +10,8 @@ import { decodeCodexCandidate } from '../src/sdlc/codex-candidate.ts'
 import { exportSourceCapsule } from '../src/sdlc/source-capsule.ts'
 import { verifierImage } from '../src/sdlc/task-binding.ts'
 
-if (process.platform !== 'linux' || process.env.GITHUB_ACTIONS !== 'true') throw new Error('Requires disposable Linux CI.')
+if (process.platform !== 'linux' || (process.env.GITHUB_ACTIONS !== 'true' &&
+    process.env.AISDLC_QUALIFICATION_HOST !== 'azure-tools-trial')) throw new Error('Requires an explicitly selected Linux qualification host.')
 const exec = promisify(execFile)
 const docker = (args, options = {}) => exec('docker', args, { timeout: 15000, maxBuffer: 65536, ...options })
 const hash = value => createHash('sha256').update(value).digest('hex')
@@ -58,6 +59,7 @@ const variants = [
   ['getter-forgery', 'export function filterTasks(tasks){Object.defineProperty(tasks[0]??tasks,"hidden",{get(){return 1}});return tasks}', false],
 ]
 const evidence = { version: 1, image: verifierImage, sourceHash: source.sha256,
+  qualificationHost: process.env.GITHUB_ACTIONS === 'true' ? 'github-disposable-linux' : 'azure-tools-trial',
   policyHash: hash(JSON.stringify(policy) + '\n'), runnerHash: hash(await readFile('scripts/taskboard-isolated-runner.mjs')),
   casesPerVariant: cases.length, results: [], syntheticOnly: true, executionAllowed: false, retryAuthorized: false }
 await docker(['pull', verifierImage], { timeout: 180000, maxBuffer: 262144 })

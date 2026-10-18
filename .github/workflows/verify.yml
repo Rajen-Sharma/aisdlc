@@ -26,7 +26,9 @@ jobs:
           mkdir -p docs/evidence/github-ci
           node --input-type=module -e "import fs from 'node:fs'; fs.writeFileSync('docs/evidence/github-ci/run.json', JSON.stringify({commit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,createdAt:new Date().toISOString()},null,2))"
       - name: Validate private client preparation script
-        run: bash -n scripts/prepare-private-codex-client.sh
+        run: |
+          bash -n scripts/prepare-private-codex-client.sh
+          bash -n scripts/prepare-private-authority.sh
       - name: Start pinned CI database with bounded diagnostics
         run: node scripts/ci-postgres.mjs start
       - name: Qualify synthetic Linux tool runtime
@@ -44,7 +46,7 @@ jobs:
       - run: npm run seed
       - run: npm run typecheck
       - name: Recovery discovery and fail-closed checks
-        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs tests/recovery-storage-template.test.mjs tests/azure-authority-ledger.test.mjs
+        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs tests/recovery-storage-template.test.mjs tests/azure-authority-ledger.test.mjs tests/azure-authority-identity.test.mjs
       - name: Integration tests
         run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
       - name: Qualify synthetic taskboard verifier
