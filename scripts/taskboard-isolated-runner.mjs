@@ -18,6 +18,7 @@ function data(value, depth = 0) {
   if (typeof value !== 'object' || types.isProxy(value)) throw new Error('Non-data value.')
   const descriptors = Object.getOwnPropertyDescriptors(value)
   const result = Array.isArray(value) ? [] : Object.create(null)
+  if (Array.isArray(value)) result.length = descriptors.length.value
   for (const key of Reflect.ownKeys(descriptors)) {
     if (Array.isArray(value) && key === 'length') continue
     const descriptor = descriptors[key]
@@ -25,6 +26,28 @@ function data(value, depth = 0) {
     Object.defineProperty(result, key, { value: data(descriptor.value, depth + 1), enumerable: true })
   }
   return result
+}
+
+function references(value, seen = new Map()) {
+  if (!value || typeof value !== 'object' || seen.has(value)) return seen
+  if (types.isProxy(value)) throw new Error('Proxy input.')
+  const descriptors = Object.getOwnPropertyDescriptors(value)
+  seen.set(value, descriptors)
+  for (const descriptor of Object.values(descriptors)) references(descriptor.value, seen)
+  return seen
+}
+
+function referencesUnchanged(snapshot) {
+  for (const [object, before] of snapshot) {
+    const after = Object.getOwnPropertyDescriptors(object)
+    if (!isDeepStrictEqual(Reflect.ownKeys(before), Reflect.ownKeys(after))) return false
+    for (const key of Reflect.ownKeys(before)) {
+      const a = before[key], b = after[key]
+      if (!Object.hasOwn(b, 'value') || !Object.is(a.value, b.value) ||
+          a.writable !== b.writable || a.enumerable !== b.enumerable || a.configurable !== b.configurable) return false
+    }
+  }
+  return true
 }
 
 const results = []
@@ -39,6 +62,7 @@ for (const entry of cases) {
     const originalItems = Array.from({ length: originalArray.length }, (_, index) =>
       Object.getOwnPropertyDescriptor(originalArray, String(index)).value)
     const before = data(originalArray)
+    const originalReferences = references(originalArray)
     Object.defineProperties(context, {
       __tasks: { value: originalArray },
       __status: { value: status },
@@ -67,7 +91,7 @@ for (const entry of cases) {
     const after = data(originalArray)
     const isArray = Array.isArray(result) && !types.isProxy(result)
     const cleanResult = !thrown && isArray ? data(result) : null
-    results.push({ id: entry.id, thrown, typeError, inputUnchanged: isDeepStrictEqual(before, after),
+    results.push({ id: entry.id, thrown, typeError, inputUnchanged: isDeepStrictEqual(before, after) && referencesUnchanged(originalReferences),
       result: cleanResult, indexes: !thrown && isArray ? Array.from({ length: cleanResult.length }, (_, index) =>
         originalItems.indexOf(Object.getOwnPropertyDescriptor(result, String(index))?.value)) : null,
       newArray: !thrown && isArray && result !== originalArray })
