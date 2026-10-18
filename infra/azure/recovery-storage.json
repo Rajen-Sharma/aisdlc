@@ -27,7 +27,9 @@
           "bypass": "None",
           "defaultAction": "Deny",
           "ipRules": "[parameters('allowedIpRules')]",
-          "virtualNetworkRules": []
+          "virtualNetworkRules": [
+            { "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet-aisdlc-trial', 'tools')]", "action": "Allow" }
+          ]
         },
         "encryption": {
           "keySource": "Microsoft.Storage",

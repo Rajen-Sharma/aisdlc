@@ -14,9 +14,23 @@ test('authority storage excludes anonymous/key authentication and public network
   assert.equal(account.properties.networkAcls.defaultAction, 'Deny')
   assert.equal(account.properties.networkAcls.bypass, 'None')
   assert.equal(account.properties.networkAcls.ipRules, "[parameters('allowedIpRules')]")
+  assert.deepEqual(account.properties.networkAcls.virtualNetworkRules, [{
+    id: "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet-aisdlc-trial', 'tools')]", action: 'Allow',
+  }])
   assert.equal(template.parameters.allowedIpRules.maxLength, 3)
   assert.equal(template.resources.some(resource => resource.type.includes('roleAssignments')), false)
   assert.equal(template.resources.some(resource => resource.type.includes('virtualMachines')), false)
+})
+
+test('authority role has no overwrite, deletion, key delegation or management write permission', async () => {
+  const role = JSON.parse(await readFile(new URL('../infra/azure/authority-append-role.json', import.meta.url)))
+  assert.deepEqual(role.DataActions, [
+    'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read',
+    'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action',
+  ])
+  assert.ok(role.Actions.length > 0 && role.Actions.every(action => action.endsWith('/read')))
+  assert.ok([...role.Actions, ...role.DataActions].every(action => !action.includes('*')))
+  assert.equal(Object.hasOwn(role, 'AssignableScopes'), false)
 })
 
 test('external ledger retains versions and permits protected append without policy locking', () => {

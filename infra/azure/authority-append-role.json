@@ -1,0 +1,15 @@
+{
+  "Name": "aisdlc-authority-append-reader-trial",
+  "IsCustom": true,
+  "Description": "Read and append existing AISDLC authority blobs only. Assign solely to the trial authority container.",
+  "Actions": [
+    "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+    "Microsoft.Storage/storageAccounts/blobServices/containers/immutabilityPolicies/read"
+  ],
+  "NotActions": [],
+  "DataActions": [
+    "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+    "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
+  ],
+  "NotDataActions": []
+}
