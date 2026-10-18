@@ -29,6 +29,10 @@ def main():
     diagnostics = {'bytes': 0}
     stage = 'startup'
     current_case = {'item': None, 'requests': 0}
+    hold_stream = threading.Event()
+    stream_opened = threading.Event()
+    release_stream = threading.Event()
+    stream_closed = threading.Event()
     marker = workspace / 'aisdlc-forbidden-tool-marker'
     assert not marker.exists()
     secret = 'synthetic-skill-canary-must-not-leave-broker'
@@ -55,6 +59,19 @@ def main():
                 requests.append(request)
                 current_case['requests'] += 1
                 assert current_case['requests'] <= 2
+                if hold_stream.is_set():
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/event-stream')
+                    self.send_header('Connection', 'close')
+                    self.end_headers()
+                    self.wfile.write(b'event: response.created\ndata: {"type":"response.created","response":{"id":"resp_hold","status":"in_progress"}}\n\n')
+                    self.wfile.flush()
+                    stream_opened.set()
+                    try:
+                        assert release_stream.wait(4), 'held-stream-deadline'
+                    finally:
+                        stream_closed.set()
+                    return
                 item = {'id': 'msg_probe', 'type': 'message', 'role': 'assistant',
                         'status': 'completed', 'content': [{'type': 'output_text',
                         'text': 'synthetic-provider-positive', 'annotations': []}]}
@@ -159,7 +176,7 @@ def main():
 
     def rpc(method, params):
         nonlocal sequence
-        assert method in {'initialize', 'thread/start', 'turn/start'}
+        assert method in {'initialize', 'thread/start', 'turn/start', 'turn/interrupt'}
         sequence += 1
         send({'id': sequence, 'method': method, 'params': params})
         while True:
@@ -297,11 +314,37 @@ def main():
         assert results[0].get('output') == 'unsupported custom tool call: apply_patch', 'patch-not-rejected'
         rejected.append('apply_patch')
         print('::notice title=Synthetic Codex rejected tools::' + ','.join(rejected))
+        stage = 'interrupt-streaming-turn'
+        notifications.clear()
+        current_case.update(item=None, requests=0)
+        request_start = len(requests)
+        hold_stream.set()
+        active = rpc('turn/start', {'threadId': thread_id, 'input': [{'type': 'text',
+                     'text': 'Synthetic interruption fixture.', 'text_elements': []}]})
+        assert stream_opened.wait(3), 'held-provider-not-reached'
+        active_id = active['turn']['id']
+        rpc('turn/interrupt', {'threadId': thread_id, 'turnId': active_id})
+        while not any(n.get('method') == 'turn/completed' for n in notifications):
+            receive()
+        completion = next(n['params']['turn'] for n in notifications if n.get('method') == 'turn/completed')
+        assert completion['id'] == active_id and completion['status'] == 'interrupted', 'interrupt-not-confirmed'
+        assert not any(n.get('method') == 'item/completed' and
+                       n.get('params', {}).get('item', {}).get('type') == 'agentMessage'
+                       for n in notifications), 'interrupted-candidate-emitted'
+        assert len(requests) == request_start + 1, 'interrupted-request-retried'
+        release_stream.set()
+        assert stream_closed.wait(1), 'held-provider-not-drained'
+        hold_stream.clear()
+        stage = 'post-interrupt-positive-control'
+        assert len(turn()) == 1, 'post-interrupt-control-failed'
+        print('::notice title=Synthetic Codex cancellation::interrupted=true; candidateEmitted=false; requests=1; subsequentControlPassed=true')
         assert all(request.get('tools') == tools for request in requests), 'tool-surface-changed'
         print(json.dumps({'syntheticProviderPositiveControl': True, 'offeredToolNames': names,
                           'catalogModelId': model_name, 'localProtocolOnly': local_mode,
                           'injectedToolsRejected': rejected,
                           'emptySkillCatalogs': 2, 'deniedSkillReads': 4, 'questionDenied': True,
+                          'streamingTurnInterrupted': True, 'interruptedCandidateEmitted': False,
+                          'postInterruptControlPassed': True,
                           'offeredToolCount': len(tools), 'realModelCalls': 0, 'credentialFree': True,
                           'toolBoundaryQualified': False, 'executionAllowed': False, 'retryAllowed': False}))
     except Exception as error:
@@ -313,6 +356,7 @@ def main():
               f'requests={len(requests)}; rpc={sequence}; exit={server.poll()}', file=sys.stderr)
         raise SystemExit(1) from None
     finally:
+        release_stream.set()
         server.stdin.close()
         try:
             server.wait(timeout=2)

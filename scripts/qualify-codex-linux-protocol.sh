@@ -6,6 +6,8 @@ script_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 probe_script=codex-linux-protocol-probe.py
 if [[ ${1:-} == tool-surface ]]; then
   probe_script=codex-tool-surface-probe.py
+elif [[ ${1:-} == lifecycle ]]; then
+  probe_script=codex-lifecycle-probe.py
 elif [[ $# != 0 ]]; then
   exit 2
 fi
@@ -19,6 +21,7 @@ cleanup() {
     printf '::error title=Codex protocol harness::stage=%s; exit=%s\n' "$stage" "$status" >&2
   fi
   systemctl stop "$unit.service" >/dev/null 2>&1 || true
+  systemctl stop "$unit-observer-loss.service" "$unit-runtime-timeout.service" >/dev/null 2>&1 || true
   systemctl reset-failed "$unit.service" >/dev/null 2>&1 || true
   rm -f "$canary_dir/canary" "$install_dir/codex" "$install_dir/probe.py"
   rmdir "$canary_dir" "$install_dir"
@@ -50,22 +53,28 @@ stage=version
 [[ $("$install_dir/codex" --version) == 'codex-cli 0.155.1' ]]
 stage=protocol
 set +e
-systemd-run --quiet --unit="$unit" --wait --pipe \
-  -p DynamicUser=yes -p NoNewPrivileges=yes -p ProtectSystem=strict \
-  -p ProtectHome=yes -p PrivateTmp=yes -p PrivateNetwork=yes \
-  -p PrivateDevices=yes -p ProtectKernelTunables=yes -p ProtectKernelModules=yes \
-  -p ProtectControlGroups=yes -p RestrictSUIDSGID=yes -p RestrictNamespaces=yes \
-  -p LockPersonality=yes -p MemoryDenyWriteExecute=yes \
-  -p CapabilityBoundingSet= -p AmbientCapabilities= \
-  -p 'InaccessiblePaths=/var/lib /proc/1' -p TemporaryFileSystem=/run:ro \
-  -p ReadOnlyPaths=/opt -p 'RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6' \
-  -p MemoryMax=128M -p TasksMax=64 -p CPUQuota=50% \
-  -p KillMode=control-group -p SendSIGKILL=yes -p TimeoutStopSec=1s \
-  -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary"
+properties=(
+  -p DynamicUser=yes -p NoNewPrivileges=yes -p ProtectSystem=strict
+  -p ProtectHome=yes -p PrivateTmp=yes -p PrivateNetwork=yes
+  -p PrivateDevices=yes -p ProtectKernelTunables=yes -p ProtectKernelModules=yes
+  -p ProtectControlGroups=yes -p RestrictSUIDSGID=yes -p RestrictNamespaces=yes
+  -p LockPersonality=yes -p MemoryDenyWriteExecute=yes
+  -p CapabilityBoundingSet= -p AmbientCapabilities=
+  -p 'InaccessiblePaths=/var/lib /proc/1' -p TemporaryFileSystem=/run:ro
+  -p ReadOnlyPaths=/opt -p 'RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6'
+  -p MemoryMax=128M -p TasksMax=64 -p CPUQuota=50%
+  -p KillMode=control-group -p SendSIGKILL=yes -p TimeoutStopSec=1s
+)
+if [[ ${1:-} == lifecycle ]]; then
+  /usr/bin/python3 "$install_dir/probe.py" host "$install_dir/codex" "$unit" "${properties[@]}"
+else
+  systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
+    -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary"
+fi
 status=$?
 set -e
 if [[ $status != 0 ]]; then
-  result=$(systemctl show "$unit" -p Result --value)
+  result=$(systemctl show "$unit" -p Result --value 2>/dev/null) || result=unavailable
   printf '::error title=Codex protocol service::result=%s; exit=%s\n' "$result" "$status" >&2
 fi
 exit "$status"

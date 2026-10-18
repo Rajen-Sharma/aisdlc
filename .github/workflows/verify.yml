@@ -34,6 +34,9 @@ jobs:
       - name: Inspect credential-free Codex tool surface
         shell: bash
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh tool-surface | tee docs/evidence/github-ci/codex-tool-surface-probe.jsonl
+      - name: Qualify Codex controller loss and process cleanup
+        shell: bash
+        run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh lifecycle | tee docs/evidence/github-ci/codex-lifecycle-probe.jsonl
       - run: npm ci
       - run: npm run setup
       - run: npm run seed
