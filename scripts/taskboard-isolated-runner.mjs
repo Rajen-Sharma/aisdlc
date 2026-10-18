@@ -2,7 +2,7 @@
 // extra language boundary, not the OS security boundary; the container is required.
 import { readFileSync } from 'node:fs'
 import { createContext, runInContext, SourceTextModule } from 'node:vm'
-import { types } from 'node:util'
+import { types, isDeepStrictEqual } from 'node:util'
 
 if (process.platform !== 'linux' || process.env.AISDLC_ISOLATED_RUNNER !== '1') {
   throw new Error('Requires the isolated Linux verifier.')
@@ -31,30 +31,45 @@ const results = []
 for (const entry of cases) {
   try {
     const context = createContext(Object.create(null), { codeGeneration: { strings: false, wasm: false }, microtaskMode: 'afterEvaluate' })
+    // Create inputs and retain intrinsic identity before candidate top-level code
+    // can change JSON.parse, error constructors, or array prototype methods.
+    const originalArray = runInContext(`JSON.parse(${JSON.stringify(JSON.stringify(entry.tasks))})`, context, { timeout: 100 })
+    const status = runInContext(`JSON.parse(${JSON.stringify(JSON.stringify(entry.status))})`, context, { timeout: 100 })
+    const typeErrorPrototype = runInContext('TypeError.prototype', context, { timeout: 100 })
+    const originalItems = Array.from({ length: originalArray.length }, (_, index) =>
+      Object.getOwnPropertyDescriptor(originalArray, String(index)).value)
+    const before = data(originalArray)
+    Object.defineProperties(context, {
+      __tasks: { value: originalArray },
+      __status: { value: status },
+    })
     const module = new SourceTextModule(source, { context })
     await module.link(() => { throw new Error('Imports disabled.') })
     await module.evaluate({ timeout: 100 })
     if (typeof module.namespace.filterTasks !== 'function') throw new Error('Missing named function.')
-    context.__fn = module.namespace.filterTasks
-    // Only serialized data enters the candidate realm; no host functions/objects.
-    runInContext(`globalThis.__tasks = JSON.parse(${JSON.stringify(JSON.stringify(entry.tasks))});
-      globalThis.__status = JSON.parse(${JSON.stringify(JSON.stringify(entry.status))});`, context, { timeout: 100 })
-    const originalArray = context.__tasks
-    const originalItems = Array.from(originalArray)
-    const before = JSON.stringify(data(originalArray))
+    Object.defineProperty(context, '__fn', { value: module.namespace.filterTasks })
+    // Only realm-owned data enters the candidate; no host functions/objects.
     let thrown = false, typeError = false
+    let result
     try {
-      runInContext('globalThis.__result = __fn(__tasks, __status)', context, { timeout: 100 })
+      result = runInContext('__fn(__tasks, __status)', context, { timeout: 100 })
     } catch (error) {
       thrown = true
-      typeError = types.isNativeError(error) && error.name === 'TypeError'
+      if (types.isNativeError(error)) {
+        let prototype = Object.getPrototypeOf(error)
+        for (let depth = 0; prototype && depth < 20; depth++) {
+          if (types.isProxy(prototype)) break
+          if (prototype === typeErrorPrototype) { typeError = true; break }
+          prototype = Object.getPrototypeOf(prototype)
+        }
+      }
     }
-    const after = JSON.stringify(data(originalArray))
-    const result = context.__result
+    const after = data(originalArray)
     const isArray = Array.isArray(result) && !types.isProxy(result)
     const cleanResult = !thrown && isArray ? data(result) : null
-    results.push({ id: entry.id, thrown, typeError, inputUnchanged: before === after,
-      result: cleanResult, indexes: !thrown && isArray ? Array.from(result, item => originalItems.indexOf(item)) : null,
+    results.push({ id: entry.id, thrown, typeError, inputUnchanged: isDeepStrictEqual(before, after),
+      result: cleanResult, indexes: !thrown && isArray ? Array.from({ length: cleanResult.length }, (_, index) =>
+        originalItems.indexOf(Object.getOwnPropertyDescriptor(result, String(index))?.value)) : null,
       newArray: !thrown && isArray && result !== originalArray })
   } catch {
     results.push({ id: entry.id, rejected: true })

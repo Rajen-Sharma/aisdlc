@@ -38,6 +38,13 @@ const variants = [
   ['invalid-status-accepted', 'export function filterTasks(tasks,status){return tasks.filter(task=>task.status===status)}', false],
   ['invalid-only-empty', reference.replace('if(![', 'if(!tasks.length&&!['), false],
   ['wrong-error-type', reference.replace('new TypeError', 'new Error'), false],
+  ['spoof-error-name', reference.replace('throw new TypeError("status")', 'throw Object.assign(new Error("status"),{name:"TypeError"})'), false],
+  ['error-name-getter', reference.replace('throw new TypeError("status")', 'throw Object.defineProperty(new Error("status"),"name",{get(){while(true){}}})'), false],
+  ['clone-iterator-forgery', reference.replace('return tasks.filter(task=>task.status===status)',
+    'const matches=tasks.filter(task=>task.status===status);const clones=matches.map(task=>({...task}));Array.prototype[Symbol.iterator]=function*(){yield* matches.values()};return clones'), false],
+  ['result-setter-forgery', 'Object.defineProperty(globalThis,"__result",{set(){},get(){return __tasks.filter(task=>task.status===__status)}});export function filterTasks(){return []}', false],
+  ['array-property-mutation', reference.replace('return tasks.filter', 'tasks.extra="changed";return tasks.filter'), false],
+  ['input-parser-tamper', 'JSON.parse=()=>[];' + reference, true],
   ['early-exit', 'process.exit(0)', false],
   ['forged-success', 'console.log("passed");export function filterTasks(){return []}', false],
   ['protected-runner-import', 'import fs from "node:fs";fs.writeFileSync("/runner/runner.mjs", "");' + reference, false],
@@ -97,4 +104,4 @@ await writeFile('docs/evidence/github-ci/taskboard-verifier.json', JSON.stringif
 const failures = evidence.results.filter(result => !result.matchedExpectation)
 if (failures.length) console.log('::error title=Taskboard verifier qualification::' + failures.map(result => result.label).join(','))
 assert.equal(failures.length, 0)
-console.log(`::notice title=Taskboard verifier qualification::variants=${variants.length}; cases=${cases.length}; referencePassed=true; rejectedVariants=${variants.length - 1}; allContainersRemoved=true`)
+console.log(`::notice title=Taskboard verifier qualification::variants=${variants.length}; cases=${cases.length}; acceptedControls=${variants.filter(([, , pass]) => pass).length}; rejectedVariants=${variants.filter(([, , pass]) => !pass).length}; allContainersRemoved=true`)
