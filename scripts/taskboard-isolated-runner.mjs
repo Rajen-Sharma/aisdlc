@@ -32,13 +32,15 @@ function references(value, seen = new Map()) {
   if (!value || typeof value !== 'object' || seen.has(value)) return seen
   if (types.isProxy(value)) throw new Error('Proxy input.')
   const descriptors = Object.getOwnPropertyDescriptors(value)
-  seen.set(value, descriptors)
+  seen.set(value, { descriptors, prototype: Object.getPrototypeOf(value), extensible: Object.isExtensible(value) })
   for (const descriptor of Object.values(descriptors)) references(descriptor.value, seen)
   return seen
 }
 
 function referencesUnchanged(snapshot) {
-  for (const [object, before] of snapshot) {
+  for (const [object, saved] of snapshot) {
+    const before = saved.descriptors
+    if (Object.getPrototypeOf(object) !== saved.prototype || Object.isExtensible(object) !== saved.extensible) return false
     const after = Object.getOwnPropertyDescriptors(object)
     if (!isDeepStrictEqual(Reflect.ownKeys(before), Reflect.ownKeys(after))) return false
     for (const key of Reflect.ownKeys(before)) {

@@ -48,6 +48,8 @@ const variants = [
   ['nonmatching-item-replacement', reference.replace('return tasks.filter', 'for(let i=0;i<tasks.length;i++)if(tasks[i].status!==status)tasks[i]={...tasks[i]};return tasks.filter'), false],
   ['nested-reference-replacement', reference.replace('return tasks.filter', 'for(const task of tasks)if(task.metadata)task.metadata={...task.metadata};return tasks.filter'), false],
   ['input-descriptor-mutation', reference.replace('return tasks.filter', 'if(tasks.length)Object.defineProperty(tasks[0],"id",{writable:false});return tasks.filter'), false],
+  ['input-prototype-mutation', reference.replace('return tasks.filter', 'if(tasks.length)Object.setPrototypeOf(tasks[0],null);return tasks.filter'), false],
+  ['input-extensibility-mutation', reference.replace('return tasks.filter', 'Object.preventExtensions(tasks);return tasks.filter'), false],
   ['input-parser-tamper', 'JSON.parse=()=>[];' + reference, true],
   ['early-exit', 'process.exit(0)', false],
   ['forged-success', 'console.log("passed");export function filterTasks(){return []}', false],
