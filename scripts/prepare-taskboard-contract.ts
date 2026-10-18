@@ -38,7 +38,7 @@ const pack = { version: 1, proposalOnly: true, executionAllowed: false, sourceRe
     runtimeQualification: 'incomplete', actualInvocationAllowed: false },
   limitations: ['No story or approval was created in the coordinator.',
     'The proposed scope hash must be recomputed by the authenticated coordinator for its actual revision.',
-    'The policy cases are prepared; a task-specific isolated verifier still needs implementation and qualification.',
+    'The task-specific verifier has synthetic Linux qualification only; real execution requires the reviewed verifier revision and independent lifecycle authority.',
     'Actual authenticated provider lifecycle and independent recovery/signing authority remain required.'] }
 await writeFile('docs/planning/taskboard-first-delivery.json', JSON.stringify(pack, null, 2) + '\n')
 console.log(JSON.stringify({ proposalOnly: true, proposedScopeHash: pack.proposedScopeHash,
