@@ -1,10 +1,15 @@
 {
   "version": 1,
-  "sourceRevision": "969fa18ef37028f1ecbe1de05d14a8567282c834",
-  "createdAt": "2026-10-20T10:27:12.621Z",
+  "sourceRevision": "201c733a9eac513c9fe7a3a2bc888a2cef15950f",
+  "createdAt": "2026-10-20T10:27:43.578Z",
   "realModelCalls": 0,
   "executionAllowed": false,
   "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 90,
+      "sha256": "7b75f111dd288884a8892baa4476891b8bc62a4981cb30eac15b3b0063760701"
+    },
     {
       "path": "authority-ledger.jsonl",
       "bytes": 2874,
