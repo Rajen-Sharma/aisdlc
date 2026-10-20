@@ -6,7 +6,7 @@ import { getPayload } from 'payload'
 import config from '../src/payload.config'
 import { digest } from '../src/sdlc/contracts'
 import { activeProject } from '../src/sdlc/project'
-import { queueReservation, reserveTask, heartbeat, finishReservation, expireReservation, recoverReservation, type Reservation } from '../src/sdlc/task-coordinator'
+import { inspectExecutionEligibility, queueReservation, reserveTask, heartbeat, finishReservation, expireReservation, recoverReservation, type Reservation } from '../src/sdlc/task-coordinator'
 
 test('ownership is atomic, fenced, scope-bound and capped across coordinator calls', async () => {
   const payload = await getPayload({ config })
@@ -21,10 +21,16 @@ test('ownership is atomic, fenced, scope-bound and capped across coordinator cal
     const story = await payload.create({ collection: 'sdlc-stories', data, user: admin, overrideAccess: false, depth: 0 })
     records.push({ collection: 'sdlc-stories', id: story.id })
     await assert.rejects(queueReservation(payload, story.id), /acceptance required/)
+    await assert.rejects(inspectExecutionEligibility(payload, story.id), /acceptance required/)
     for (const kind of ['sprint', 'design-security'] as const) {
       const gate = await payload.create({ collection: 'sdlc-gates', user: admin, overrideAccess: false, depth: 0, data: { story: story.id, projectKey: project.key, scopeHash: story.scopeHash, kind, decision: 'accept', notes: 'Synthetic test approval, removed after test.', actor: admin.id, decisionKey: '' } })
       records.push({ collection: 'sdlc-gates', id: gate.id })
     }
+    const eligibility = await inspectExecutionEligibility(payload, story.id)
+    assert.equal(eligibility.snapshotHash, digest(eligibility.record))
+    assert.equal(eligibility.record.scopeHash, story.scopeHash)
+    assert.equal(eligibility.record.executionAllowed, false)
+    assert.equal(eligibility.record.approvalGates.length, 2)
     const queued = await Promise.all([queueReservation(payload, story.id), queueReservation(payload, story.id)])
     assert.equal(queued[0], queued[1]); taskId = queued[0]
     taskIds.push(taskId)
@@ -88,11 +94,16 @@ test('ownership is atomic, fenced, scope-bound and capped across coordinator cal
     const revision = await payload.create({ collection: 'sdlc-stories', data: { ...data, supersedes: story.id }, user: admin, overrideAccess: false, depth: 0 })
     records.push({ collection: 'sdlc-stories', id: revision.id })
     await assert.rejects(queueReservation(payload, story.id), /superseded/)
+    await assert.rejects(inspectExecutionEligibility(payload, story.id), /superseded/)
     await assert.rejects(queueReservation(payload, revision.id), /acceptance required/)
     for (const kind of ['sprint', 'design-security'] as const) {
       const gate = await payload.create({ collection: 'sdlc-gates', user: admin, overrideAccess: false, depth: 0, data: { story: revision.id, projectKey: project.key, scopeHash: revision.scopeHash, kind, decision: 'accept', notes: 'Synthetic revised scope.', actor: admin.id, decisionKey: '' } })
       records.push({ collection: 'sdlc-gates', id: gate.id })
     }
+    const revisedEligibility = await inspectExecutionEligibility(payload, revision.id)
+    assert.equal(revisedEligibility.record.taskKey, eligibility.record.taskKey)
+    assert.notEqual(revisedEligibility.record.scopeHash, eligibility.record.scopeHash)
+    assert.notEqual(revisedEligibility.record.approvalHash, eligibility.record.approvalHash)
     const secondTask = await queueReservation(payload, revision.id); taskIds.push(secondTask)
     const inFlight = await reserveTask(payload, secondTask); assert.ok(inFlight)
     const changed = await payload.create({ collection: 'sdlc-stories', data: { ...data, supersedes: revision.id }, user: admin, overrideAccess: false, depth: 0 })

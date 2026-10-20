@@ -54,6 +54,26 @@ async function lockedTask(db: PoolClient, id: number): Promise<Task> {
   const result = await db.query<Task>('SELECT * FROM sdlc_tasks WHERE id=$1 FOR UPDATE', [id])
   return taskRow(result.rows[0])
 }
+
+/** A current approval snapshot for trusted external-authority integration.
+ * Never an execution permit. Stable story identity must key the external budget,
+ * so a revision, new SQL task or restored database cannot reset spent attempts.
+ */
+export async function inspectExecutionEligibility(payload: Payload, storyId: number) {
+  if (!Number.isSafeInteger(storyId) || storyId < 1) throw new Error('Invalid story.')
+  return transaction(payload, async db => {
+    const lookup = await db.query('SELECT project_key,story_key FROM sdlc_stories WHERE id=$1', [storyId])
+    if (!lookup.rows[0]) throw new Error('Story not found.')
+    await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
+    const story = await eligible(db, storyId)
+    const record = { version: 1, taskKey: digest({ projectKey: story.project_key, storyKey: story.story_key }),
+      storyId, storyRevision: Number(story.revision), projectKey: story.project_key, storyKey: story.story_key,
+      scopeHash: story.scope_hash, approvalHash: digest(story.approvalGates), approvalGates: story.approvalGates,
+      sourceHash: story.contract.sourceHash, checkPolicyHash: story.contract.checkPolicyHash,
+      maxAttempts: 3, subscriptionOnly: true, additionalChargesAllowed: false, executionAllowed: false }
+    return { record, snapshotHash: digest(record) }
+  })
+}
 function taskRow(value: Task): Task {
   if (!value) throw new Error('Task not found.')
   const row = { ...value, fence: Number(value.fence), attempt_count: Number(value.attempt_count) }
