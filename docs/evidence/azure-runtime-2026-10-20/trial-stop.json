@@ -1,0 +1,16 @@
+{
+  "recordType": "session-tool-output-summary",
+  "date": "2026-10-20",
+  "machines": [
+    {
+      "name": "vm-aisdlc-client",
+      "powerState": "VM deallocated"
+    },
+    {
+      "name": "vm-aisdlc-tools",
+      "powerState": "VM deallocated"
+    }
+  ],
+  "approvedWindowEnds": "2026-10-20T11:12:11.753Z",
+  "localApplicationRunning": true
+}

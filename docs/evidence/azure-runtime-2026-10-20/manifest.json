@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "sourceRevision": "969fa18ef37028f1ecbe1de05d14a8567282c834",
+  "createdAt": "2026-10-20T10:27:12.621Z",
+  "realModelCalls": 0,
+  "executionAllowed": false,
+  "files": [
+    {
+      "path": "authority-ledger.jsonl",
+      "bytes": 2874,
+      "sha256": "8f8fae9832706a1bf0846c007761b84497352f1fb1b4876a640a53c5277847c7"
+    },
+    {
+      "path": "authority-public-key.der",
+      "bytes": 44,
+      "sha256": "cf4a1610aa79d746979701e1054f4f8844b1d9cf9f27954495d7aa9e3cbe0d75"
+    },
+    {
+      "path": "authority-qualification.json",
+      "bytes": 481,
+      "sha256": "0eddf841b42c745b06f6fe4574e1402fd096936847f64e90ba7b4a4248d878ad"
+    },
+    {
+      "path": "client-metadata.json",
+      "bytes": 254,
+      "sha256": "8ce978d6ad250606a7e9a1d104d8b2d45df98aaec75dab4c8e098c4f407122de"
+    },
+    {
+      "path": "local-delivery-ui/browser.json",
+      "bytes": 497,
+      "sha256": "cc3ef82ab8db61dc5f0cd978a793a013c346fe8c29ad844ee69bf9244656c4f1"
+    },
+    {
+      "path": "local-delivery-ui/story-reviews-desktop.png",
+      "bytes": 359837,
+      "sha256": "3dcc0e2c33b4191fd495ae81bebc8f2dce1472cf1b139298efdee20c63eb5540"
+    },
+    {
+      "path": "local-delivery-ui/story-reviews-mobile.png",
+      "bytes": 340324,
+      "sha256": "cb8318e325d07902b33fccc92ca5f623ccead6fe9f8fe5f23ba314f2de11acb4"
+    },
+    {
+      "path": "local-ui/generic-home-mobile.png",
+      "bytes": 125613,
+      "sha256": "2c096d1a668ac58c1217fea5e410a7cfb4ce5cc1ab79a089c2521be7ea2c6975"
+    },
+    {
+      "path": "local-ui/generic-home.png",
+      "bytes": 137103,
+      "sha256": "fc211c4568c19468b5c4b963f56d00e592c84f82a91acb67db5ba9146a40405b"
+    },
+    {
+      "path": "local-ui/generic-pipeline-browser.json",
+      "bytes": 524,
+      "sha256": "f77681a1b23102e00bd45fb1a6eb18388689ac8744d455d6789eecfcf50b26b7"
+    },
+    {
+      "path": "local-ui/generic-pipeline-desktop.png",
+      "bytes": 359837,
+      "sha256": "3dcc0e2c33b4191fd495ae81bebc8f2dce1472cf1b139298efdee20c63eb5540"
+    },
+    {
+      "path": "local-ui/generic-pipeline-mobile.png",
+      "bytes": 340324,
+      "sha256": "cb8318e325d07902b33fccc92ca5f623ccead6fe9f8fe5f23ba314f2de11acb4"
+    },
+    {
+      "path": "sol-tool-surface.json",
+      "bytes": 655,
+      "sha256": "8c26026d58cfb50c63ed41e3a490c968588c57e1af46efd41db83df5c11098e4"
+    },
+    {
+      "path": "taskboard-verifier.json",
+      "bytes": 7539,
+      "sha256": "df64a753bcc5ec563c1043b1a0d9b3a3bb74ed7295a6d4f3905cee3ba66371ff"
+    },
+    {
+      "path": "trial-stop.json",
+      "bytes": 348,
+      "sha256": "ec9f2ce7d601cd91d9965adb834289b53311c07ee1b71e51a33c49988febad3d"
+    },
+    {
+      "path": "verifier-export-validation.json",
+      "bytes": 208,
+      "sha256": "c7b9af9c4f9859f4a267dc962c9ade45fca982b339d2de8ba9b84357f0c5407a"
+    }
+  ]
+}

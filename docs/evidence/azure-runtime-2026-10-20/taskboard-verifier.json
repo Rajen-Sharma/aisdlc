@@ -1,0 +1,239 @@
+{
+  "version": 1,
+  "image": "node@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8",
+  "sourceHash": "f76e88c8164c18a55c824be6ac809b4cdc5958da9ce4db18f24e9a6d0ab3047e",
+  "qualificationHost": "azure-tools-trial",
+  "policyHash": "b86dac3e8ed4ab4330ff03373edcf326f029a3da4f7883ba707598dbbe0e7614",
+  "runnerHash": "b292d2424fd40b0569b82f63ef159ce344bcf999343d19cb4f70ed9c899b0068",
+  "casesPerVariant": 22,
+  "results": [
+    {
+      "label": "reference-control",
+      "candidateHash": "848a1e99807d7ade6bc93bb7a91efae172668e23c8cd95f7b50ed201c635eb67",
+      "expectedAcceptance": true,
+      "accepted": true,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "wrong-empty",
+      "candidateHash": "7a6def2fb2f961baee55a9763592a3fb349c7cf36b875216949858b8d8fb958a",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "sort-input",
+      "candidateHash": "8e960244693a123d7c35ba6130f892896001ba987e1d9ff6c90f8801baaa12c3",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "clone-items",
+      "candidateHash": "2685323c498c3dbf7037d8d691e96b14c09cc48e02e13899139e05ea251fc92e",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "mutate-task",
+      "candidateHash": "dfa47a83b2d11cceedff2633377ff877311571d314aac168e4374ad08bc82ed5",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "invalid-status-accepted",
+      "candidateHash": "c33f5d072bf7dea3fb52447b21e3f61d776f1c4f99c771782b172f2281f3f43e",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "invalid-only-empty",
+      "candidateHash": "6a83777dcdf5c8ce9f6be28596379b8bca1b73a680281cc8aa832d8e5a43243f",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "wrong-error-type",
+      "candidateHash": "648a9034a4a74c7aef62c532d67a3cd86603f3b35fce9937d8177ab4a1e8eda8",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "spoof-error-name",
+      "candidateHash": "8225b78f4143493a40ab57990dbf65b85d5f3c7d9c960554fd1fdfb083e038d2",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "error-name-getter",
+      "candidateHash": "6f42ca98b334e3a98af04be71078423e878a3188c448c8717ee1d819caebebda",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "clone-iterator-forgery",
+      "candidateHash": "b240a10038d1761d3ea348a714279ed8ef7ecb7843612ebce5dab3ac521cd0ef",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "result-setter-forgery",
+      "candidateHash": "b42534fda5c50a7e5d228f7db7d13dd2e97d97d18405bcabdf72bac044ca0b65",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "array-property-mutation",
+      "candidateHash": "af6f147ba598efde9ac910d24d82c61917a74c6fc675f4a8b1ad36f8a9090290",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "array-length-mutation",
+      "candidateHash": "fe8dcd9f3d9671314df7f5aa0992849915fed2e0fce58cea421a1bc7e84159d7",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "nonmatching-item-replacement",
+      "candidateHash": "ce7eec8b849ba8c03bafcbf535081e168c7710038b6e8be94b235976a28a4294",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "nested-reference-replacement",
+      "candidateHash": "089763864dd2e03f008b65fc1b20fddff57acbeb795c3002515754a89eca63ef",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "input-descriptor-mutation",
+      "candidateHash": "f3211f1aa16516e90510c0d6bbf621f309787dc1054a257308ecb31f6259b805",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "input-prototype-mutation",
+      "candidateHash": "09a6fd003da52ce9012be54096e7f08fcca7aa2481815cb8f3d549c63448a161",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "input-extensibility-mutation",
+      "candidateHash": "64bd1f0449ec980d2b0cf5edef39522940444cefa0192327b374d5c52ba2223e",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "input-parser-tamper",
+      "candidateHash": "c43fcde7c09e2051294a68980dad3e50a05ed6bf9b24e4ec24966e6fe2e27500",
+      "expectedAcceptance": true,
+      "accepted": true,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "early-exit",
+      "candidateHash": "bdf18bdd8f73c23879bb84963220a7beba6262971c1d51e76c5d1834092c3534",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "forged-success",
+      "candidateHash": "2c185c1fcd066160fb0f934ac7546e467d744767c1738171e17201cf66cf00eb",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "protected-runner-import",
+      "candidateHash": "8cc445ec7f263043b461df5172aa1d2c56987d8f18879f8a7e653afbb0e7b2f3",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "cpu-runaway",
+      "candidateHash": "26fb005d9b26a0b54c0448f77db5860be0a28391e11626e7e7624c1ebc839e30",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    },
+    {
+      "label": "getter-forgery",
+      "candidateHash": "22d7e372226a187644b2c0360cb65fa23851eb45b98ffd409daa3cb407feb77f",
+      "expectedAcceptance": false,
+      "accepted": false,
+      "matchedExpectation": true,
+      "removed": true,
+      "failure": null
+    }
+  ],
+  "syntheticOnly": true,
+  "executionAllowed": false,
+  "retryAuthorized": false
+}

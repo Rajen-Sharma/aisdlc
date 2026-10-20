@@ -1,0 +1,27 @@
+{
+  "recordType": "session-tool-output-summary",
+  "host": "azure-client-trial",
+  "catalogModelId": "gpt-6-sol",
+  "syntheticProviderPositiveControl": true,
+  "offeredToolNames": [
+    "request_user_input",
+    "skills"
+  ],
+  "injectedToolsRejected": [
+    "exec_command",
+    "shell_command",
+    "shell",
+    "view_image",
+    "apply_patch"
+  ],
+  "emptySkillCatalogs": 2,
+  "deniedSkillReads": 4,
+  "questionDenied": true,
+  "streamingTurnInterrupted": true,
+  "interruptedCandidateEmitted": false,
+  "postInterruptControlPassed": true,
+  "realModelCalls": 0,
+  "credentialFree": true,
+  "toolBoundaryQualified": false,
+  "executionAllowed": false
+}
