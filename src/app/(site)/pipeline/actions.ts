@@ -8,6 +8,7 @@ import { role } from '../../../security'
 import { digest, intakeKinds } from '../../../sdlc/contracts'
 import { activeProject } from '../../../sdlc/project'
 import { queueReservation } from '../../../sdlc/task-coordinator'
+import { registerApprovedTask } from '../../../sdlc/approved-task-registration'
 async function session() {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: await headers() })
@@ -18,6 +19,11 @@ const text = (form: FormData, key: string, max: number) => {
   const value = form.get(key)
   if (typeof value !== 'string' || !value.trim() || value.length > max) throw new Error(`Invalid ${key}.`)
   return value.trim()
+}
+export async function registerRecordedTask(form: FormData) {
+  const { payload, user } = await session()
+  await registerApprovedTask(payload, user, text(form, 'scopeHash', 64))
+  revalidatePath('/pipeline'); redirect('/pipeline?notice=task-registered')
 }
 export async function queueStoryReservation(form: FormData) {
   const { payload } = await session()

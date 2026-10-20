@@ -61,7 +61,7 @@ export const Gates: CollectionConfig = {
   hooks: { beforeValidate: [async ({ data, req, operation }) => {
     if (operation !== 'create') return data
     if (!data || role(req.user) !== 'admin') throw new APIError('Authenticated human gate decision required.', 403)
-    const story = await req.payload.findByID({ collection: 'sdlc-stories', id: data.story, user: req.user, overrideAccess: false, depth: 0 })
+    const story = await req.payload.findByID({ collection: 'sdlc-stories', id: data.story, user: req.user, overrideAccess: false, depth: 0, req })
     await lockStory(req, story.projectKey, story.storyKey)
     const project = await activeProject()
     if (story.projectKey !== project.key || story.contextHash !== digest(project) || data.scopeHash !== story.scopeHash) throw new APIError('Gate scope is stale or belongs to another project.', 409)

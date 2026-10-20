@@ -36,7 +36,7 @@ PY
 config="$broker_home/.codex/config.toml"
 [[ ! -e "$config" && ! -L "$config" ]]
 cat > "$config" <<'TOML'
-model = "gpt-6.1-sol"
+model = "gpt-6-sol"
 forced_login_method = "chatgpt"
 cli_auth_credentials_store = "file"
 web_search = "disabled"

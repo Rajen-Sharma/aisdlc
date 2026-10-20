@@ -3,6 +3,9 @@
 set -euo pipefail
 [[ $(id -u) == 0 && $(ps -p 1 -o comm=) == systemd ]]
 script_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+qualification_model=${2:-gpt-6.1-sol}
+[[ $# -le 2 && ( $qualification_model == gpt-6.1-sol || $qualification_model == gpt-6-sol ) ]]
+[[ $# -lt 2 || ${1:-} == tool-surface ]]
 probe_script=codex-linux-protocol-probe.py
 if [[ ${1:-} == tool-surface ]]; then
   probe_script=codex-tool-surface-probe.py
@@ -69,7 +72,7 @@ if [[ ${1:-} == lifecycle ]]; then
   /usr/bin/python3 "$install_dir/probe.py" host "$install_dir/codex" "$unit" "${properties[@]}"
 else
   systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
-    -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary"
+    -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary" "--model=$qualification_model"
 fi
 status=$?
 set -e

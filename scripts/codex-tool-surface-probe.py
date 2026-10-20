@@ -17,6 +17,11 @@ def main():
     # A catalog model id exercises its tool selection, but the endpoint is always
     # the local synthetic provider. This is not an entitlement or inference test.
     model_name = 'gpt-6.1-sol'
+    model_args = [arg for arg in sys.argv[2:] if arg.startswith('--model=')]
+    assert len(model_args) <= 1
+    if model_args:
+        model_name = model_args[0].split('=', 1)[1]
+    assert model_name in {'gpt-6.1-sol', 'gpt-6-sol'}, 'unqualified-model-selection'
     inventory_only = '--local-inventory' in sys.argv[2:]
     local_skills = '--local-skills' in sys.argv[2:]
     local_mode = inventory_only or local_skills or '--local-protocol' in sys.argv[2:]

@@ -29,6 +29,8 @@ jobs:
         run: |
           bash -n scripts/prepare-private-codex-client.sh
           bash -n scripts/prepare-private-authority.sh
+          python3 -c "import ast,pathlib; ast.parse(pathlib.Path('scripts/private-codex-preflight.py').read_text())"
+          node --check scripts/qualify-azure-authority.mjs
       - name: Start pinned CI database with bounded diagnostics
         run: node scripts/ci-postgres.mjs start
       - name: Qualify synthetic Linux tool runtime
@@ -41,6 +43,9 @@ jobs:
       - name: Qualify Codex controller loss and process cleanup
         shell: bash
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh lifecycle | tee docs/evidence/github-ci/codex-lifecycle-probe.jsonl
+      - name: Qualify subscription-available Sol tool surface
+        shell: bash
+        run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh tool-surface gpt-6-sol | tee docs/evidence/github-ci/codex-sol-tool-surface-probe.jsonl
       - run: npm ci
       - run: npm run setup
       - run: npm run seed
