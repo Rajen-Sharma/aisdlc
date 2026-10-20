@@ -47,7 +47,7 @@ page failure; the delivery suite passed when run on its own.
 Thirty runtime/recovery guard tests and TypeScript checking passed. A local
 integration process hit a memory allocation failure while a production build was
 also running. The build was stopped and the failed claim suite passed on its own;
-remaining suites are being run sequentially. The interrupted build is not a
+all remaining suites subsequently passed sequentially. The interrupted build is not a
 successful production-build result.
 
 The workspace now offers **Register my recorded decision**. A signed-in human
@@ -62,8 +62,14 @@ the real task's approvals in the operator database.
 
 ## Remaining boundary
 
-Registration requires the user's action in the authenticated workspace; the
-assistant does not impersonate it. The authenticated coding lifecycle, durable
+The user signed in and registered story 84, revision 1, at 10:25:19 UTC on
+20 October. Read-only database inspection confirmed the exact approved scope
+and both accepted gates under administrator account 1. This supersedes the
+earlier documentary-only coordinator status without altering the recorded scope
+decision. The assistant did not submit that registration. Both Azure VMs were
+confirmed deallocated after qualification; the local app remains available.
+
+The authenticated coding lifecycle, durable
 attempt/spend state machine, current signing/recovery authority integration and
 whole-host-loss fencing remain incomplete. Execution, retries and artifact
 acceptance remain disabled. Passing infrastructure and synthetic verifier checks

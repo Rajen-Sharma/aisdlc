@@ -3,8 +3,9 @@
 Update, 20 October 2026: the local app runs and the private Azure client confirms
 ChatGPT authentication. Actual Azure verifier and signed append-ledger checks
 passed; [the runtime review](../reviews/azure-runtime-2026-10-20.md) records their
-limits. The workspace supports authenticated registration of the already
-approved task. Full coding execution and later review gates remain unavailable.
+limits. The user registered the approved task through the signed-in workspace:
+story 84, revision 1, exact scope, both accepted gates under account 1. Full coding
+execution and later review gates remain unavailable.
 
 Update, 18 October 2026: the human accepted taskboard-filter revision 1 sprint/design
 scope (APP-SP-TASKBOARD-001 / APP-DES-TASKBOARD-001). See the

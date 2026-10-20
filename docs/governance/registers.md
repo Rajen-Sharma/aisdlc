@@ -78,3 +78,14 @@ story/gate records were created by the assistant. Runtime/provider qualification
 independent recovery/signing authority and later exact-artifact code-security,
 outcome, MVP and production decisions remain required. Exact message time and
 legal identity were not supplied.
+
+## Authenticated registration, 20 October 2026
+
+After signing into the local workspace, the user selected registration of the
+existing recorded decision. Read-only inspection observed story 84, revision 1,
+scope `9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb`, with
+accepted sprint and design-security gates under signed-in administrator account
+1, created at 2026-10-20T10:25:19 UTC. This binds the prior exact-scope acceptance
+to the coordinator; it is not a new code, outcome, MVP or production decision.
+The assistant did not submit that registration. See the
+[runtime review](../reviews/azure-runtime-2026-10-20.md).
