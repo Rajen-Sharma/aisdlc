@@ -48,7 +48,7 @@ jobs:
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh tool-surface gpt-6-sol | tee docs/evidence/github-ci/codex-sol-tool-surface-probe.jsonl
       - name: Qualify bounded credential-free Codex session
         shell: bash
-        run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh session | tee docs/evidence/github-ci/codex-bounded-session-probe.jsonl
+        run: sudo env AISDLC_NODE_BINARY="$(command -v node)" timeout 180 bash scripts/qualify-codex-linux-protocol.sh session | tee docs/evidence/github-ci/codex-bounded-session-probe.jsonl
       - run: npm ci
       - run: npm run setup
       - run: npm run seed
@@ -77,6 +77,7 @@ jobs:
           node scripts/sdlc-smoke.mjs --evidence-dir=docs/evidence/github-ci
           node scripts/delivery-browser.mjs --evidence-dir=docs/evidence/github-ci
           node --env-file=.env --import tsx scripts/ownership-browser.ts --evidence-dir=docs/evidence/github-ci
+          node --env-file=.env --import tsx scripts/artifact-review-browser.ts --evidence-dir=docs/evidence/github-ci
       - name: Remove owned CI database
         if: always()
         run: node scripts/ci-postgres.mjs stop

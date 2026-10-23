@@ -28,7 +28,7 @@ cleanup() {
   systemctl stop "$unit.service" >/dev/null 2>&1 || true
   systemctl stop "$unit-observer-loss.service" "$unit-runtime-timeout.service" >/dev/null 2>&1 || true
   systemctl reset-failed "$unit.service" >/dev/null 2>&1 || true
-  rm -f "$canary_dir/canary" "$install_dir/codex" "$install_dir/probe.py" "$install_dir/codex-session-qualification.mjs" "$install_dir/codex-turn-session.mjs"
+  rm -f "$canary_dir/canary" "$install_dir/codex" "$install_dir/node" "$install_dir/probe.py" "$install_dir/codex-session-qualification.mjs" "$install_dir/codex-turn-session.mjs"
   rmdir "$canary_dir" "$install_dir"
 }
 trap cleanup EXIT
@@ -48,6 +48,10 @@ with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as archive:
     pathlib.Path(sys.argv[1]).write_bytes(archive.extractfile(member).read())
 PY
 if [[ ${1:-} == session ]]; then
+  [[ ${AISDLC_NODE_BINARY:-} == /* && -f $AISDLC_NODE_BINARY ]]
+  [[ $("$AISDLC_NODE_BINARY" --version) == v24.14.0 ]]
+  cp "$AISDLC_NODE_BINARY" "$install_dir/node"
+  chmod 755 "$install_dir/node"
   cp "$script_dir/codex-session-qualification.mjs" "$script_dir/codex-turn-session.mjs" "$install_dir/"
   chmod 644 "$install_dir/"*.mjs
 else
@@ -81,7 +85,7 @@ elif [[ ${1:-} == session ]]; then
   systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
     -p MemoryMax=256M -p RuntimeMaxSec=45s /usr/bin/python3 \
     -c 'import subprocess,sys; r=subprocess.run(sys.argv[1:],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=40); output=r.stdout.decode("utf-8",errors="replace"); print(output if r.returncode == 0 else "::error title=Credential-free Node startup::"+output[:4000].replace("%","%25").replace("\r","%0D").replace("\n","%0A")); sys.exit(r.returncode)' \
-    "$(command -v node)" --jitless --input-type=module \
+    "$install_dir/node" --jitless --input-type=module \
     -e 'import(process.argv[1]).catch(error => { const message = String(error.message).slice(0, 300).replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A"); console.error("::error title=Credential-free session startup::" + error.name + ": " + message); process.exitCode = 1 })' \
     "$install_dir/codex-session-qualification.mjs" "$install_dir/codex"
 else
