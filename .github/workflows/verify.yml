@@ -48,7 +48,10 @@ jobs:
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh tool-surface gpt-6-sol | tee docs/evidence/github-ci/codex-sol-tool-surface-probe.jsonl
       - name: Qualify bounded credential-free Codex session
         shell: bash
-        run: sudo env AISDLC_NODE_BINARY="$(command -v node)" timeout 180 bash scripts/qualify-codex-linux-protocol.sh session | tee docs/evidence/github-ci/codex-bounded-session-probe.jsonl
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bubblewrap
+          sudo env AISDLC_NODE_BINARY="$(command -v node)" timeout 180 bash scripts/qualify-codex-linux-protocol.sh session | tee docs/evidence/github-ci/codex-bounded-session-probe.jsonl
       - run: npm ci
       - run: npm run setup
       - run: npm run seed
