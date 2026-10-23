@@ -46,12 +46,15 @@ jobs:
       - name: Qualify subscription-available Sol tool surface
         shell: bash
         run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh tool-surface gpt-6-sol | tee docs/evidence/github-ci/codex-sol-tool-surface-probe.jsonl
+      - name: Qualify bounded credential-free Codex session
+        shell: bash
+        run: sudo timeout 180 bash scripts/qualify-codex-linux-protocol.sh session | tee docs/evidence/github-ci/codex-bounded-session-probe.jsonl
       - run: npm ci
       - run: npm run setup
       - run: npm run seed
       - run: npm run typecheck
       - name: Recovery discovery and fail-closed checks
-        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs tests/recovery-storage-template.test.mjs tests/azure-authority-ledger.test.mjs tests/azure-authority-identity.test.mjs tests/authority-attempts.test.mjs
+        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs tests/recovery-storage-template.test.mjs tests/azure-authority-ledger.test.mjs tests/azure-authority-identity.test.mjs tests/authority-attempts.test.mjs tests/attempt-evidence.test.mjs tests/codex-turn-session.test.mjs
       - name: Integration tests
         run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
       - name: Qualify synthetic taskboard verifier

@@ -37,9 +37,18 @@ config="$broker_home/.codex/config.toml"
 [[ ! -e "$config" && ! -L "$config" ]]
 cat > "$config" <<'TOML'
 model = "gpt-6-sol"
+model_provider = "openai"
 forced_login_method = "chatgpt"
 cli_auth_credentials_store = "file"
 web_search = "disabled"
+suppress_unstable_features_warning = true
+[model_providers.openai]
+name = "OpenAI"
+requires_openai_auth = true
+wire_api = "responses"
+request_max_retries = 0
+stream_max_retries = 0
+supports_websockets = false
 [features]
 shell_tool = false
 shell_snapshot = false

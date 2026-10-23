@@ -11,6 +11,8 @@ if [[ ${1:-} == tool-surface ]]; then
   probe_script=codex-tool-surface-probe.py
 elif [[ ${1:-} == lifecycle ]]; then
   probe_script=codex-lifecycle-probe.py
+elif [[ ${1:-} == session ]]; then
+  probe_script=
 elif [[ $# != 0 ]]; then
   exit 2
 fi
@@ -26,7 +28,7 @@ cleanup() {
   systemctl stop "$unit.service" >/dev/null 2>&1 || true
   systemctl stop "$unit-observer-loss.service" "$unit-runtime-timeout.service" >/dev/null 2>&1 || true
   systemctl reset-failed "$unit.service" >/dev/null 2>&1 || true
-  rm -f "$canary_dir/canary" "$install_dir/codex" "$install_dir/probe.py"
+  rm -f "$canary_dir/canary" "$install_dir/codex" "$install_dir/probe.py" "$install_dir/codex-session-qualification.mjs" "$install_dir/codex-turn-session.mjs"
   rmdir "$canary_dir" "$install_dir"
 }
 trap cleanup EXIT
@@ -45,9 +47,14 @@ with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as archive:
     assert member.isfile() and member.size == 269273536, 'unexpected pinned executable size'
     pathlib.Path(sys.argv[1]).write_bytes(archive.extractfile(member).read())
 PY
-cp "$script_dir/$probe_script" "$install_dir/probe.py"
+if [[ ${1:-} == session ]]; then
+  cp "$script_dir/codex-session-qualification.mjs" "$script_dir/codex-turn-session.mjs" "$install_dir/"
+  chmod 644 "$install_dir/"*.mjs
+else
+  cp "$script_dir/$probe_script" "$install_dir/probe.py"
+  chmod 644 "$install_dir/probe.py"
+fi
 chmod 755 "$install_dir" "$install_dir/codex" "$canary_dir"
-chmod 644 "$install_dir/probe.py"
 printf 'synthetic-host-canary\n' > "$canary_dir/canary"
 chmod 644 "$canary_dir/canary"
 stage=positive-control
@@ -70,6 +77,9 @@ properties=(
 )
 if [[ ${1:-} == lifecycle ]]; then
   /usr/bin/python3 "$install_dir/probe.py" host "$install_dir/codex" "$unit" "${properties[@]}"
+elif [[ ${1:-} == session ]]; then
+  systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
+    -p MemoryMax=256M -p RuntimeMaxSec=45s "$(command -v node)" --jitless "$install_dir/codex-session-qualification.mjs" "$install_dir/codex"
 else
   systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
     -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary" "--model=$qualification_model"

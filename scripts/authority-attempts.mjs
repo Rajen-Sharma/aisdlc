@@ -33,15 +33,16 @@ function legacyQualification(record) {
 // Input must have been signature/chain authenticated by AzureAuthorityLedger.read().
 // No state snapshot, local counter, lease expiry or application row is authoritative.
 function reduce(records) {
-  const tasks = new Map()
+  const tasks = new Map(), admissions = new Set()
   for (const record of records) {
     const p = record.payload
     if (legacyQualification(record)) continue
     if (p.protocol !== protocol || !sha(p.taskKey) || !positive(record.issuedAt)) reject()
     let task = tasks.get(p.taskKey)
     if (p.action === 'register') {
-      if (task || record.kind !== 'registry' || !exact(p, [...fixed, 'scopeHash', 'approvalHash', 'runtimeHash', 'expiresAt', 'maxAttempts', 'subscriptionOnly', 'additionalChargesAllowed'])
+      if (task || record.kind !== 'registry' || !exact(p, [...fixed, 'scopeHash', 'approvalHash', 'runtimeHash', 'expiresAt', 'maxAttempts', 'subscriptionOnly', 'additionalChargesAllowed', 'model', 'maxTurnsPerAttempt'])
         || ![p.scopeHash, p.approvalHash, p.runtimeHash].every(sha) || p.maxAttempts !== 3
+        || p.model !== 'gpt-6-sol' || p.maxTurnsPerAttempt !== 1
         || p.subscriptionOnly !== true || p.additionalChargesAllowed !== false
         || !positive(p.expiresAt) || p.expiresAt <= record.issuedAt || p.expiresAt - record.issuedAt > 86400) reject()
       task = { registrationId: record.operationId, policy: copy(p), attempts: [], revoked: false, lastAt: record.issuedAt }
@@ -63,11 +64,18 @@ function reduce(records) {
         || (previous && (!previous.terminal || (previous.candidateHash && !previous.repair)))) reject()
       // An intent is immediately spent and uncertain, even if a launch never happens.
       task.attempts.push({ attemptId: record.operationId, attempt: p.attempt, fence: p.fence,
+        issuedAt: record.issuedAt,
         reservationHash: p.reservationHash, runtime: copy(p.runtime), deadline: p.deadline,
-        candidateHash: null, terminal: null, repair: null })
+        admission: null, candidateHash: null, terminal: null, repair: null })
+    } else if (p.action === 'admit') {
+      if (record.kind !== 'intent' || !exact(p, [...fixed, 'attemptId', 'challengeNonce'])
+        || task.revoked || !previous || previous.attemptId !== p.attemptId || previous.terminal || previous.admission
+        || record.issuedAt >= previous.deadline || !uuid(p.challengeNonce) || admissions.has(p.challengeNonce)) reject()
+      previous.admission = { operationId: record.operationId, challengeNonce: p.challengeNonce }
+      admissions.add(p.challengeNonce)
     } else if (p.action === 'candidate') {
       if (record.kind !== 'candidate' || !exact(p, [...fixed, 'attemptId', 'candidateHash'])
-        || !previous || previous.attemptId !== p.attemptId || task.revoked || previous.terminal || previous.candidateHash
+        || !previous || previous.attemptId !== p.attemptId || task.revoked || previous.terminal || previous.candidateHash || !previous.admission
         || record.issuedAt >= previous.deadline || !sha(p.candidateHash)) reject()
       previous.candidateHash = p.candidateHash
     } else if (p.action === 'settle') {
@@ -135,8 +143,14 @@ export class AttemptAuthority {
     if (!positive(checkedAt) || checkedAt < issuedAt || checkedAt - issuedAt > 5
       || (!cleanup && (checkedAt >= context.policy.expiresAt || await this.#authorize(copy(context)) !== true))
       || (p.action === 'begin' && checkedAt >= p.deadline)
+      || (p.action === 'admit' && checkedAt >= context.attempt.deadline)
       || (p.action === 'candidate' && checkedAt >= context.attempt.deadline)
       || (needsProof && await this.#verifyEvidence(copy(proof), copy(context)) !== true)) reject()
+    const finalAt = this.#now()
+    if (!positive(finalAt) || finalAt < checkedAt || finalAt - issuedAt > 5
+      || (!cleanup && finalAt >= context.policy.expiresAt)
+      || (['admit', 'candidate'].includes(p.action) && finalAt >= context.attempt.deadline)
+      || (p.action === 'begin' && finalAt >= p.deadline)) reject()
     // The ledger's CAS denies concurrent changes; a lost acknowledgement is never retried.
     return this.#ledger.append(head, JSON.stringify({ record, signature }))
   }
@@ -147,6 +161,7 @@ export class AttemptAuthority {
       fence: attempt, reservationHash, runtime: { hostId, bootId, unit: `aisdlc-attempt-${attemptId}.service` }, deadline })
   }
   candidate({ taskKey, attemptId, candidateHash }) { return this.#append('candidate', { protocol, action: 'candidate', taskKey, attemptId, candidateHash }) }
+  admit({ taskKey, attemptId, challengeNonce }) { return this.#append('intent', { protocol, action: 'admit', taskKey, attemptId, challengeNonce }) }
   settle({ taskKey, attemptId, terminationHash, outcome, usage: tokenUsage }, proof) {
     return this.#append('terminal', { protocol, action: 'settle', taskKey, attemptId, terminationHash, outcome, usage: tokenUsage }, proof)
   }
