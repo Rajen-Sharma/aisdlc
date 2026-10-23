@@ -9,7 +9,7 @@ import { authenticateTurnPermit } from './turn-permit.mjs'
 import { boundedJsonChannel } from './bounded-json-channel.mjs'
 
 const exec = promisify(execFile)
-const reject = () => { throw new Error('Systemd guardian rejected; attempt remains uncertain.') }
+const reject = (stage = 'validation') => { throw new Error(`Systemd guardian rejected at ${stage}; attempt remains uncertain.`) }
 const fixedEnvironment = { PATH: '/usr/bin:/bin', HOME: '/root', LANG: 'C', NODE_ENV: 'production' }
 export const nativeUnitProperties = [
   'User=aisdlc-broker', 'Group=aisdlc-broker', 'Type=exec', 'RemainAfterExit=yes',
@@ -27,7 +27,7 @@ const journalDirectory = '/var/lib/aisdlc-guardian/journal'
 async function trustedFile(file, executable) {
   const info = await lstat(file)
   if (!info.isFile() || info.isSymbolicLink() || info.uid !== 0 || info.nlink !== 1 || (info.mode & 0o022)
-    || (executable && !(info.mode & 0o100)) || await realpath(file) !== file) reject()
+    || (executable && !(info.mode & 0o100)) || await realpath(file) !== file) reject('trusted-file')
 }
 async function command(args) {
   return exec('/usr/bin/systemctl', args, { env: fixedEnvironment, timeout: 5000, maxBuffer: 4096, encoding: 'utf8' })
@@ -44,13 +44,13 @@ async function inspect(unit) {
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 export async function launchGuardedAttempt(envelope, context, { diagnostic } = {}) {
-  if (process.platform !== 'linux' || process.getuid() !== 0 || (await readFile('/proc/1/comm', 'utf8')).trim() !== 'systemd') reject()
+  if (process.platform !== 'linux' || process.getuid() !== 0 || (await readFile('/proc/1/comm', 'utf8')).trim() !== 'systemd') reject('host')
   const lease = authenticateTurnPermit(envelope, context, Math.floor(Date.now() / 1000))
-  if (context.kind !== 'launch' || lease.bootId !== (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim()) reject()
+  if (context.kind !== 'launch' || lease.bootId !== (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim()) reject('boot')
   for (const file of [nodeBinary, brokerScript]) await trustedFile(file, file === nodeBinary)
   const directory = await lstat(journalDirectory)
   if (!directory.isDirectory() || directory.isSymbolicLink() || directory.uid !== 0 || (directory.mode & 0o077)
-    || await realpath(journalDirectory) !== journalDirectory) reject()
+    || await realpath(journalDirectory) !== journalDirectory) reject('journal')
   // O_EXCL plus fsync before the only launcher exists. Restart, duplicate request
   // and a lost controller cannot launch the same attempt again on this host.
   const journal = await open(path.join(journalDirectory, lease.attemptId + '.jsonl'), constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600)
@@ -62,7 +62,7 @@ export async function launchGuardedAttempt(envelope, context, { diagnostic } = {
   // Lease may have expired during durable storage; the intent stays spent.
   authenticateTurnPermit(envelope, context, Math.floor(Date.now() / 1000))
   const remaining = lease.deadline - Math.floor(Date.now() / 1000)
-  if (remaining < 1 || remaining > 120) reject()
+  if (remaining < 1 || remaining > 120) reject('deadline')
   const child = spawn('/usr/bin/systemd-run', ['--quiet', '--unit', lease.unit, '--wait', '--pipe', ...properties,
     '--property', `RuntimeMaxSec=${remaining}s`, '--working-directory=/opt/aisdlc-codex/workspace',
     nodeBinary, '--jitless', brokerScript], { env: fixedEnvironment, stdio: ['pipe', 'pipe', 'pipe'] })
@@ -98,7 +98,7 @@ export async function launchGuardedAttempt(envelope, context, { diagnostic } = {
       catch (error) { if (error.code !== 'ENOENT') reject() }
       if (populated || !observed) reject()
       return { rootExited: true, cgroupEmpty: true, launchWritersDrained: true }
-    } catch { reject() }
+    } catch { reject('cleanup') }
     finally { channel.dispose() }
   }
   // Observe the actual daemon-created unit, retaining it through stopped state.
@@ -130,6 +130,6 @@ export async function launchGuardedAttempt(envelope, context, { diagnostic } = {
     try { await command(['stop', lease.unit]) } catch { /* Remains uncertain. */ }
     if (!closed) child.kill('SIGKILL')
     channel.dispose()
-    reject()
+    reject('observation')
   }
 }
