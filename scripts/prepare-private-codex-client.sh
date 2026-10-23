@@ -3,6 +3,10 @@
 # Installs no login material and never invokes inference or starts an app-server.
 set -euo pipefail
 [[ $(id -u) == 0 && $(uname -m) == x86_64 ]]
+if ! command -v bwrap >/dev/null 2>&1; then
+  apt-get update -qq
+  apt-get install -y --no-install-recommends bubblewrap
+fi
 account=aisdlc-broker
 install_dir=/opt/aisdlc-codex/0.155.1
 broker_home=/var/lib/aisdlc-codex-broker

@@ -57,11 +57,17 @@ jobs:
       - run: npm run seed
       - run: npm run typecheck
       - name: Recovery discovery and fail-closed checks
-        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs tests/recovery-storage-template.test.mjs tests/azure-authority-ledger.test.mjs tests/azure-authority-identity.test.mjs tests/authority-attempts.test.mjs tests/attempt-evidence.test.mjs tests/codex-turn-session.test.mjs
+        run: node --test tests/recovery-discovery.test.mjs tests/verifier-recovery.test.mjs tests/qualification-docker-proxy.test.mjs tests/codex-trial-policy.test.mjs tests/codex-transport-guard.test.mjs tests/azure-trial-template.test.mjs tests/recovery-storage-template.test.mjs tests/azure-authority-ledger.test.mjs tests/azure-authority-identity.test.mjs tests/authority-attempts.test.mjs tests/attempt-evidence.test.mjs tests/codex-turn-session.test.mjs tests/turn-permit.test.mjs tests/bounded-json-channel.test.mjs
       - name: Integration tests
         run: npm test > docs/evidence/github-ci/integration-tests.log 2>&1
       - name: Qualify synthetic taskboard verifier
         run: node --import tsx scripts/taskboard-verifier-qualification.mjs
+      - name: Package and qualify native guardian lifecycle without credentials
+        shell: bash
+        run: |
+          node scripts/package-native-runtime.mjs > .local/native-runtime-package.json
+          package_dir=$(node --input-type=module -e "import fs from 'node:fs'; process.stdout.write(JSON.parse(fs.readFileSync('.local/native-runtime-package.json','utf8')).directory)")
+          sudo env GITHUB_ACTIONS=true AISDLC_NODE_BINARY="$(command -v node)" timeout 150 "$(command -v node)" scripts/qualify-native-guardian.mjs "$package_dir" | tee docs/evidence/github-ci/native-guardian-qualification.jsonl
       - name: Publish safe integration diagnostics
         if: failure()
         run: node scripts/ci-test-summary.mjs
