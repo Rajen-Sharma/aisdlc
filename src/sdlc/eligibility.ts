@@ -11,12 +11,12 @@ export async function storyReadiness(payload: Payload, id: number) {
   const blockers: string[] = []
   if (story.projectKey !== project.key || story.contextHash !== digest(project)) blockers.push('Project context changed.')
   validateTaskContract(story.contract)
-  if (digest({ projectKey: story.projectKey, contextHash: story.contextHash, storyKey: story.storyKey, revision: story.revision, title: story.title, contract: story.contract, supersedes: story.supersedes ?? null }) !== story.scopeHash) blockers.push('Story integrity failed.')
+  if (digest({ projectKey: story.projectKey, contextHash: story.contextHash, storyKey: story.storyKey, revision: story.revision, title: story.title, contract: story.contract, supersedes: story.supersedes ?? null, ...(story.feedback ? { feedback: story.feedback } : {}) }) !== story.scopeHash) blockers.push('Story integrity failed.')
   const latest = await payload.find({ collection: 'sdlc-stories', overrideAccess: true, where: { and: [{ projectKey: { equals: story.projectKey } }, { storyKey: { equals: story.storyKey } }] }, sort: '-revision', limit: 1, depth: 0 })
   if (latest.docs[0]?.id !== story.id) blockers.push('Story is superseded.')
   const gates = await payload.find({ collection: 'sdlc-gates', overrideAccess: true, where: { story: { equals: id } }, limit: 10, depth: 0 })
   for (const kind of ['sprint', 'design-security']) {
     if (!gates.docs.some(gate => gate.kind === kind && gate.decision === 'accept' && gate.scopeHash === story.scopeHash && gate.projectKey === story.projectKey && gate.actor)) blockers.push(`${kind} acceptance required for this exact story version.`)
   }
-  return { storyId: id, scopeHash: story.scopeHash, planningReady: !blockers.length, executionReady: false as const, blockers, executionBlocker: 'Coding worker, atomic claim and independent verifier are not yet qualified.' }
+  return { storyId: id, scopeHash: story.scopeHash, planningReady: !blockers.length, executionReady: false as const, blockers, executionBlocker: 'Coding is waiting for a qualified runtime and independent verification.' }
 }

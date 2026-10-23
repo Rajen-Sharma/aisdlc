@@ -3,6 +3,7 @@ import { admin, role } from '../security'
 import { digest } from './contracts'
 import { activeProject } from './project'
 import { lockStory } from './story-lock'
+import { reviewArtifact } from './artifact-collections'
 
 const immutable = { read: admin, create: admin, update: () => false, delete: () => false }
 const hashPattern = /^[a-f0-9]{64}$/
@@ -39,16 +40,21 @@ export const Stories: CollectionConfig = {
       if (previous.projectKey !== project.key || previous.storyKey !== data.storyKey) throw new APIError('Revision must supersede the same project and story.', 409)
       revision = previous.revision + 1
     }
+    if (data.feedback) {
+      const feedback = await req.payload.findByID({ collection: 'sdlc-delivery-feedback', id: data.feedback, user: req.user, overrideAccess: false, req, depth: 0 })
+      if (feedback.projectKey !== project.key || feedback.story !== data.supersedes) throw new APIError('Feedback revision must supersede the reviewed story.', 409)
+    }
     data.revision = revision
     data.versionKey = `${project.key}:${data.storyKey}:${revision}`
     data.actor = req.user!.id
-    data.scopeHash = digest({ projectKey: project.key, contextHash: data.contextHash, storyKey: data.storyKey, revision, title: data.title, contract: data.contract, supersedes: data.supersedes ?? null })
+    data.scopeHash = digest({ projectKey: project.key, contextHash: data.contextHash, storyKey: data.storyKey, revision, title: data.title, contract: data.contract, supersedes: data.supersedes ?? null, ...(data.feedback ? { feedback: data.feedback } : {}) })
     return data
   }] },
   fields: [
     { name: 'projectKey', type: 'text', required: true }, { name: 'contextHash', type: 'text', required: true },
     { name: 'storyKey', type: 'text', required: true, maxLength: 100 }, { name: 'title', type: 'text', required: true, maxLength: 200 },
     { name: 'contract', type: 'json', required: true }, { name: 'supersedes', type: 'relationship', relationTo: 'sdlc-stories' },
+    { name: 'feedback', type: 'relationship', relationTo: 'sdlc-delivery-feedback' },
     { name: 'revision', type: 'number', required: true, admin: { readOnly: true } },
     { name: 'versionKey', type: 'text', required: true, unique: true, admin: { readOnly: true } },
     { name: 'scopeHash', type: 'text', required: true, admin: { readOnly: true } },
@@ -67,17 +73,25 @@ export const Gates: CollectionConfig = {
     if (story.projectKey !== project.key || story.contextHash !== digest(project) || data.scopeHash !== story.scopeHash) throw new APIError('Gate scope is stale or belongs to another project.', 409)
     const revisions = await req.payload.find({ collection: 'sdlc-stories', user: req.user, overrideAccess: false, where: { and: [{ projectKey: { equals: project.key } }, { storyKey: { equals: story.storyKey } }] }, sort: '-revision', limit: 1, depth: 0, req })
     if (revisions.docs[0]?.id !== story.id) throw new APIError('Superseded story cannot receive approvals.', 409)
-    // Artifact review needs a verified artifact ledger, which this checkpoint does not yet provide.
-    if (!['sprint', 'design-security'].includes(data.kind)) throw new APIError('Artifact review is unavailable until verified artifact evidence exists.', 409)
+    if (!['sprint', 'design-security'].includes(data.kind)) {
+      if (!['code-security', 'outcome', 'mvp'].includes(data.kind)) throw new APIError('Unknown review gate.', 400)
+      const artifact = await reviewArtifact(req, story, data.artifactHash)
+      if (data.decision === 'accept' && !artifact.passed) throw new APIError('Failed checks cannot receive artifact acceptance.', 409)
+      const required = data.kind === 'mvp' ? ['code-security', 'outcome'] : data.kind === 'outcome' ? ['code-security'] : []
+      for (const kind of required) if (!artifact.gates.some(g => g.kind === kind && g.decision === 'accept' && g.artifactHash === data.artifactHash)) throw new APIError(`${kind} acceptance required for this exact artifact.`, 409)
+      // A short-lived independent state must still be current after the database reads.
+      if (Math.floor(Date.now() / 1000) >= artifact.state.expiresAt) throw new APIError('Current delivery evidence expired. Refresh the review.', 409)
+    } else if (data.artifactHash) throw new APIError('Planning approvals must not contain an artifact.', 400)
     data.actor = req.user!.id
     data.projectKey = project.key
-    data.decisionKey = `${story.id}:${story.scopeHash}:${data.kind}`
+    data.decisionKey = `${story.id}:${story.scopeHash}:${data.kind}${data.artifactHash ? `:${data.artifactHash}` : ''}`
     return data
   }] },
   fields: [
     { name: 'story', type: 'relationship', relationTo: 'sdlc-stories', required: true },
     { name: 'projectKey', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'scopeHash', type: 'text', required: true },
+    { name: 'artifactHash', type: 'text' },
     { name: 'kind', type: 'select', required: true, options: [...gateKinds] },
     { name: 'decision', type: 'select', required: true, options: ['accept', 'reject'] },
     { name: 'notes', type: 'textarea', required: true, maxLength: 4000 },

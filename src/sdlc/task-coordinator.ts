@@ -7,6 +7,8 @@ import { validateTaskContract } from './delivery'
 import { bindArtifacts, validateBinding, validateBoundCandidate, type BindingArtifacts, type BindingGate, type BindingReceipt, type TaskBindingRecord } from './task-binding'
 import { authenticateVerifierEvidence, supervisorIdentity, validateChallenge, type ChallengeReceipt, type VerifierChallenge } from './verifier-evidence'
 import { SupervisorRegistry } from './supervisor-registry'
+import { authenticateDeliveryArtifact } from './delivery-artifact'
+import { currentDelivery } from './delivery-current'
 
 const maxAttempts = 3
 const executionAllowed = false as const // No qualified executor or verifier is attached.
@@ -33,7 +35,7 @@ async function eligible(db: PoolClient, storyId: number) {
   const project = await activeProject()
   if (story.project_key !== project.key || story.context_hash !== digest(project)) throw new Error('Project scope is stale.')
   validateTaskContract(story.contract)
-  const scope = digest({ projectKey: story.project_key, contextHash: story.context_hash, storyKey: story.story_key, revision: Number(story.revision), title: story.title, contract: story.contract, supersedes: story.supersedes_id ?? null })
+  const scope = digest({ projectKey: story.project_key, contextHash: story.context_hash, storyKey: story.story_key, revision: Number(story.revision), title: story.title, contract: story.contract, supersedes: story.supersedes_id ?? null, ...(story.feedback_id ? { feedback: story.feedback_id } : {}) })
   if (scope !== story.scope_hash) throw new Error('Story integrity failed.')
   const latest = await db.query('SELECT id FROM sdlc_stories WHERE project_key=$1 AND story_key=$2 ORDER BY revision DESC LIMIT 1', [project.key, story.story_key])
   if (latest.rows[0]?.id !== storyId) throw new Error('Story is superseded.')
@@ -72,6 +74,39 @@ export async function inspectExecutionEligibility(payload: Payload, storyId: num
       sourceHash: story.contract.sourceHash, checkPolicyHash: story.contract.checkPolicyHash,
       maxAttempts: 3, subscriptionOnly: true, additionalChargesAllowed: false, executionAllowed: false }
     return { record, snapshotHash: digest(record) }
+  })
+}
+
+/** Import an independently signed native delivery. No HTTP or model-facing writer.
+ * Current authority state, signed artifact bytes and current human planning gates
+ * must all agree. Synthetic qualification receipts cannot pass this boundary.
+ */
+export async function retainDeliveryArtifact(payload: Payload, storyId: number, input: unknown) {
+  if (!Number.isSafeInteger(storyId) || storyId < 1 || Buffer.byteLength(JSON.stringify(input) ?? '') > 800000) throw new Error('Invalid delivery artifact.')
+  const detached = structuredClone(input)
+  return transaction(payload, async db => {
+    const lookup = await db.query('SELECT project_key,story_key FROM sdlc_stories WHERE id=$1', [storyId])
+    if (!lookup.rows[0]) throw new Error('Story not found.')
+    await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
+    const story = await eligible(db, storyId)
+    const taskKey = digest({ projectKey: story.project_key, storyKey: story.story_key })
+    const { state, trust } = await currentDelivery(taskKey)
+    const result = authenticateDeliveryArtifact(detached, trust, Math.floor(Date.now() / 1000), { storyId, taskKey,
+      scopeHash: story.scope_hash, approvalHash: digest(story.approvalGates), sourceHash: story.contract.sourceHash,
+      checkPolicyHash: story.contract.checkPolicyHash, allowedPaths: story.contract.allowedPaths, criteriaTotal: story.contract.acceptanceCriteria.length })
+    const c = result.artifact.envelope.claim
+    if (state.artifactHash !== result.artifactHash || state.scopeHash !== c.scopeHash || state.approvalHash !== c.approvalHash
+      || state.attemptId !== c.attemptId || state.terminationHash !== c.terminationHash || state.verificationHash !== c.verificationHash) throw new Error('Current authority does not retain this delivery.')
+    const existing = await db.query('SELECT id,artifact_hash FROM sdlc_delivery_artifacts WHERE attempt_id=$1', [c.attemptId])
+    if (existing.rows[0]) {
+      if (existing.rows[0].artifact_hash !== result.artifactHash) throw new Error('Attempt already retains different evidence.')
+      return { id: Number(existing.rows[0].id), artifactHash: result.artifactHash }
+    }
+    if (Math.floor(Date.now() / 1000) >= state.expiresAt) throw new Error('Current delivery evidence expired.')
+    const retained = await db.query(`INSERT INTO sdlc_delivery_artifacts (story_id,project_key,scope_hash,artifact_hash,candidate_hash,attempt_id,record,created_at,updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,clock_timestamp(),clock_timestamp()) RETURNING id`,
+      [storyId, story.project_key, story.scope_hash, result.artifactHash, c.candidateHash, c.attemptId, JSON.stringify(result.artifact)])
+    return { id: Number(retained.rows[0].id), artifactHash: result.artifactHash }
   })
 }
 function taskRow(value: Task): Task {

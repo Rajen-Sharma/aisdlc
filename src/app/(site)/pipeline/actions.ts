@@ -42,6 +42,49 @@ export async function reviewStory(form: FormData) {
   } })
   revalidatePath('/pipeline'); redirect('/pipeline')
 }
+export async function reviewDeliveryArtifact(_previous: { error?: string; success?: string }, form: FormData): Promise<{ error?: string; success?: string }> {
+  try {
+    const { payload, user } = await session()
+    const story = Number(text(form, 'story', 20)), kind = text(form, 'kind', 30), decision = text(form, 'decision', 20)
+    if (!Number.isSafeInteger(story) || story < 1 || !['code-security', 'outcome', 'mvp'].includes(kind) || !['accept', 'reject'].includes(decision)) throw new Error('Invalid artifact review.')
+    await payload.create({ collection: 'sdlc-gates', user, overrideAccess: false, data: {
+      story, scopeHash: text(form, 'scopeHash', 64), artifactHash: text(form, 'artifactHash', 64),
+      kind: kind as 'code-security' | 'outcome' | 'mvp', decision: decision as 'accept' | 'reject', notes: text(form, 'notes', 4000),
+      actor: user.id, projectKey: '', decisionKey: '',
+    } })
+    revalidatePath('/pipeline')
+    return { success: 'Your decision was recorded for this exact artifact.' }
+  } catch { return { error: 'Decision was not recorded. Refresh the evidence and check earlier reviews. Your notes are preserved.' } }
+}
+
+export async function recordDeliveryFeedback(form: FormData) {
+  const { payload, user } = await session()
+  const story = Number(text(form, 'story', 20))
+  if (!Number.isSafeInteger(story) || story < 1) throw new Error('Invalid story.')
+  await payload.create({ collection: 'sdlc-delivery-feedback', user, overrideAccess: false, data: {
+    story, artifactHash: text(form, 'artifactHash', 64), content: text(form, 'content', 4000),
+    actor: user.id, projectKey: '', scopeHash: '', feedbackHash: '',
+  } })
+  revalidatePath('/pipeline'); redirect('/pipeline?notice=delivery-feedback')
+}
+
+export async function reviseDeliveryFeedback(form: FormData) {
+  const { payload, user } = await session()
+  const id = Number(text(form, 'feedback', 20))
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error('Invalid feedback.')
+  const feedback = await payload.findByID({ collection: 'sdlc-delivery-feedback', id, user, overrideAccess: false, depth: 0 })
+  const story = await payload.findByID({ collection: 'sdlc-stories', id: typeof feedback.story === 'number' ? feedback.story : feedback.story.id, user, overrideAccess: false, depth: 0 })
+  const project = await activeProject()
+  if (story.projectKey !== project.key || story.contextHash !== digest(project)) throw new Error('Feedback project is stale.')
+  const old = story.contract as Record<string, unknown>
+  const acceptanceCriteria = text(form, 'acceptanceCriteria', 12000).split(/\r?\n/).map(line => line.trim()).filter(Boolean)
+  await payload.create({ collection: 'sdlc-stories', user, overrideAccess: false, data: {
+    projectKey: project.key, contextHash: digest(project), storyKey: story.storyKey, title: text(form, 'title', 200),
+    contract: { ...old, acceptanceCriteria, checkPolicyHash: text(form, 'checkPolicyHash', 64) }, supersedes: story.id, feedback: feedback.id,
+    revision: 0, scopeHash: '', versionKey: '', actor: user.id,
+  } })
+  revalidatePath('/pipeline'); redirect('/pipeline?notice=delivery-revised')
+}
 export async function submitIntake(form: FormData) {
   const { payload, user } = await session()
   const project = await activeProject()

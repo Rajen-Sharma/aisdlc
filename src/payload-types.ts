@@ -80,6 +80,8 @@ export interface Config {
     'sdlc-task-bindings': SdlcTaskBinding;
     'sdlc-verifier-challenges': SdlcVerifierChallenge;
     'sdlc-verifier-evidence': SdlcVerifierEvidence;
+    'sdlc-delivery-artifacts': SdlcDeliveryArtifact;
+    'sdlc-delivery-feedback': SdlcDeliveryFeedback;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +102,8 @@ export interface Config {
     'sdlc-task-bindings': SdlcTaskBindingsSelect<false> | SdlcTaskBindingsSelect<true>;
     'sdlc-verifier-challenges': SdlcVerifierChallengesSelect<false> | SdlcVerifierChallengesSelect<true>;
     'sdlc-verifier-evidence': SdlcVerifierEvidenceSelect<false> | SdlcVerifierEvidenceSelect<true>;
+    'sdlc-delivery-artifacts': SdlcDeliveryArtifactsSelect<false> | SdlcDeliveryArtifactsSelect<true>;
+    'sdlc-delivery-feedback': SdlcDeliveryFeedbackSelect<false> | SdlcDeliveryFeedbackSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -296,9 +300,26 @@ export interface SdlcStory {
     | boolean
     | null;
   supersedes?: (number | null) | SdlcStory;
+  feedback?: (number | null) | SdlcDeliveryFeedback;
   revision: number;
   versionKey: string;
   scopeHash: string;
+  actor: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-delivery-feedback".
+ */
+export interface SdlcDeliveryFeedback {
+  id: number;
+  story: number | SdlcStory;
+  projectKey: string;
+  scopeHash: string;
+  artifactHash: string;
+  content: string;
+  feedbackHash: string;
   actor: number | User;
   updatedAt: string;
   createdAt: string;
@@ -312,6 +333,7 @@ export interface SdlcGate {
   story: number | SdlcStory;
   projectKey: string;
   scopeHash: string;
+  artifactHash?: string | null;
   kind: 'sprint' | 'design-security' | 'code-security' | 'outcome' | 'mvp';
   decision: 'accept' | 'reject';
   notes: string;
@@ -437,6 +459,30 @@ export interface SdlcVerifierEvidence {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-delivery-artifacts".
+ */
+export interface SdlcDeliveryArtifact {
+  id: number;
+  story: number | SdlcStory;
+  projectKey: string;
+  scopeHash: string;
+  artifactHash: string;
+  candidateHash: string;
+  attemptId: string;
+  record:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -510,6 +556,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sdlc-verifier-evidence';
         value: number | SdlcVerifierEvidence;
+      } | null)
+    | ({
+        relationTo: 'sdlc-delivery-artifacts';
+        value: number | SdlcDeliveryArtifact;
+      } | null)
+    | ({
+        relationTo: 'sdlc-delivery-feedback';
+        value: number | SdlcDeliveryFeedback;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -669,6 +723,7 @@ export interface SdlcStoriesSelect<T extends boolean = true> {
   title?: T;
   contract?: T;
   supersedes?: T;
+  feedback?: T;
   revision?: T;
   versionKey?: T;
   scopeHash?: T;
@@ -684,6 +739,7 @@ export interface SdlcGatesSelect<T extends boolean = true> {
   story?: T;
   projectKey?: T;
   scopeHash?: T;
+  artifactHash?: T;
   kind?: T;
   decision?: T;
   notes?: T;
@@ -766,6 +822,36 @@ export interface SdlcVerifierEvidenceSelect<T extends boolean = true> {
   resultHash?: T;
   record?: T;
   evidenceBase64?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-delivery-artifacts_select".
+ */
+export interface SdlcDeliveryArtifactsSelect<T extends boolean = true> {
+  story?: T;
+  projectKey?: T;
+  scopeHash?: T;
+  artifactHash?: T;
+  candidateHash?: T;
+  attemptId?: T;
+  record?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sdlc-delivery-feedback_select".
+ */
+export interface SdlcDeliveryFeedbackSelect<T extends boolean = true> {
+  story?: T;
+  projectKey?: T;
+  scopeHash?: T;
+  artifactHash?: T;
+  content?: T;
+  feedbackHash?: T;
+  actor?: T;
   updatedAt?: T;
   createdAt?: T;
 }
