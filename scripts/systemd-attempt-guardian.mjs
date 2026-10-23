@@ -43,7 +43,7 @@ async function inspect(unit) {
 }
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-export async function launchGuardedAttempt(envelope, context) {
+export async function launchGuardedAttempt(envelope, context, { diagnostic } = {}) {
   if (process.platform !== 'linux' || process.getuid() !== 0 || (await readFile('/proc/1/comm', 'utf8')).trim() !== 'systemd') reject()
   const lease = authenticateTurnPermit(envelope, context, Math.floor(Date.now() / 1000))
   if (context.kind !== 'launch' || lease.bootId !== (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim()) reject()
@@ -69,7 +69,13 @@ export async function launchGuardedAttempt(envelope, context) {
   let closed = false, transportFailed = false, diagnostics = 0, observed = false
   child.on('error', () => { transportFailed = true })
   child.stdin.on('error', () => { transportFailed = true })
-  child.stderr.on('data', chunk => { diagnostics += chunk.length; if (diagnostics > 65536) transportFailed = true })
+  child.stderr.on('data', chunk => {
+    diagnostics += chunk.length
+    if (diagnostics > 65536) transportFailed = true
+    // An in-process trusted fixture observer may inspect its own credential-free
+    // diagnostics. The native controller supplies no observer and logs none.
+    else diagnostic?.(Buffer.from(chunk))
+  })
   const exit = new Promise(resolve => child.once('close', code => { closed = true; resolve(code) }))
   const channel = boundedJsonChannel(child.stdout)
   const group = `/system.slice/${lease.unit}`

@@ -77,7 +77,9 @@ let pending=''; process.stdin.on('data', async chunk => {
     return { envelope: { lease, signature: sign(null, turnPermitSigningBytes(lease), keys.privateKey).toString('base64') },
       context: { policy, hostId, bootId, kind: 'launch', challengeNonce }, task: { canaries, port } }
   }
-  const successful = ticket(), work = await engine.launchGuardedAttempt(successful.envelope, successful.context)
+  const successful = ticket(), work = await engine.launchGuardedAttempt(successful.envelope, successful.context, { diagnostic: chunk => {
+    console.error('::notice title=Credential-free guardian launcher::' + chunk.toString('utf8').slice(0, 2000).replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A'))
+  } })
   work.send(successful.task)
   const observed = await work.read(Date.now() + 10000)
   assert.equal(observed.uid, uid); assert.deepEqual(observed.denied, [true, true, true]); assert.equal(observed.brokerData, true); assert.equal(observed.networkDenied, true)
@@ -105,6 +107,14 @@ let pending=''; process.stdin.on('data', async chunk => {
   console.log(JSON.stringify({ nativeGuardianQualifiedSynthetically: true, realModelCalls: 0, credentialsUsed: false, actualHumanApprovals: 0,
     nativeRuntimeQualified: false, executionAllowed: false, reports }))
 } catch (error) {
+  for (const unit of units) {
+    try {
+      const status = await exec('/usr/bin/systemctl', ['show', unit, '--property=LoadState,ActiveState,SubState,Result,ExecMainCode,ExecMainStatus'])
+      console.error('::notice title=Credential-free guardian unit::' + status.stdout.trim().replaceAll('\n', ';'))
+      const log = await exec('/usr/bin/journalctl', ['--unit', unit, '--no-pager', '-n', '8', '-o', 'cat'], { timeout: 5000, maxBuffer: 16384 })
+      console.error('::notice title=Credential-free guardian fixture::' + log.stdout.slice(0, 2000).replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A'))
+    } catch { /* Unit might never have been created. */ }
+  }
   console.error('::error title=Synthetic guardian qualification::' + String(error.message).slice(0, 2000).replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A'))
   throw error
 } finally {
