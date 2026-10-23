@@ -26,8 +26,11 @@ const nodeBinary = '/opt/aisdlc-node/24.14.0/node', brokerScript = '/opt/aisdlc-
 const journalDirectory = '/var/lib/aisdlc-guardian/journal'
 async function trustedFile(file, executable) {
   const info = await lstat(file)
-  if (!info.isFile() || info.isSymbolicLink() || info.uid !== 0 || info.nlink !== 1 || (info.mode & 0o022)
-    || (executable && !(info.mode & 0o100)) || await realpath(file) !== file) reject('trusted-file')
+  const label = executable ? 'node' : 'broker'
+  if (!info.isFile() || info.isSymbolicLink()) reject(`trusted-file-${label}-type`)
+  if (info.uid !== 0 || info.nlink !== 1 || (info.mode & 0o022)) reject(`trusted-file-${label}-ownership`)
+  if (executable && !(info.mode & 0o100)) reject(`trusted-file-${label}-executable`)
+  if (await realpath(file) !== file) reject(`trusted-file-${label}-path`)
 }
 async function command(args) {
   return exec('/usr/bin/systemctl', args, { env: fixedEnvironment, timeout: 5000, maxBuffer: 4096, encoding: 'utf8' })
