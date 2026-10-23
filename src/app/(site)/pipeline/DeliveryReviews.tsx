@@ -4,6 +4,8 @@ import { reviewArtifact } from '../../../sdlc/artifact-collections'
 import ArtifactDecisionForm from './ArtifactDecisionForm'
 import { recordDeliveryFeedback, reviseDeliveryFeedback } from './actions'
 import SubmitButton from './SubmitButton'
+import { recordedShowcase } from '../../../sdlc/delivery-showcase'
+import VerifiedShowcase from './VerifiedShowcase'
 
 export default async function DeliveryReviews({ payload, user, projectKey }: { payload: Payload; user: User; projectKey: string }) {
   const artifacts = await payload.find({ collection: 'sdlc-delivery-artifacts', user, overrideAccess: false,
@@ -19,6 +21,7 @@ export default async function DeliveryReviews({ payload, user, projectKey }: { p
       try { verified = await reviewArtifact(req, story, row.artifactHash) } catch { /* Unavailable or stale evidence never enables review. */ }
       if (!verified) return <article className="run-card" key={row.id}><h3>{story.storyKey} · v{story.revision}</h3><p className="hash">Artifact {row.artifactHash}</p><p role="status">Review blocked: current independent evidence is unavailable, expired or superseded. Refresh when the verifier service is available.</p></article>
       const { artifact, gates, passed } = verified, claim = artifact.envelope.claim
+      const showcase = await recordedShowcase(row.artifactHash, claim)
       const feedback = await payload.find({ collection: 'sdlc-delivery-feedback', user, overrideAccess: false, depth: 0,
         where: { and: [{ story: { equals: story.id } }, { artifactHash: { equals: row.artifactHash } }] }, sort: '-id', limit: 20 })
       const contract = story.contract as { acceptanceCriteria: string[]; checkPolicyHash: string }
@@ -26,6 +29,8 @@ export default async function DeliveryReviews({ payload, user, projectKey }: { p
         <div className="run-heading"><h3>{story.storyKey} · v{story.revision}</h3><span className="pill">{passed ? 'Checks passed · human review pending' : `Checks ${claim.verdict}`}</span></div>
         <p>{claim.criteriaPassed}/{claim.criteriaTotal} criteria passed · Attempt {claim.attempt}/3 · Native Codex candidate</p>
         <ol>{contract.acceptanceCriteria.map((criterion, i) => <li key={i}>{criterion}</li>)}</ol>
+        {showcase ? <><p>{showcase.casesPassed}/{showcase.cases.length} check cases passed · {showcase.elapsedMs} ms · Exit {showcase.exitCode ?? 'unknown'} · {showcase.usage ? `${showcase.usage.totalTokens} recorded tokens` : 'Token usage unavailable'}</p>
+          <VerifiedShowcase cases={showcase.cases}/></> : <p className="muted">Detailed recorded case replay is unavailable.</p>}
         <details><summary>Exact source changes</summary>{artifact.candidate.files.map((file, index) => <div key={file.path}>
           <h4>{file.path}</h4><p>{file.sha256 === artifact.source.files[index].sha256 ? 'Unchanged' : 'Changed'}</p>
           <details><summary>Before</summary><pre>{Buffer.from(artifact.source.files[index].content, 'base64').toString('utf8')}</pre></details>

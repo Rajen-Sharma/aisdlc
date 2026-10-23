@@ -18,7 +18,7 @@ export const nativeUnitProperties = [
   'RestrictNamespaces=yes', 'LockPersonality=yes', 'MemoryDenyWriteExecute=yes', 'ProtectProc=invisible',
   'CapabilityBoundingSet=', 'AmbientCapabilities=', 'TemporaryFileSystem=/var/lib:ro /run:ro',
   'BindPaths=/var/lib/aisdlc-codex-broker/.codex', 'ReadOnlyPaths=/opt', 'InaccessiblePaths=/proc/1',
-  'RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6', 'IPAddressDeny=localhost 169.254.169.254/32', 'IPAddressAllow=127.0.0.53/32',
+  'RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6', 'IPAddressDeny=127.0.0.0/8 ::1/128 169.254.169.254/32', 'IPAddressAllow=127.0.0.53/32',
   'MemoryMax=384M', 'TasksMax=64', 'CPUQuota=50%', 'KillMode=control-group', 'SendSIGKILL=yes', 'TimeoutStopSec=2s',
 ]
 const properties = nativeUnitProperties.flatMap(value => ['--property', value])
@@ -85,7 +85,7 @@ export async function launchGuardedAttempt(envelope, context, { diagnostic } = {
   const stop = async () => {
     try {
       const current = await inspect(lease.unit)
-      if (current.LoadState !== 'loaded' || Number(current.ExecMainPID) < 1
+      if (!observed || current.LoadState !== 'loaded'
         || (current.ControlGroup && current.ControlGroup !== group)) reject()
       observed = true
       child.stdin.end()

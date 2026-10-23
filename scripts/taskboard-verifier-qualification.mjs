@@ -9,6 +9,7 @@ import { decodeCodexCandidate } from '../src/sdlc/codex-candidate.ts'
 import { exportSourceCapsule } from '../src/sdlc/source-capsule.ts'
 import { verifierImage } from '../src/sdlc/task-binding.ts'
 import { taskboardCases, verifyTaskboardCandidate } from '../src/sdlc/taskboard-verifier.ts'
+import { qualifyNativeDelivery } from './qualify-native-delivery.mjs'
 
 if (process.platform !== 'linux' || (process.env.GITHUB_ACTIONS !== 'true' &&
     process.env.AISDLC_QUALIFICATION_HOST !== 'azure-tools-trial')) throw new Error('Requires an explicitly selected Linux qualification host.')
@@ -65,6 +66,12 @@ for (const [label, content, shouldPass] of variants) {
   const accepted = report.verdict === 'pass'
   evidence.results.push({ label, candidateHash: decoded.candidateHash, expectedAcceptance: shouldPass,
     accepted, matchedExpectation: accepted === shouldPass, removed: report.cleanupVerified, report })
+  if (['reference-control', 'wrong-empty'].includes(label)) {
+    const qualification = await qualifyNativeDelivery({ source, candidate: decoded.capsule, policyText, runnerSource,
+      verifierHash: evidence.runnerHash, image: verifierImage, shouldPass })
+    evidence.nativeDeliveryProtocol ??= []
+    evidence.nativeDeliveryProtocol.push({ label, ...qualification })
+  }
 }
 await mkdir('docs/evidence/github-ci', { recursive: true })
 await writeFile('docs/evidence/github-ci/taskboard-verifier.json', JSON.stringify(evidence, null, 2) + '\n')

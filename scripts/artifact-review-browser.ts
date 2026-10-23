@@ -27,6 +27,7 @@ try {
   const page = await context.newPage()
   await page.goto(`${base}/pipeline`, { timeout: 60000 })
   await expect(page.getByRole('heading', { name: 'Code, showcase & outcome', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Coding run progress', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'No verified delivery yet', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Accept code security', exact: true })).toHaveCount(0)
   results.push('Anonymous records and authenticated browser writes denied; no acceptance without verified evidence')

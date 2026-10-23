@@ -16,7 +16,8 @@ type Configuration = {
   version: 1; hostId: string; storyId: number
   policy: { taskKey: string; scopeHash: string; approvalHash: string; runtimeHash: string; keyId: string; authorityRevision: number;
     publicKeyDer: string; nativeRuntimeQualified: true; expiresAt: number }
-  task: { projectKey: string; storyKey: string; title: string; contract: { sourceHash: string; checkPolicyHash: string; allowedPaths: string[]; acceptanceCriteria: string[] } }
+  task: { projectKey: string; contextHash: string; storyKey: string; revision: number; supersedes: number | null; feedback?: number;
+    title: string; contract: { sourceHash: string; checkPolicyHash: string; allowedPaths: string[]; acceptanceCriteria: string[] } }
   source: SourceCapsule
   runtimeMaterial: { nodeHash: string; codexHash: string; brokerHash: string; guardianHash: string; profileHash: string; guardianKeyFingerprint: string }
   guardian: { keyId: string; revision: number; publicKeyDer: string }

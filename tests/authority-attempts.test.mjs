@@ -63,6 +63,40 @@ async function settle(state, extra = {}, proofExtra = {}) {
     outcome: attempt.candidateHash ? 'candidate' : 'failed', usage: null, ...extra }, proof)
 }
 
+test('new human-approved feedback scopes retain the global budget and cannot restore an old scope', async () => {
+  const state = fixture()
+  await state.authority.register(state.policy()); await begin(state); await settle(state)
+  const original = await state.authority.inspect(taskKey)
+  const revise = async (scope, approval) => state.construct().revise({ taskKey,
+    previousRegistrationId: (await state.authority.inspect(taskKey)).task.registrationId,
+    feedbackHash: hash('human feedback'), policy: { ...state.policy(), scopeHash: hash(scope), approvalHash: hash(approval) } })
+  await assert.rejects(revise('scope2', 'gates2'))
+  state.controls.authorized = false; state.advance(4000)
+  await state.authority.revoke({ taskKey, reasonHash: hash('superseded') })
+  await assert.rejects(revise('scope2', 'gates2'))
+  state.controls.authorized = true
+  await revise('scope2', 'gates2')
+  assert.equal((await state.construct().inspect(taskKey)).accounting.attemptsSpent, 1)
+  await assert.rejects(state.authority.begin({ taskKey, registrationId: original.task.registrationId,
+    attempt: 2, reservationHash: hash('reservation'), hostId, bootId, deadline: state.now() + 100 }))
+  await begin(state); await settle(state)
+  await state.authority.revoke({ taskKey, reasonHash: hash('superseded again') })
+  await assert.rejects(revise('scope', 'gates3'))
+  await revise('scope3', 'gates3'); await begin(state); await settle(state)
+  await state.authority.revoke({ taskKey, reasonHash: hash('third scope revoked') })
+  await assert.rejects(revise('scope4', 'gates4'))
+  assert.equal((await state.construct().inspect(taskKey)).accounting.remainingAttempts, 0)
+})
+
+test('a revision cannot clear an unresolved attempt even with a new approved scope', async () => {
+  const state = fixture(); await state.authority.register(state.policy()); await begin(state)
+  await state.authority.revoke({ taskKey, reasonHash: hash('changed') })
+  const current = await state.authority.inspect(taskKey)
+  await assert.rejects(state.authority.revise({ taskKey, previousRegistrationId: current.task.registrationId,
+    feedbackHash: hash('human feedback'), policy: { ...state.policy(), scopeHash: hash('new'), approvalHash: hash('new gates') } }))
+  assert.equal((await state.construct().inspect(taskKey)).accounting.attemptsSpent, 1)
+})
+
 test('external intents consume at most three attempts across fresh authority processes and never grant execution', async () => {
   const state = fixture()
   await state.authority.register(state.policy())

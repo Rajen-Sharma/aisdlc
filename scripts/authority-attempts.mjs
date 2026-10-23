@@ -12,6 +12,9 @@ const exact = (value, keys) => value && typeof value === 'object' && !Array.isAr
 const reject = () => { throw new Error('Attempt authority rejected.') }
 const copy = value => structuredClone(value)
 const fixed = ['protocol', 'action', 'taskKey']
+const canonical = value => Array.isArray(value) ? `[${value.map(canonical).join(',')}]`
+  : value && typeof value === 'object' ? `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}` : JSON.stringify(value)
+const digest = value => createHash('sha256').update(canonical(value)).digest('hex')
 
 function runtime(value) {
   return exact(value, ['hostId', 'bootId', 'unit']) && uuid(value.hostId) && uuid(value.bootId)
@@ -45,14 +48,29 @@ function reduce(records) {
         || p.model !== 'gpt-6-sol' || p.maxTurnsPerAttempt !== 1
         || p.subscriptionOnly !== true || p.additionalChargesAllowed !== false
         || !positive(p.expiresAt) || p.expiresAt <= record.issuedAt || p.expiresAt - record.issuedAt > 86400) reject()
-      task = { registrationId: record.operationId, policy: copy(p), attempts: [], revoked: false, lastAt: record.issuedAt }
+      task = { registrationId: record.operationId, policy: copy(p), scopeHistory: [p.scopeHash], generationStart: 0, attempts: [], revoked: false, lastAt: record.issuedAt }
       tasks.set(p.taskKey, task)
       continue
     }
     if (!task || record.issuedAt < task.lastAt) reject()
     task.lastAt = record.issuedAt
     const previous = task.attempts.at(-1)
-    if (p.action === 'revoke') {
+    if (p.action === 'revise') {
+      const next = p.policy
+      if (record.kind !== 'registry' || !exact(p, [...fixed, 'previousRegistrationId', 'feedbackHash', 'policy'])
+        || !task.revoked || p.previousRegistrationId !== task.registrationId || !sha(p.feedbackHash)
+        || task.attempts.length >= 3 || (previous && !previous.terminal)
+        || !exact(next, [...fixed, 'scopeHash', 'approvalHash', 'runtimeHash', 'expiresAt', 'maxAttempts', 'subscriptionOnly', 'additionalChargesAllowed', 'model', 'maxTurnsPerAttempt'])
+        || next.protocol !== protocol || next.action !== 'register' || next.taskKey !== p.taskKey
+        || ![next.scopeHash, next.approvalHash, next.runtimeHash].every(sha) || task.scopeHistory.includes(next.scopeHash)
+        || next.approvalHash === task.policy.approvalHash || next.maxAttempts !== 3 || next.model !== 'gpt-6-sol'
+        || next.maxTurnsPerAttempt !== 1 || next.subscriptionOnly !== true || next.additionalChargesAllowed !== false
+        || !positive(next.expiresAt) || next.expiresAt <= record.issuedAt || next.expiresAt - record.issuedAt > 86400) reject()
+      // A new, reapproved scope supersedes the revoked scope. Spent intents and
+      // fencing remain global to the stable task key, including across revisions.
+      task.policy = copy(next); task.registrationId = record.operationId
+      task.scopeHistory.push(next.scopeHash); task.generationStart = task.attempts.length; task.revoked = false
+    } else if (p.action === 'revoke') {
       if (record.kind !== 'registry' || !exact(p, [...fixed, 'reasonHash']) || !sha(p.reasonHash) || task.revoked) reject()
       task.revoked = true
     } else if (p.action === 'begin') {
@@ -61,12 +79,12 @@ function reduce(records) {
         || p.runtime.unit !== `aisdlc-attempt-${record.operationId}.service`
         || p.attempt !== task.attempts.length + 1 || p.attempt > 3 || p.fence !== p.attempt
         || !positive(p.deadline) || p.deadline <= record.issuedAt || p.deadline > task.policy.expiresAt || p.deadline - record.issuedAt > 120
-        || (previous && (!previous.terminal || (previous.candidateHash && !previous.repair)))) reject()
+        || (previous && (!previous.terminal || (task.attempts.length > task.generationStart && previous.candidateHash && !previous.repair)))) reject()
       // An intent is immediately spent and uncertain, even if a launch never happens.
       task.attempts.push({ attemptId: record.operationId, attempt: p.attempt, fence: p.fence,
         issuedAt: record.issuedAt,
         reservationHash: p.reservationHash, runtime: copy(p.runtime), deadline: p.deadline,
-        admission: null, candidateHash: null, terminal: null, repair: null })
+        admission: null, candidateHash: null, terminal: null, verification: null, delivery: null, repair: null })
     } else if (p.action === 'admit') {
       if (record.kind !== 'intent' || !exact(p, [...fixed, 'attemptId', 'challengeNonce'])
         || task.revoked || !previous || previous.attemptId !== p.attemptId || previous.terminal || previous.admission
@@ -86,6 +104,31 @@ function reduce(records) {
       // Settlement after expiry/revocation is allowed so cleanup can be recorded.
       // It cannot restore a consumed attempt or certify the candidate's correctness.
       previous.terminal = { terminationHash: p.terminationHash, outcome: p.outcome, usage: copy(p.usage) }
+    } else if (p.action === 'verification') {
+      if (record.kind !== 'registry' || !exact(p, [...fixed, 'attemptId', 'candidateHash', 'verificationHash', 'evidence'])
+        || task.revoked || !previous || previous.attemptId !== p.attemptId || previous.terminal?.outcome !== 'candidate' || previous.verification
+        || p.candidateHash !== previous.candidateHash || !sha(p.verificationHash)
+        || !exact(p.evidence, ['proof', 'report', 'provenance']) || !exact(p.evidence.proof, ['record', 'signature'])
+        || p.evidence.proof.record?.version !== 2 || p.evidence.proof.record?.kind !== 'verification'
+        || !['pass', 'fail', 'error'].includes(p.evidence.proof.record?.verdict)
+        || createHash('sha256').update(JSON.stringify(p.evidence.proof)).digest('hex') !== p.verificationHash
+        || createHash('sha256').update(JSON.stringify(p.evidence.report)).digest('hex') !== p.evidence.proof.record.evidenceHash
+        || createHash('sha256').update(JSON.stringify(p.evidence.provenance)).digest('hex') !== p.evidence.proof.record.provenanceHash
+        || p.evidence.proof.record.candidateHash !== p.candidateHash || p.evidence.report?.candidateHash !== p.candidateHash
+        || p.evidence.provenance?.record?.candidateHash !== p.candidateHash) reject()
+      previous.verification = { verificationHash: p.verificationHash, verdict: p.evidence.proof.record.verdict, evidence: copy(p.evidence) }
+    } else if (p.action === 'delivery') {
+      if (record.kind !== 'registry' || !exact(p, [...fixed, 'attemptId', 'artifactHash', 'artifact'])
+        || task.revoked || !previous || previous.attemptId !== p.attemptId || !previous.verification || previous.delivery
+        || !sha(p.artifactHash) || digest(p.artifact) !== p.artifactHash
+        || !exact(p.artifact, ['envelope', 'source', 'candidate']) || !exact(p.artifact.envelope, ['claim', 'signature'])) reject()
+      const c = p.artifact.envelope.claim
+      if (!c || c.version !== 1 || c.nativeCodex !== true || c.taskKey !== p.taskKey || c.attemptId !== previous.attemptId
+        || c.scopeHash !== task.policy.scopeHash || c.approvalHash !== task.policy.approvalHash || c.runtimeHash !== task.policy.runtimeHash
+        || c.candidateHash !== previous.candidateHash || c.terminationHash !== previous.terminal.terminationHash
+        || c.verificationHash !== previous.verification.verificationHash || c.verdict !== previous.verification.verdict
+        || p.artifact.candidate?.sha256 !== previous.candidateHash || p.artifact.source?.sha256 !== c.sourceHash) reject()
+      previous.delivery = { artifactHash: p.artifactHash, artifact: copy(p.artifact) }
     } else if (p.action === 'repair') {
       if (record.kind !== 'registry' || !exact(p, [...fixed, 'attemptId', 'candidateHash', 'verifierEvidenceHash'])
         || task.revoked || !previous || previous.attemptId !== p.attemptId || !previous.terminal
@@ -130,31 +173,38 @@ export class AttemptAuthority {
     if (!uuid(record.operationId)) reject()
     // Replay validation runs before signing and before any external write.
     reduce([...records, record])
-    const context = { action: p.action, policy: p.action === 'register' ? p : before.policy,
+    const context = { action: p.action, policy: p.action === 'register' ? p : p.action === 'revise' ? p.policy : before.policy,
       attempt: before?.attempts.at(-1) ?? null, payload: p }
     const cleanup = p.action === 'settle'
-    if (!cleanup && (issuedAt >= context.policy.expiresAt || await this.#authorize(copy(context)) !== true)) reject()
-    const needsProof = ['settle', 'repair'].includes(p.action)
+    const restrictive = cleanup || p.action === 'revoke'
+    if (!restrictive && (issuedAt >= context.policy.expiresAt || await this.#authorize(copy(context)) !== true)) reject()
+    const needsProof = ['settle', 'repair', 'verification', 'delivery'].includes(p.action)
+    const proofHash = !needsProof ? null : cleanup ? p.terminationHash : p.action === 'repair' ? p.verifierEvidenceHash
+      : p.action === 'verification' ? p.verificationHash : createHash('sha256').update(JSON.stringify(p.artifact)).digest('hex')
     if (needsProof && (!(proof instanceof Uint8Array) || !proof.byteLength || proof.byteLength > 65536
-      || createHash('sha256').update(proof).digest('hex') !== (cleanup ? p.terminationHash : p.verifierEvidenceHash)
+      || createHash('sha256').update(proof).digest('hex') !== proofHash
       || await this.#verifyEvidence(copy(proof), copy(context)) !== true)) reject()
     const signature = await this.#sign(authoritySigningBytes(record))
     const checkedAt = this.#now()
     if (!positive(checkedAt) || checkedAt < issuedAt || checkedAt - issuedAt > 5
-      || (!cleanup && (checkedAt >= context.policy.expiresAt || await this.#authorize(copy(context)) !== true))
+      || (!restrictive && (checkedAt >= context.policy.expiresAt || await this.#authorize(copy(context)) !== true))
       || (p.action === 'begin' && checkedAt >= p.deadline)
       || (p.action === 'admit' && checkedAt >= context.attempt.deadline)
       || (p.action === 'candidate' && checkedAt >= context.attempt.deadline)
       || (needsProof && await this.#verifyEvidence(copy(proof), copy(context)) !== true)) reject()
     const finalAt = this.#now()
     if (!positive(finalAt) || finalAt < checkedAt || finalAt - issuedAt > 5
-      || (!cleanup && finalAt >= context.policy.expiresAt)
+      || (!restrictive && finalAt >= context.policy.expiresAt)
       || (['admit', 'candidate'].includes(p.action) && finalAt >= context.attempt.deadline)
       || (p.action === 'begin' && finalAt >= p.deadline)) reject()
     // The ledger's CAS denies concurrent changes; a lost acknowledgement is never retried.
     return this.#ledger.append(head, JSON.stringify({ record, signature }))
   }
   register(policy) { return this.#append('registry', { ...policy, protocol, action: 'register' }) }
+  revise({ taskKey, previousRegistrationId, feedbackHash, policy }) {
+    return this.#append('registry', { protocol, action: 'revise', taskKey, previousRegistrationId, feedbackHash,
+      policy: { ...policy, taskKey, protocol, action: 'register' } })
+  }
   begin({ taskKey, registrationId, attempt, reservationHash, hostId, bootId, deadline }) {
     const attemptId = randomUUID()
     return this.#append('intent', { protocol, action: 'begin', taskKey, registrationId, attempt,
@@ -167,6 +217,12 @@ export class AttemptAuthority {
   }
   repair({ taskKey, attemptId, candidateHash, verifierEvidenceHash }, proof) {
     return this.#append('registry', { protocol, action: 'repair', taskKey, attemptId, candidateHash, verifierEvidenceHash }, proof)
+  }
+  verification({ taskKey, attemptId, candidateHash, verificationHash, evidence }, proof) {
+    return this.#append('registry', { protocol, action: 'verification', taskKey, attemptId, candidateHash, verificationHash, evidence }, proof)
+  }
+  deliver({ taskKey, attemptId, artifactHash, artifact }, proof) {
+    return this.#append('registry', { protocol, action: 'delivery', taskKey, attemptId, artifactHash, artifact }, proof)
   }
   revoke({ taskKey, reasonHash }) { return this.#append('registry', { protocol, action: 'revoke', taskKey, reasonHash }) }
 }

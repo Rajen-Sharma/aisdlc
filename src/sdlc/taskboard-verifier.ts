@@ -47,6 +47,7 @@ export async function verifyTaskboardCandidate(input: { capsule: unknown; candid
   const sourceFile = path.join(sourceDir, 'src/filter-tasks.mjs'), runnerFile = path.join(runnerDir, 'runner.mjs')
   const name = `aisdlc-verifier-${randomUUID()}`
   let createAcknowledged = false, verdict: 'pass' | 'fail' | 'error' = 'error', exitCode: number | null = null, casesPassed = 0
+  let observations: unknown[] | null = null, outputHash: string | null = null, outputBytes = 0
   const docker = (args: string[], timeout = 15000) => exec('/usr/bin/docker', args, { timeout, maxBuffer: 65536,
     encoding: 'utf8', windowsHide: true,
     env: { NODE_ENV: 'production', PATH: '/usr/bin:/bin', HOME: '/nonexistent', DOCKER_CONFIG: '/nonexistent', DOCKER_HOST: 'unix:///var/run/docker.sock' } })
@@ -77,7 +78,9 @@ export async function verifyTaskboardCandidate(input: { capsule: unknown; candid
       const state = JSON.parse((await docker(['inspect', '--format', '{{json .State}}', name])).stdout)
       if (!Number.isInteger(state.ExitCode) || state.Running || state.OOMKilled) throw new Error('Verifier runtime incomplete.')
       exitCode = state.ExitCode
+      outputHash = hash(run.stdout); outputBytes = Buffer.byteLength(run.stdout)
       const observed = JSON.parse(run.stdout)
+      if (Array.isArray(observed) && observed.length <= 32) observations = observed
       casesPassed = Array.isArray(observed) ? expected.filter((entry, index) => isDeepStrictEqual(observed[index], entry)).length : 0
       verdict = exitCode === 0 && isDeepStrictEqual(observed, expected) ? 'pass' : 'fail'
     } catch { verdict = 'error' }
@@ -98,5 +101,8 @@ export async function verifyTaskboardCandidate(input: { capsule: unknown; candid
   if (!removed || !integrity) throw new Error('Verifier cleanup is uncertain; no verdict may authorize a repair.')
   return { version: 1 as const, candidateHash: capsule.sha256, checkPolicyHash: input.policyHash, verifierHash: input.runnerHash,
     image: verifierImage, verdict, casesPassed, casesTotal: cases.length, exitCode, elapsedMs: Date.now() - started,
+    outputHash, outputBytes, replay: cases.map((entry, index) => ({ id: entry.id, input: { tasks: entry.tasks, status: entry.status },
+      expected: expected[index], observed: observations?.[index] ?? null,
+      passed: observations !== null && isDeepStrictEqual(observations[index], expected[index]) })),
     cleanupVerified: true as const, executionAllowed: false as const, retryAuthorized: false as const }
 }

@@ -12,6 +12,7 @@ const home = '/var/lib/aisdlc-codex-broker', cwd = '/opt/aisdlc-codex/workspace'
 async function main() {
   if (process.platform !== 'linux' || process.getuid() === 0 || process.argv.length !== 2) throw new Error()
   const channel = boundedJsonChannel(process.stdin)
+  const controllerClosed = new Promise(resolve => process.stdin.once('end', resolve))
   let child
   try {
     const task = await channel.read(Date.now() + 10000)
@@ -33,6 +34,9 @@ async function main() {
     const timer = setTimeout(() => child.kill('SIGKILL'), 3000)
     try { await closed } finally { clearTimeout(timer) }
     if (!result.completed) process.exitCode = 1
+    // Retain the observed unit root until the external guardian closes input
+    // and stops the whole cgroup. Controller loss is still bounded by systemd.
+    await controllerClosed
   } finally {
     channel.dispose()
     if (child && child.exitCode === null) child.kill('SIGKILL')

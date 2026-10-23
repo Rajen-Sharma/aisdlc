@@ -30,6 +30,7 @@ jobs:
           bash -n scripts/prepare-private-codex-client.sh
           bash -n scripts/prepare-private-authority.sh
           python3 -c "import ast,pathlib; ast.parse(pathlib.Path('scripts/private-codex-preflight.py').read_text())"
+          python3 -c "import ast,pathlib; ast.parse(pathlib.Path('scripts/install-native-runtime.py').read_text())"
           node --check scripts/qualify-azure-authority.mjs
       - name: Start pinned CI database with bounded diagnostics
         run: node scripts/ci-postgres.mjs start

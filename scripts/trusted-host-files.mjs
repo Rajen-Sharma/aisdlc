@@ -6,10 +6,10 @@ import { createHash } from 'node:crypto'
 import path from 'node:path'
 
 const reject = () => { throw new Error('Trusted host file rejected.') }
-export async function trustedHostFile(file, { maximumBytes = 1048576, privateMode = false } = {}) {
+export async function trustedHostFile(file, { maximumBytes = 1048576, privateMode = false, ownerUid = 0 } = {}) {
   if (process.platform !== 'linux' || !path.isAbsolute(file) || !Number.isSafeInteger(maximumBytes) || maximumBytes < 1 || maximumBytes > 1048576) reject()
   const stat = await lstat(file)
-  if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.uid !== 0 || (stat.mode & (privateMode ? 0o077 : 0o022))
+  if (!Number.isSafeInteger(ownerUid) || ownerUid < 0 || !stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.uid !== ownerUid || (stat.mode & (privateMode ? 0o077 : 0o022))
     || stat.size > maximumBytes || await realpath(file) !== file) reject()
   const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW)
   try {

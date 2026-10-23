@@ -77,6 +77,13 @@ test('exact artifact reviews stay separate; stale proof, failed checks and feedb
     const readiness = await storyReadiness(payload, revision.id)
     assert.equal(readiness.planningReady, false)
     assert.equal(readiness.blockers.includes('Story integrity failed.'), false)
+    for (const kind of ['sprint', 'design-security'] as const) await payload.create({ collection: 'sdlc-gates', user: human, overrideAccess: false,
+      data: { ...gate(kind), story: revision.id, scopeHash: revision.scopeHash } })
+    const reapproved = await inspectExecutionEligibility(payload, revision.id)
+    assert.equal(reapproved.record.taskKey, eligible.record.taskKey)
+    assert.equal(reapproved.record.feedbackHash, feedback.feedbackHash)
+    assert.equal(reapproved.record.supersedes, story.id)
+    assert.notEqual(reapproved.record.approvalHash, eligible.record.approvalHash)
     await assert.rejects(payload.create({ collection: 'sdlc-gates', user: human, overrideAccess: false, data: gate('mvp', artifactHash) }), /Superseded/)
     await assert.rejects(inspectExecutionEligibility(payload, story.id), /superseded/)
   } finally {

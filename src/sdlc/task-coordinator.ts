@@ -47,7 +47,15 @@ async function eligible(db: PoolClient, storyId: number) {
     const gate = gates.rows.find(g => g.kind === kind)!
     return { id: Number(gate.id), kind, actorId: Number(gate.actor_id), decisionKey: gate.decision_key }
   })
-  return { ...story, approvalGates }
+  let feedbackHash: string | null = null
+  if (story.feedback_id) {
+    const feedback = (await db.query('SELECT * FROM sdlc_delivery_feedback WHERE id=$1 AND story_id=$2 AND project_key=$3',
+      [story.feedback_id, story.supersedes_id, story.project_key])).rows[0]
+    if (!feedback || feedback.feedback_hash !== digest({ storyId: Number(feedback.story_id), scopeHash: feedback.scope_hash,
+      artifactHash: feedback.artifact_hash, content: feedback.content, actor: Number(feedback.actor_id) })) throw new Error('Feedback integrity failed.')
+    feedbackHash = feedback.feedback_hash
+  }
+  return { ...story, approvalGates, feedbackHash }
 }
 async function lockedTask(db: PoolClient, id: number): Promise<Task> {
   const lookup = await db.query('SELECT s.project_key,s.story_key FROM sdlc_tasks t JOIN sdlc_stories s ON s.id=t.story_id WHERE t.id=$1', [id])
@@ -68,12 +76,34 @@ export async function inspectExecutionEligibility(payload: Payload, storyId: num
     if (!lookup.rows[0]) throw new Error('Story not found.')
     await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
     const story = await eligible(db, storyId)
+    return executionSnapshot(story, storyId)
+  })
+}
+function executionSnapshot(story: Awaited<ReturnType<typeof eligible>>, storyId: number) {
     const record = { version: 1, taskKey: digest({ projectKey: story.project_key, storyKey: story.story_key }),
       storyId, storyRevision: Number(story.revision), projectKey: story.project_key, storyKey: story.story_key,
       scopeHash: story.scope_hash, approvalHash: digest(story.approvalGates), approvalGates: story.approvalGates,
       sourceHash: story.contract.sourceHash, checkPolicyHash: story.contract.checkPolicyHash,
+      ...(story.feedbackHash ? { feedbackHash: story.feedbackHash, supersedes: Number(story.supersedes_id) } : {}),
       maxAttempts: 3, subscriptionOnly: true, additionalChargesAllowed: false, executionAllowed: false }
     return { record, snapshotHash: digest(record) }
+}
+
+/** Trusted controller only. Hold the story mutation lock across the bounded
+ * native cycle; each remote operation obtains a freshly rechecked snapshot.
+ * This callback cannot itself grant execution: the independent authority still
+ * requires its current external counter, qualified runtime and signed permits.
+ */
+export async function withExecutionEligibility<T>(payload: Payload, storyId: number,
+  work: (current: () => Promise<ReturnType<typeof executionSnapshot> & { observedAt: number }>) => Promise<T>) {
+  if (!Number.isSafeInteger(storyId) || storyId < 1 || typeof work !== 'function') throw new Error('Invalid native controller request.')
+  return transaction(payload, async db => {
+    const lookup = await db.query('SELECT project_key,story_key FROM sdlc_stories WHERE id=$1', [storyId])
+    if (!lookup.rows[0]) throw new Error('Story not found.')
+    await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
+    const current = async () => ({ ...executionSnapshot(await eligible(db, storyId), storyId), observedAt: Math.floor(Date.now() / 1000) })
+    await current()
+    return work(current)
   })
 }
 

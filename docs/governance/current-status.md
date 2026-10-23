@@ -1,5 +1,13 @@
 # Current governance status GOV-STATUS-001
 
+Update, 24 October 2026: native execution orchestration, signed delivery archives,
+feedback revisions preserving the external attempt budget, recorded-case showcase
+and exact-artifact review integration are implemented. Local tests and browser
+checks pass; [the integration review](../reviews/native-delivery-integration-2026-10-24.md)
+records current qualification limits. Both private Azure VMs remain deallocated
+after the authorized window expired. No real model patch or later human artifact
+decision has been recorded.
+
 Update, 20 October 2026: the local app runs and the private Azure client confirms
 ChatGPT authentication. Actual Azure verifier and signed append-ledger checks
 passed; [the runtime review](../reviews/azure-runtime-2026-10-20.md) records their

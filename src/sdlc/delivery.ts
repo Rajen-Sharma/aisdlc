@@ -4,6 +4,7 @@ import { digest } from './contracts'
 import { activeProject } from './project'
 import { lockStory } from './story-lock'
 import { reviewArtifact } from './artifact-collections'
+import { nativeAuthorityCall, nativeExecutorConfiguration } from './native-transport'
 
 const immutable = { read: admin, create: admin, update: () => false, delete: () => false }
 const hashPattern = /^[a-f0-9]{64}$/
@@ -48,6 +49,19 @@ export const Stories: CollectionConfig = {
     data.versionKey = `${project.key}:${data.storyKey}:${revision}`
     data.actor = req.user!.id
     data.scopeHash = digest({ projectKey: project.key, contextHash: data.contextHash, storyKey: data.storyKey, revision, title: data.title, contract: data.contract, supersedes: data.supersedes ?? null, ...(data.feedback ? { feedback: data.feedback } : {}) })
+    return data
+  }], beforeChange: [async ({ data, req, operation }) => {
+    if (operation !== 'create' || !data.supersedes) return data
+    // Validation and story locking precede the external revocation. If SQL later
+    // fails, revocation remains restrictive; it never refunds or resets a budget.
+    const native = await nativeExecutorConfiguration()
+    if (!native || native.taskKey !== digest({ projectKey: data.projectKey, storyKey: data.storyKey })) return data
+    try {
+      const current = await nativeAuthorityCall(native, 'inspect', null)
+      if (current.task && !current.task.revoked) await nativeAuthorityCall(native, 'revoke', {
+        reasonHash: digest({ previousStory: data.supersedes, nextScope: data.scopeHash, actor: req.user!.id }),
+      })
+    } catch { throw new APIError('Native task revocation must be recorded before this story can change.', 409) }
     return data
   }] },
   fields: [

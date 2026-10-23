@@ -14,6 +14,7 @@ const entries = {
   'guardian-engine.mjs': 'scripts/systemd-attempt-guardian.mjs',
   'broker.mjs': 'scripts/private-codex-broker.mjs',
   'verifier.mjs': 'src/sdlc/taskboard-verifier.ts',
+  'authority.mjs': 'scripts/private-native-authority.ts',
 }
 const sources = new Set(), files = []
 for (const [name, entry] of Object.entries(entries)) {
@@ -29,10 +30,14 @@ for (const [name, entry] of Object.entries(entries)) {
 for (const [name, source] of [
   ['runner.mjs', 'scripts/taskboard-isolated-runner.mjs'],
   ['prepare-client.sh', 'scripts/prepare-private-codex-client.sh'],
+  ['prepare-authority.sh', 'scripts/prepare-private-authority.sh'],
   ['metadata-preflight.py', 'scripts/private-codex-preflight.py'],
+  ['install-runtime.py', 'scripts/install-native-runtime.py'],
 ]) {
   // Explicit public source allowlist; no recursive repository or home-directory copy.
-  const bytes = await readFile(source)
+  // Linux scripts/runner are packaged with stable LF bytes on every checkout.
+  // Source hashes below still retain the actual local input bytes separately.
+  const bytes = Buffer.from((await readFile(source, 'utf8')).replaceAll('\r\n', '\n'))
   await writeFile(path.join(directory, name), bytes, { flag: 'wx' })
   sources.add(source)
   files.push({ name, bytes: bytes.length, sha256: hash(bytes) })

@@ -23,7 +23,7 @@ export class AttemptEvidenceVerifier {
   async verify(bytes, context) {
     try {
       if (!(bytes instanceof Uint8Array) || !bytes.byteLength || bytes.byteLength > 32768
-        || !context?.attempt || !['settle', 'repair'].includes(context.action)) return false
+        || !context?.attempt || !['settle', 'repair', 'verification'].includes(context.action)) return false
       const envelope = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
       if (!exact(envelope, ['record', 'signature'])) return false
       const { record: r, signature } = envelope
@@ -32,7 +32,10 @@ export class AttemptEvidenceVerifier {
         'hostId', 'bootId', 'unit', 'observedAt', 'expiresAt']
       const fields = kind === 'termination' ? ['rootExited', 'cgroupEmpty', 'launchWritersDrained']
         : ['candidateHash', 'verdict', 'verifierHash', 'qualificationHash', 'image']
-      if (!exact(r, [...common, ...fields]) || r.version !== 1 || r.kind !== kind || !slug(r.keyId)
+      const extended = kind === 'verification' && r.version === 2 ? ['evidenceHash', 'provenanceHash'] : []
+      if (!exact(r, [...common, ...fields, ...extended]) || ![1, 2].includes(r.version) || (kind === 'termination' && r.version !== 1)
+        || (context.action === 'verification' && r.version !== 2) || (r.version === 2 && (!sha(r.evidenceHash) || !sha(r.provenanceHash)))
+        || r.kind !== kind || !slug(r.keyId)
         || !positive(r.authorityRevision) || ![r.taskKey, r.reservationHash, r.runtimeHash].every(sha)) return false
       const attempt = context.attempt
       if (r.taskKey !== context.policy.taskKey || r.attemptId !== attempt.attemptId
@@ -51,7 +54,8 @@ export class AttemptEvidenceVerifier {
         || selected.validFrom > r.observedAt || selected.validUntil < r.expiresAt || selected.validUntil <= now) return false
       if (kind === 'termination') {
         if (r.rootExited !== true || r.cgroupEmpty !== true || r.launchWritersDrained !== true) return false
-      } else if (r.verdict !== 'fail' || r.candidateHash !== attempt.candidateHash || !sha(r.candidateHash)
+      } else if ((context.action === 'repair' ? r.verdict !== 'fail' : !['pass', 'fail', 'error'].includes(r.verdict))
+        || r.candidateHash !== attempt.candidateHash || !sha(r.candidateHash)
         || !sha(r.verifierHash) || !sha(r.qualificationHash) || r.verifierHash !== selected.verifierHash
         || r.qualificationHash !== selected.qualificationHash || r.image !== selected.image
         || typeof r.image !== 'string' || !/^node@sha256:[a-f0-9]{64}$/.test(r.image)) return false
