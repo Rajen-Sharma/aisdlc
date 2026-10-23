@@ -79,7 +79,9 @@ if [[ ${1:-} == lifecycle ]]; then
   /usr/bin/python3 "$install_dir/probe.py" host "$install_dir/codex" "$unit" "${properties[@]}"
 elif [[ ${1:-} == session ]]; then
   systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
-    -p MemoryMax=256M -p RuntimeMaxSec=45s "$(command -v node)" --jitless "$install_dir/codex-session-qualification.mjs" "$install_dir/codex"
+    -p MemoryMax=256M -p RuntimeMaxSec=45s "$(command -v node)" --jitless --input-type=module \
+    -e 'import(process.argv[1]).catch(error => { const message = String(error.message).slice(0, 300).replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A"); console.error("::error title=Credential-free session startup::" + error.name + ": " + message); process.exitCode = 1 })' \
+    "$install_dir/codex-session-qualification.mjs" "$install_dir/codex"
 else
   systemd-run --quiet --unit="$unit" --wait --pipe "${properties[@]}" \
     -p RuntimeMaxSec=45s /usr/bin/python3 "$install_dir/probe.py" "$install_dir/codex" "$canary_dir/canary" "--model=$qualification_model"
