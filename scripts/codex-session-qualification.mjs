@@ -75,6 +75,21 @@ if (process.platform === 'win32') Object.assign(environment, { SYSTEMROOT: proce
 const child = spawn(binary, ['--strict-config', 'app-server', '--listen', 'stdio://'],
   { cwd: workspace, env: environment, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true })
 const closed = new Promise(resolve => child.once('close', resolve))
+// Fixture-only warning diagnostics. This child has a new empty credential-free
+// home and can report only the synthetic configuration prepared above.
+let diagnosticPending = ''
+child.stdout.on('data', chunk => {
+  diagnosticPending += chunk.toString('utf8')
+  if (diagnosticPending.length > 131072) { diagnosticPending = ''; return }
+  let newline
+  while ((newline = diagnosticPending.indexOf('\n')) !== -1) {
+    const line = diagnosticPending.slice(0, newline); diagnosticPending = diagnosticPending.slice(newline + 1)
+    try {
+      const message = JSON.parse(line)
+      if (message.method === 'configWarning') console.error('::notice title=Synthetic configuration warning::' + JSON.stringify(message.params).slice(0, 1600).replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A'))
+    } catch { /* The actual session driver independently rejects malformed bytes. */ }
+  }
+})
 try {
   let admissions = 0
   const result = await runCodexTurn({ child, prompt: 'Return the synthetic fixture schema only.', sourceHash,

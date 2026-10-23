@@ -34,8 +34,32 @@ with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as archive:
 PY
 [[ $("$install_dir/codex" --version) == 'codex-cli 0.155.1' ]]
 config="$broker_home/.codex/config.toml"
-[[ ! -e "$config" && ! -L "$config" ]]
-cat > "$config" <<'TOML'
+manifest=/opt/aisdlc-codex/private-client-files.sha256
+[[ ! -L "$config" && ! -L "$manifest" ]]
+if [[ -e "$config" ]]; then
+  # Upgrade only a root-owned public configuration matching its retained manifest.
+  # Authentication and caches are never opened, copied or changed.
+  python3 - "$manifest" "$config" "$install_dir/codex" <<'PY'
+import hashlib, pathlib, re, stat, sys
+manifest, config, binary = map(pathlib.Path, sys.argv[1:])
+for file in (manifest, config):
+    info = file.lstat()
+    assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_uid == 0 and info.st_mode & 0o022 == 0
+lines = manifest.read_text().splitlines()
+assert len(lines) == 2
+entries = {}
+for line in lines:
+    match = re.fullmatch(r'([a-f0-9]{64})  (.+)', line)
+    assert match and match[2] in (str(config), str(binary)) and match[2] not in entries
+    entries[match[2]] = match[1]
+assert set(entries) == {str(config), str(binary)}
+for file in (config, binary):
+    assert hashlib.sha256(file.read_bytes()).hexdigest() == entries[str(file)]
+PY
+fi
+staging=$(mktemp "$install_dir/config.XXXXXX")
+trap 'rm -f -- "$staging"' EXIT
+cat > "$staging" <<'TOML'
 model = "gpt-6-sol"
 model_provider = "openai"
 forced_login_method = "chatgpt"
@@ -62,9 +86,10 @@ skill_mcp_dependency_install = false
 skip_host_skill_discovery = true
 tool_suggest = false
 TOML
-chown root:"$account" "$config"
-chmod 640 "$config"
+chown root:"$account" "$staging"
+chmod 640 "$staging"
+mv -f -- "$staging" "$config"
 # Retain only public executable/config hashes, never authentication/cache bytes.
-sha256sum "$install_dir/codex" "$config" > /opt/aisdlc-codex/private-client-files.sha256
-chmod 644 /opt/aisdlc-codex/private-client-files.sha256
+sha256sum "$install_dir/codex" "$config" > "$manifest"
+chmod 644 "$manifest"
 printf '{"privateClientPrepared":true,"version":"0.155.1","authenticationInstalled":false,"executionAllowed":false}\n'

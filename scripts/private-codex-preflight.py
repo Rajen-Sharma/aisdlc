@@ -77,7 +77,13 @@ def main():
         assert config.get('model_provider') in (None, 'openai'), 'provider-mismatch'
         assert config.get('web_search') == 'disabled', 'web-search-enabled'
         assert not config.get('mcp_servers'), 'mcp-configuration-present'
-        assert not config.get('model_providers'), 'custom-provider-present'
+        providers = config.get('model_providers') or {}
+        assert set(providers) == {'openai'}, 'custom-provider-present'
+        provider = providers['openai']
+        expected = {'requires_openai_auth': True, 'wire_api': 'responses',
+                    'request_max_retries': 0, 'stream_max_retries': 0, 'supports_websockets': False}
+        assert all(provider.get(key) == value for key, value in expected.items()), 'custom-provider-present'
+        assert all(value is None or key in set(expected) | {'name'} for key, value in provider.items()), 'custom-provider-present'
         disabled = ['shell_tool', 'shell_snapshot', 'apps', 'hooks', 'multi_agent',
                     'plugins', 'remote_plugin', 'skill_search', 'skill_mcp_dependency_install', 'tool_suggest']
         features = config.get('features', {})
