@@ -15,6 +15,9 @@ const entries = {
   'broker.mjs': 'scripts/private-codex-broker.mjs',
   'verifier.mjs': 'src/sdlc/taskboard-verifier.ts',
   'authority.mjs': 'scripts/private-native-authority.ts',
+  'qualify-host.mjs': 'scripts/qualify-private-native-host.mjs',
+  'qualify-delivery.mjs': 'scripts/qualify-native-delivery.mjs',
+  'qualify-tools.mjs': 'scripts/qualify-private-tools.mjs',
 }
 const sources = new Set(), files = []
 for (const [name, entry] of Object.entries(entries)) {

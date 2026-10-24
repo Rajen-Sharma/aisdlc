@@ -30,7 +30,7 @@ async function retainedAttempt(attemptId: string) {
 }
 try {
   await status('preparing')
-  const delivered = await withExecutionEligibility(payload, selected.storyId, async current => {
+  const delivered = await withExecutionEligibility(payload, selected.storyId, async (current, retain) => {
     const checked = async () => {
       const snapshot = await current()
       if (snapshot.record.taskKey !== selected.taskKey || snapshot.record.scopeHash !== selected.scopeHash || snapshot.record.approvalHash !== selected.approvalHash) throw new Error('Native task scope changed.')
@@ -56,9 +56,12 @@ try {
         const saved = await retainedAttempt(previous.attemptId)
         await status('verifying', previous.attempt)
         const verified = await call('verify', { attemptId: previous.attemptId, candidate: saved.candidate, provenance: saved.provenance })
-        if (verified.artifact.envelope.claim.verdict === 'pass') return call('head')
+        const checkedHead = await call('head')
+        await publishNativeHead(selected, checkedHead)
+        await retain(checkedHead.artifact)
+        if (verified.artifact.envelope.claim.verdict === 'pass') return checkedHead
         if (verified.artifact.envelope.claim.verdict !== 'fail') throw new Error('Verifier outcome is unresolved; no repair was authorized.')
-        if (external.accounting.remainingAttempts === 0) throw new Error('Three attempts consumed; no additional model turn authorized.')
+        if (external.accounting.remainingAttempts === 0) return checkedHead
         if (!previous.repair) await call('repair', { attemptId: previous.attemptId })
       }
       if (external.accounting.remainingAttempts === 0) throw new Error('Three attempts consumed; no additional model turn authorized.')
@@ -105,8 +108,10 @@ try {
   })
   await publishNativeHead(selected, delivered)
   await retainDeliveryArtifact(payload, selected.storyId, delivered.artifact)
-  await status('awaiting-review', delivered.artifact.envelope.claim.attempt)
-  console.log(JSON.stringify({ artifactHash: delivered.current.state.artifactHash, awaitingHumanReview: true, additionalModelTurnsStarted: false }))
+  const passed = delivered.artifact.envelope.claim.verdict === 'pass'
+  await status(passed ? 'awaiting-review' : 'failed-checks', delivered.artifact.envelope.claim.attempt)
+  console.log(JSON.stringify({ artifactHash: delivered.current.state.artifactHash, awaitingHumanReview: passed,
+    failedChecks: !passed, additionalModelTurnsStarted: false }))
 } catch {
   await status('uncertain').catch(() => {})
   console.error('Native cycle paused: independent state or proof is unavailable. No request was retried and no additional attempt was authorized.')

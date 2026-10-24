@@ -2,6 +2,7 @@
 // attests a current eligibility snapshot while holding the story lock. No caller
 // chooses a key, ledger account, verifier, command, policy file or callback.
 import { createPrivateKey, createPublicKey, sign } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
 import { boundedJsonChannel } from './bounded-json-channel.mjs'
 import { trustedHostFile, trustedHostHash } from './trusted-host-files.mjs'
 import { AzureAuthorityLedger } from './azure-authority-ledger.mjs'
@@ -18,7 +19,7 @@ const now = () => Math.floor(Date.now() / 1000)
 const write = (value: unknown) => new Promise<void>((resolve, reject) => process.stdout.write(JSON.stringify(value) + '\n', error => error ? reject(error) : resolve()))
 type RawConfiguration = {
   version: 1; nativeRuntimeQualified: true; issuedAt: number; expiresAt: number
-  authorityBundleHash: string; nodeHash: string; guardianValidFrom: number
+  authorityBundleHash: string; nodeHash: string; guardianValidFrom: number; toolsBootId: string
   delivery: Omit<NativeDeliveryConfiguration, 'trust' | 'guardian' | 'policyText' | 'runnerSource'> & {
     trust: Omit<NativeDeliveryConfiguration['trust'], 'publicKey'> & { publicKeyDer: string }
     guardian: Omit<NativeDeliveryConfiguration['guardian'], 'publicKey'>
@@ -31,6 +32,7 @@ async function main() {
     || !Number.isSafeInteger(raw.issuedAt) || !Number.isSafeInteger(raw.expiresAt) || !Number.isSafeInteger(raw.guardianValidFrom)
     || raw.guardianValidFrom < 1 || raw.guardianValidFrom > now()
     || raw.issuedAt > now() || raw.expiresAt <= raw.issuedAt || raw.expiresAt - raw.issuedAt > 172800 || raw.delivery.trust.expiresAt > raw.expiresAt) fail()
+  if (raw.toolsBootId !== (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim()) fail()
   await trustedHostHash('/opt/aisdlc-authority/native-authority.mjs', raw.authorityBundleHash)
   await trustedHostHash('/opt/aisdlc-node/24.14.0/node', raw.nodeHash)
   const privateKey = createPrivateKey(await trustedHostFile('/var/lib/aisdlc-authority/signing-key.pem', { maximumBytes: 4096, privateMode: true, ownerUid: process.getuid!() }))
@@ -139,7 +141,8 @@ async function main() {
         if (!attempt || attempt.attemptId !== input.attemptId) fail()
         const bytes = Buffer.from(JSON.stringify(input.terminationProof))
         result = await attempts.settle({ taskKey: configuration.taskKey, attemptId: attempt.attemptId, terminationHash: (await import('node:crypto')).createHash('sha256').update(bytes).digest('hex'),
-          outcome: attempt.candidateHash ? 'candidate' : 'failed', usage: null }, bytes); break
+          outcome: attempt.candidateHash ? 'candidate' : 'failed', usage: input.terminationProof?.record?.version === 2
+            ? input.terminationProof.record.usage : null }, bytes); break
       }
     }
     await write({ ok: true, result })

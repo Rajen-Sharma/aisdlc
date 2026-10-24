@@ -53,7 +53,8 @@ export class NativeDeliveryAuthority {
     if (!attempt || attempt.terminal) return reject()
     const termination = bytes(input.terminationProof)
     if (await this.#proof.verify(termination, { action: 'settle', policy: task.policy, attempt }) !== true) return reject()
-    let usage = null
+    const cleanupRecord = (input.terminationProof as { record: { version: number; usage?: any } }).record
+    let usage = cleanupRecord.version === 2 ? cleanupRecord.usage : null
     if (input.candidate !== null) {
       const native = authenticateNativeCandidate(input.provenance, input.candidate, { policy: task.policy, attempt,
         sourceHash: this.#config.contract.sourceHash, guardian: this.#config.guardian }, this.#now())
@@ -61,6 +62,7 @@ export class NativeDeliveryAuthority {
       if (native.capsule.sha256 === base.sha256 || base.files.length !== native.capsule.files.length || base.files.some((file, index) =>
         file.path !== native.capsule.files[index].path || (file.sha256 !== native.capsule.files[index].sha256 && !this.#config.contract.allowedPaths.includes(file.path)))) return reject()
       usage = native.record.usage
+      if (cleanupRecord.version === 2 && digest(usage) !== digest(cleanupRecord.usage)) return reject()
       if (!attempt.candidateHash) await this.#attempts.candidate({ taskKey: this.#config.taskKey, attemptId: input.attemptId, candidateHash: native.capsule.sha256 })
       else if (attempt.candidateHash !== native.capsule.sha256) return reject()
     } else if (input.provenance !== null || attempt.candidateHash) return reject()
@@ -84,6 +86,7 @@ export class NativeDeliveryAuthority {
     let report = evidence?.report
     if (evidence && (digest(evidence.provenance) !== digest(input.provenance) || report?.candidateHash !== native.capsule.sha256)) return reject()
     if (!evidence) {
+    if (digest(JSON.parse(c.policyText).requirements) !== digest(c.contract.acceptanceCriteria)) return reject()
     report = await verifyTaskboardCandidate({ capsule: native.capsule, candidateHash: native.capsule.sha256,
       policyText: c.policyText, policyHash: c.contract.checkPolicyHash, runnerSource: c.runnerSource,
       runnerHash: c.trust.verifierHash, workspaceRoot: c.workspaceRoot })

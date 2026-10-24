@@ -38,7 +38,7 @@ assert digest(manifest_bytes) == expected_manifest_hash
 manifest = json.loads(manifest_bytes)
 assert manifest['version'] == 1 and manifest['node'] == '24.14.0' and manifest['codex'] == '0.155.1'
 assert manifest['nativeRuntimeQualified'] is False and manifest['executionAllowed'] is False
-allow = {'guardian.mjs', 'guardian-engine.mjs', 'broker.mjs', 'verifier.mjs', 'authority.mjs', 'runner.mjs',
+allow = {'guardian.mjs', 'guardian-engine.mjs', 'broker.mjs', 'verifier.mjs', 'authority.mjs', 'runner.mjs', 'qualify-host.mjs', 'qualify-delivery.mjs', 'qualify-tools.mjs',
          'prepare-client.sh', 'prepare-authority.sh', 'metadata-preflight.py', 'install-runtime.py'}
 entries = manifest['files']
 assert {entry['name'] for entry in entries} == allow and len(entries) == len(allow)
@@ -114,7 +114,7 @@ process.stdout.write(createPublicKey(key).export({format:'der',type:'spki'}));
     public = subprocess.check_output([str(node), '--input-type=module', '-e', helper.decode()])
     assert len(public) == 44
     atomic(base / 'guardian-public-key.der', public)
-    mapping = {'guardian.mjs': 'guardian.mjs', 'broker.mjs': 'broker.mjs'}
+    mapping = {'guardian.mjs': 'guardian.mjs', 'broker.mjs': 'broker.mjs', 'qualify-host.mjs': 'qualify-host.mjs'}
 else:
     subprocess.run(['/usr/bin/bash', '-s'], input=content['prepare-authority.sh'], check=True)
     folder(base)
@@ -123,7 +123,7 @@ else:
     # This is the trusted verifier/signing service, never the coding account.
     assert pathlib.Path('/usr/bin/docker').is_file()
     subprocess.run(['/usr/sbin/usermod', '-aG', 'docker', 'aisdlc-authority'], check=True)
-    mapping = {'authority.mjs': 'native-authority.mjs', 'runner.mjs': 'runner.mjs'}
+    mapping = {'authority.mjs': 'native-authority.mjs', 'runner.mjs': 'runner.mjs', 'qualify-delivery.mjs': 'qualify-delivery.mjs', 'qualify-tools.mjs': 'qualify-tools.mjs'}
 
 retained = base / 'installed-runtime.json'
 prior = json.loads(regular(retained, owner=0)) if retained.exists() else None

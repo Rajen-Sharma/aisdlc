@@ -95,7 +95,8 @@ function executionSnapshot(story: Awaited<ReturnType<typeof eligible>>, storyId:
  * requires its current external counter, qualified runtime and signed permits.
  */
 export async function withExecutionEligibility<T>(payload: Payload, storyId: number,
-  work: (current: () => Promise<ReturnType<typeof executionSnapshot> & { observedAt: number }>) => Promise<T>) {
+  work: (current: () => Promise<ReturnType<typeof executionSnapshot> & { observedAt: number }>,
+    retain: (input: unknown) => Promise<{ id: number; artifactHash: string }>) => Promise<T>) {
   if (!Number.isSafeInteger(storyId) || storyId < 1 || typeof work !== 'function') throw new Error('Invalid native controller request.')
   return transaction(payload, async db => {
     const lookup = await db.query('SELECT project_key,story_key FROM sdlc_stories WHERE id=$1', [storyId])
@@ -103,7 +104,7 @@ export async function withExecutionEligibility<T>(payload: Payload, storyId: num
     await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
     const current = async () => ({ ...executionSnapshot(await eligible(db, storyId), storyId), observedAt: Math.floor(Date.now() / 1000) })
     await current()
-    return work(current)
+    return work(current, async input => retainArtifact(db, await eligible(db, storyId), storyId, structuredClone(input)))
   })
 }
 
@@ -118,7 +119,11 @@ export async function retainDeliveryArtifact(payload: Payload, storyId: number, 
     const lookup = await db.query('SELECT project_key,story_key FROM sdlc_stories WHERE id=$1', [storyId])
     if (!lookup.rows[0]) throw new Error('Story not found.')
     await lock(db, lookup.rows[0].project_key, lookup.rows[0].story_key)
-    const story = await eligible(db, storyId)
+    return retainArtifact(db, await eligible(db, storyId), storyId, detached)
+  })
+}
+async function retainArtifact(db: PoolClient, story: Awaited<ReturnType<typeof eligible>>, storyId: number, detached: unknown) {
+    if (Buffer.byteLength(JSON.stringify(detached) ?? '') > 800000) throw new Error('Invalid delivery artifact.')
     const taskKey = digest({ projectKey: story.project_key, storyKey: story.story_key })
     const { state, trust } = await currentDelivery(taskKey)
     const result = authenticateDeliveryArtifact(detached, trust, Math.floor(Date.now() / 1000), { storyId, taskKey,
@@ -137,7 +142,6 @@ export async function retainDeliveryArtifact(payload: Payload, storyId: number, 
       VALUES ($1,$2,$3,$4,$5,$6,$7,clock_timestamp(),clock_timestamp()) RETURNING id`,
       [storyId, story.project_key, story.scope_hash, result.artifactHash, c.candidateHash, c.attemptId, JSON.stringify(result.artifact)])
     return { id: Number(retained.rows[0].id), artifactHash: result.artifactHash }
-  })
 }
 function taskRow(value: Task): Task {
   if (!value) throw new Error('Task not found.')

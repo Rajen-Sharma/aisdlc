@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "mode": "protected-trial",
+  "issuedAt": 1792885952,
+  "expiresAt": 1793058752,
+  "subscriptionId": "b7c13fa8-f215-42a7-b04b-b48e78f1ba72",
+  "resourceGroup": "rg-aisdlc-trial-aue",
+  "vms": [
+    "vm-aisdlc-client",
+    "vm-aisdlc-tools"
+  ],
+  "planningCeilingUsd": 10,
+  "trialCreditsOnly": true,
+  "payAsYouGoAllowed": false,
+  "additionalChargesAllowed": false,
+  "subscriptionOnly": true,
+  "maxAttempts": 3,
+  "planHash": "c374e9a795d2be89e1987a17afd618382d200a99020afa0f124d60bc24e04f37",
+  "humanDecision": "Authorize the renewed trial window and VM startup",
+  "approvalScope": "Renew existing protected trial, install and qualify runtime, and execute already approved task; later artifact decisions remain human",
+  "recordedAt": "2026-10-24T23:52:32.4457929+00:00"
+}

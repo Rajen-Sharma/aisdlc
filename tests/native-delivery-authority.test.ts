@@ -90,4 +90,20 @@ test('native handoff retains authenticated usage, verifier receipt and full arti
   await assert.rejects(attempts.deliver({ taskKey: f.claim.taskKey, attemptId: intent.operationId, artifactHash, artifact }, bytes(artifact)))
   await attempts.revoke({ taskKey: f.claim.taskKey, reasonHash: 'f'.repeat(64) })
   await assert.rejects(service.head())
+  const revised = { ...configuration, scopeHash: digest('synthetic-feedback-scope'), approvalHash: digest('synthetic-reapproval') }
+  const revisedPolicy = { taskKey: f.claim.taskKey, scopeHash: revised.scopeHash, approvalHash: revised.approvalHash,
+    runtimeHash: f.claim.runtimeHash, expiresAt: f.now + 300, maxAttempts: 3, subscriptionOnly: true,
+    additionalChargesAllowed: false, model: 'gpt-6-sol', maxTurnsPerAttempt: 1 }
+  await attempts.revise({ taskKey: f.claim.taskKey, previousRegistrationId: (await attempts.inspect(f.claim.taskKey)).task!.registrationId,
+    feedbackHash: digest('synthetic feedback'), policy: revisedPolicy })
+  const next = await attempts.begin({ taskKey: f.claim.taskKey, registrationId: (await attempts.inspect(f.claim.taskKey)).task!.registrationId,
+    attempt: 2, reservationHash: digest('next synthetic reservation'), hostId: randomUUID(), bootId: randomUUID(), deadline: f.now + 100 })
+  const nextAttempt = (await attempts.inspect(f.claim.taskKey)).task!.attempts.at(-1)!
+  const failedCleanup = { ...terminationRecord, version: 2, attemptId: next.operationId, reservationHash: nextAttempt.reservationHash,
+    ...nextAttempt.runtime, usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 } }
+  const failedProof = { record: failedCleanup, signature: sign(null, attemptEvidenceSigningBytes(failedCleanup), guardian.privateKey).toString('base64') }
+  const revisedService = new NativeDeliveryAuthority({ attempts, proofVerifier: proof, signRecord: signRoot, configuration: revised, now: () => f.now })
+  await revisedService.finish({ attemptId: next.operationId, candidate: null, provenance: null, terminationProof: failedProof })
+  assert.equal((await attempts.inspect(f.claim.taskKey)).accounting.usage.knownTotalTokens, 7)
+  assert.equal((await attempts.inspect(f.claim.taskKey)).task!.attempts.at(-1)!.terminal.outcome, 'failed')
 })

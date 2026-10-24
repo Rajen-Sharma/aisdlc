@@ -32,9 +32,9 @@ export class AttemptEvidenceVerifier {
         'hostId', 'bootId', 'unit', 'observedAt', 'expiresAt']
       const fields = kind === 'termination' ? ['rootExited', 'cgroupEmpty', 'launchWritersDrained']
         : ['candidateHash', 'verdict', 'verifierHash', 'qualificationHash', 'image']
-      const extended = kind === 'verification' && r.version === 2 ? ['evidenceHash', 'provenanceHash'] : []
-      if (!exact(r, [...common, ...fields, ...extended]) || ![1, 2].includes(r.version) || (kind === 'termination' && r.version !== 1)
-        || (context.action === 'verification' && r.version !== 2) || (r.version === 2 && (!sha(r.evidenceHash) || !sha(r.provenanceHash)))
+      const extended = r.version !== 2 ? [] : kind === 'verification' ? ['evidenceHash', 'provenanceHash'] : ['usage']
+      if (!exact(r, [...common, ...fields, ...extended]) || ![1, 2].includes(r.version)
+        || (context.action === 'verification' && r.version !== 2) || (kind === 'verification' && r.version === 2 && (!sha(r.evidenceHash) || !sha(r.provenanceHash)))
         || r.kind !== kind || !slug(r.keyId)
         || !positive(r.authorityRevision) || ![r.taskKey, r.reservationHash, r.runtimeHash].every(sha)) return false
       const attempt = context.attempt
@@ -54,6 +54,12 @@ export class AttemptEvidenceVerifier {
         || selected.validFrom > r.observedAt || selected.validUntil < r.expiresAt || selected.validUntil <= now) return false
       if (kind === 'termination') {
         if (r.rootExited !== true || r.cgroupEmpty !== true || r.launchWritersDrained !== true) return false
+        if (r.version === 2) {
+          if (r.usage !== null && (!exact(r.usage, ['inputTokens', 'outputTokens', 'totalTokens'])
+            || !['inputTokens', 'outputTokens', 'totalTokens'].every(key => Number.isSafeInteger(r.usage[key]) && r.usage[key] >= 0 && r.usage[key] <= 10000000)
+            || r.usage.totalTokens !== r.usage.inputTokens + r.usage.outputTokens)) return false
+          if (context.payload && canonical(r.usage) !== canonical(context.payload.usage)) return false
+        }
       } else if ((context.action === 'repair' ? r.verdict !== 'fail' : !['pass', 'fail', 'error'].includes(r.verdict))
         || r.candidateHash !== attempt.candidateHash || !sha(r.candidateHash)
         || !sha(r.verifierHash) || !sha(r.qualificationHash) || r.verifierHash !== selected.verifierHash

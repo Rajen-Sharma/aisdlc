@@ -13,7 +13,7 @@ import { validateSourceCapsule, type SourceCapsule } from '../src/sdlc/source-ca
 import { nativeCandidateSigningBytes, type NativeCandidate } from '../src/sdlc/native-candidate'
 
 type Configuration = {
-  version: 1; hostId: string; storyId: number
+  version: 1; hostId: string; qualifiedBootId: string; storyId: number
   policy: { taskKey: string; scopeHash: string; approvalHash: string; runtimeHash: string; keyId: string; authorityRevision: number;
     publicKeyDer: string; nativeRuntimeQualified: true; expiresAt: number }
   task: { projectKey: string; contextHash: string; storyKey: string; revision: number; supersedes: number | null; feedback?: number;
@@ -45,6 +45,7 @@ async function main() {
   ]) await trustedHostHash(file, hash)
   if (config.hostId !== (await readFile('/sys/class/dmi/id/product_uuid', 'utf8')).trim().toLowerCase()) throw new Error()
   const bootId = (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim()
+  if (bootId !== config.qualifiedBootId) throw new Error()
   const privateKey = createPrivateKey(await trustedHostFile('/var/lib/aisdlc-guardian/signing-key.pem', { maximumBytes: 4096, privateMode: true }))
   const publicDer = createPublicKey(privateKey).export({ format: 'der', type: 'spki' })
   if (privateKey.asymmetricKeyType !== 'ed25519' || publicDer.toString('base64') !== config.guardian.publicKeyDer
@@ -84,9 +85,9 @@ async function main() {
       if (result.completed === true && (!admission || result.turnSent !== true || result.threadId !== admission.threadId)) throw new Error()
     } finally { cleanup = await work.stop() }
     const observedAt = Math.floor(Date.now() / 1000)
-    const termination = { version: 1, kind: 'termination', keyId: config.guardian.keyId, authorityRevision: config.guardian.revision,
+    const termination = { version: 2, kind: 'termination', keyId: config.guardian.keyId, authorityRevision: config.guardian.revision,
       taskKey: policy.taskKey, attemptId: lease.attemptId, reservationHash: lease.reservationHash, runtimeHash: policy.runtimeHash,
-      hostId: config.hostId, bootId, unit: lease.unit, observedAt, expiresAt: observedAt + 30, ...cleanup }
+      hostId: config.hostId, bootId, unit: lease.unit, observedAt, expiresAt: observedAt + 30, ...cleanup, usage: result?.usage ?? null }
     const terminationProof = { record: termination, signature: sign(null, attemptEvidenceSigningBytes(termination), privateKey).toString('base64') }
     let candidate = null, provenance = null
     if (result?.completed === true && admission) {

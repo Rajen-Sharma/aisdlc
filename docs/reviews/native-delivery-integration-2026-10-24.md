@@ -31,11 +31,15 @@ artifact-review browser checks at desktop and 390px, and dependency audit with
 zero known findings. Portable signed vectors are explicitly synthetic. Linux CI
 also checks actual Docker verification and the complete signed archive protocol
 with named reference/negative controls, plus fixed-unit lifecycle confinement.
-Current CI qualification is still being completed; synthetic protocol flags never
-enable the private runtime.
+Full Linux CI passed at `3faa433` (run 40036208545), including the actual isolated
+verifier/archive protocol, guardian lifecycle, build and browser checks. Later
+private-host qualification refinements still require checks against their exact
+revision. Synthetic protocol flags never enable the private runtime.
 
-Both Azure VMs remain deallocated. Their previous 48-hour authorization window
-expired on 20 October. A renewed protected-trial window, private-host qualification,
+The previous 48-hour authorization window expired on 20 October. On 25 October
+the user explicitly renewed the protected trial; see the immutable
+[renewal record](../governance/azure-trial-renewal-2026-10-25.json). The existing
+VMs were started after protected-subscription verification. Private-host qualification,
 one genuine bounded model patch, independent checks and the user's exact-artifact
 reviews remain necessary before this increment can be accepted. No production
 merge or deployment is authorized.

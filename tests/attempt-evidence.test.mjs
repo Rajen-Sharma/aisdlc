@@ -53,6 +53,17 @@ test('root exit without cgroup absence and drained launch writers cannot settle 
   }
 })
 
+test('signed cleanup retains known usage even without a candidate and denies changed accounting', async () => {
+  const state = fixture(), usage = { inputTokens: 7, outputTokens: 3, totalTokens: 10 }
+  const evidence = state.envelope({ version: 2, usage })
+  assert.equal(await state.verifier.verify(evidence, { ...state.context, payload: { usage } }), true)
+  for (const changed of [null, { ...usage, totalTokens: 11 }, { inputTokens: 0, outputTokens: 0, totalTokens: 0 }]) {
+    assert.equal(await state.verifier.verify(evidence, { ...state.context, payload: { usage: changed } }), false)
+  }
+  assert.equal(await state.verifier.verify(state.envelope({ version: 2, usage: { ...usage, totalTokens: 11 } }), state.context), false)
+  assert.equal(await state.verifier.verify(state.envelope({ version: 2, usage: null }), { ...state.context, payload: { usage: null } }), true)
+})
+
 test('replayed revision, expired evidence, future observation and withdrawn key deny', async () => {
   const state = fixture()
   for (const extra of [{ authorityRevision: 2 }, { keyId: 'guardian-other' },

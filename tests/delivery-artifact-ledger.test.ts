@@ -7,7 +7,7 @@ import { getPayload } from 'payload'
 import config from '../src/payload.config'
 import { activeProject } from '../src/sdlc/project'
 import { digest } from '../src/sdlc/contracts'
-import { inspectExecutionEligibility, retainDeliveryArtifact } from '../src/sdlc/task-coordinator'
+import { inspectExecutionEligibility, retainDeliveryArtifact, withExecutionEligibility } from '../src/sdlc/task-coordinator'
 import { storyReadiness } from '../src/sdlc/eligibility'
 import { deliveryFixture } from './helpers/delivery-evidence'
 
@@ -47,7 +47,10 @@ test('exact artifact reviews stay separate; stale proof, failed checks and feedb
     await assert.rejects(payload.create({ collection: 'sdlc-delivery-artifacts', overrideAccess: true, data: {
       story: story.id, projectKey: project.key, scopeHash: story.scopeHash, artifactHash, candidateHash: f.claim.candidateHash, attemptId: f.claim.attemptId, record: artifact,
     } }), /trusted evidence importer/)
-    const retained = await retainDeliveryArtifact(payload, story.id, artifact)
+    const retained = await withExecutionEligibility(payload, story.id, async (current, retain) => {
+      assert.equal((await current()).record.scopeHash, story.scopeHash)
+      return retain(artifact)
+    })
     assert.deepEqual(await retainDeliveryArtifact(payload, story.id, artifact), retained)
     await assert.rejects(payload.create({ collection: 'sdlc-gates', user: editor, overrideAccess: false, data: gate('code-security', artifactHash) }))
     await assert.rejects(payload.create({ collection: 'sdlc-gates', overrideAccess: true, data: gate('code-security', artifactHash) }))
