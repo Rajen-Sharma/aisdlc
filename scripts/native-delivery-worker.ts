@@ -114,7 +114,11 @@ try {
   console.log(JSON.stringify({ artifactHash: delivered.current.state.artifactHash, awaitingHumanReview: passed,
     failedChecks: !passed, additionalModelTurnsStarted: false }))
 } catch (error) {
-  await status('uncertain').catch(() => {})
+  try {
+    const external = await nativeAuthorityCall(selected, 'inspect', null)
+    const last = external.task?.attempts.at(-1)
+    await status(external.accounting.remainingAttempts === 0 && last?.terminal ? 'attempt-limit' : 'uncertain', last?.attempt)
+  } catch { await status('uncertain').catch(() => {}) }
   console.error('Native cycle paused: independent state or proof is unavailable. No request was retried and no additional attempt was authorized.')
   if (error instanceof Error && /^Native permit denied at [a-z-]{1,40}\.$/.test(error.message)) console.error(error.message)
   process.exitCode = 1

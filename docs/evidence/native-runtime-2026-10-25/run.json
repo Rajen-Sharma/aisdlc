@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-25T06:29:26.950Z",
+  "storyId": 84,
+  "taskKey": "35ee0a337e6ba28dfb51cd680edfb007cfa46fb7a0c80e711566af4df3ae418d",
+  "scopeHash": "9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb",
+  "runtimeSourceRevision": "268eb1c2ca3d8de069c0609c765dd103972a30fc",
+  "ciRunId": 40168754171,
+  "manifestHash": "4888414c505727bb05e27da719d99474f91d33171dc04af8ceb921bf08ce89f6",
+  "runtimeHash": "12274b25db38f41fdaa356d83d10fc57c9a9de892d70ae9093369f13ea7ed906",
+  "ledgerTipHash": "f17c84494fcee6ab6544d6f4748a7dbcb21e722107d54f15f060d8e9dbfbc69a",
+  "ledgerRecords": 16,
+  "attemptsSpent": 3,
+  "remainingAttempts": 0,
+  "deliveries": 0,
+  "actualHumanArtifactApprovals": 0,
+  "modelCallCount": "unknown; two turn admissions, no authenticated usage",
+  "tokenUsageComplete": false,
+  "blockedReason": "native warning after turn admission; no candidate; global attempt limit exhausted"
+}

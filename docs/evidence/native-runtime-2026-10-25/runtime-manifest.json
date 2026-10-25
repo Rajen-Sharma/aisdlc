@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "sourceRevision": "268eb1c2ca3d8de069c0609c765dd103972a30fc",
+  "sourceFiles": [
+    {
+      "file": "scripts/attempt-evidence.mjs",
+      "sha256": "a1148dc9b430805b1ae69acca3aa7d4de6d34de2db6df37d4c2496158ac89c10",
+      "normalizedHash": "a1148dc9b430805b1ae69acca3aa7d4de6d34de2db6df37d4c2496158ac89c10",
+      "committedHash": "a1148dc9b430805b1ae69acca3aa7d4de6d34de2db6df37d4c2496158ac89c10"
+    },
+    {
+      "file": "scripts/authority-attempts.mjs",
+      "sha256": "480af74ca4eb332230ebc17c38f1b565c525d982a1ece8ab0b821ea1a83285f9",
+      "normalizedHash": "480af74ca4eb332230ebc17c38f1b565c525d982a1ece8ab0b821ea1a83285f9",
+      "committedHash": "480af74ca4eb332230ebc17c38f1b565c525d982a1ece8ab0b821ea1a83285f9"
+    },
+    {
+      "file": "scripts/azure-authority-identity.mjs",
+      "sha256": "1abb7b2e1df025d5d217fa529ffe7388f961e469689f27bae4e47a19fc667190",
+      "normalizedHash": "1abb7b2e1df025d5d217fa529ffe7388f961e469689f27bae4e47a19fc667190",
+      "committedHash": "1abb7b2e1df025d5d217fa529ffe7388f961e469689f27bae4e47a19fc667190"
+    },
+    {
+      "file": "scripts/azure-authority-ledger.mjs",
+      "sha256": "ddc3e57ef9ca94f29de1689891d2023fb192ebcde4590222147655f066cd1291",
+      "normalizedHash": "ddc3e57ef9ca94f29de1689891d2023fb192ebcde4590222147655f066cd1291",
+      "committedHash": "ddc3e57ef9ca94f29de1689891d2023fb192ebcde4590222147655f066cd1291"
+    },
+    {
+      "file": "scripts/bounded-json-channel.mjs",
+      "sha256": "7ade0231b9aa2029f5d906950b8ab4823bff288082d89dae7d90af69d9c964e3",
+      "normalizedHash": "7ade0231b9aa2029f5d906950b8ab4823bff288082d89dae7d90af69d9c964e3",
+      "committedHash": "7ade0231b9aa2029f5d906950b8ab4823bff288082d89dae7d90af69d9c964e3"
+    },
+    {
+      "file": "scripts/codex-turn-session.mjs",
+      "sha256": "9c76056cf874618cf19b3463994975e65b6e10b6850c86be82766d18fb919480",
+      "normalizedHash": "9c76056cf874618cf19b3463994975e65b6e10b6850c86be82766d18fb919480",
+      "committedHash": "9c76056cf874618cf19b3463994975e65b6e10b6850c86be82766d18fb919480"
+    },
+    {
+      "file": "scripts/install-native-runtime.py",
+      "sha256": "5b02a9c3ef9bbd010ffdf7740b7fbf1286720e69bc055212960f85560990f706",
+      "normalizedHash": "5b02a9c3ef9bbd010ffdf7740b7fbf1286720e69bc055212960f85560990f706",
+      "committedHash": "5b02a9c3ef9bbd010ffdf7740b7fbf1286720e69bc055212960f85560990f706"
+    },
+    {
+      "file": "scripts/package-native-runtime.mjs",
+      "sha256": "5a13d79052a55793bd6411488d70527f54a4b9098f9f2b3f587934330df143bb",
+      "normalizedHash": "5a13d79052a55793bd6411488d70527f54a4b9098f9f2b3f587934330df143bb",
+      "committedHash": "5a13d79052a55793bd6411488d70527f54a4b9098f9f2b3f587934330df143bb"
+    },
+    {
+      "file": "scripts/prepare-private-authority.sh",
+      "sha256": "bb649b983eba6016633dfdb34b72020f9051852b1f303159d43629fa2b6b753a",
+      "normalizedHash": "bb649b983eba6016633dfdb34b72020f9051852b1f303159d43629fa2b6b753a",
+      "committedHash": "bb649b983eba6016633dfdb34b72020f9051852b1f303159d43629fa2b6b753a"
+    },
+    {
+      "file": "scripts/prepare-private-codex-client.sh",
+      "sha256": "5cfb1c36e7ba2cf1151b9fb218bc5784155ab06716da4f502480d02d5b88fb79",
+      "normalizedHash": "5cfb1c36e7ba2cf1151b9fb218bc5784155ab06716da4f502480d02d5b88fb79",
+      "committedHash": "5cfb1c36e7ba2cf1151b9fb218bc5784155ab06716da4f502480d02d5b88fb79"
+    },
+    {
+      "file": "scripts/private-codex-broker.mjs",
+      "sha256": "7e6d7f9fbf192797a65c8ff54ba6998f4ebf4341c0b2e37444c78ffbf65ee684",
+      "normalizedHash": "7e6d7f9fbf192797a65c8ff54ba6998f4ebf4341c0b2e37444c78ffbf65ee684",
+      "committedHash": "7e6d7f9fbf192797a65c8ff54ba6998f4ebf4341c0b2e37444c78ffbf65ee684"
+    },
+    {
+      "file": "scripts/private-codex-guardian.ts",
+      "sha256": "3e6aeaf1e6f954878efe9ffa27b29c34b20d1c9b13218756056cd33291b0e3cb",
+      "normalizedHash": "3e6aeaf1e6f954878efe9ffa27b29c34b20d1c9b13218756056cd33291b0e3cb",
+      "committedHash": "3e6aeaf1e6f954878efe9ffa27b29c34b20d1c9b13218756056cd33291b0e3cb"
+    },
+    {
+      "file": "scripts/private-codex-preflight.py",
+      "sha256": "704b84479978829c726e1335a585e206205e70cf0b516cae5ab3f64991ad250f",
+      "normalizedHash": "704b84479978829c726e1335a585e206205e70cf0b516cae5ab3f64991ad250f",
+      "committedHash": "704b84479978829c726e1335a585e206205e70cf0b516cae5ab3f64991ad250f"
+    },
+    {
+      "file": "scripts/private-native-authority.ts",
+      "sha256": "026f3741784820b2c5f2addd39306b9a3ef4f4f8890afd799de55b02bf541e56",
+      "normalizedHash": "026f3741784820b2c5f2addd39306b9a3ef4f4f8890afd799de55b02bf541e56",
+      "committedHash": "026f3741784820b2c5f2addd39306b9a3ef4f4f8890afd799de55b02bf541e56"
+    },
+    {
+      "file": "scripts/private-unlaunched-recovery.ts",
+      "sha256": "7d7d0fbd775422be300b0d194fff48a9f75560ed56984b093d1054b53da6145a",
+      "normalizedHash": "7d7d0fbd775422be300b0d194fff48a9f75560ed56984b093d1054b53da6145a",
+      "committedHash": "7d7d0fbd775422be300b0d194fff48a9f75560ed56984b093d1054b53da6145a"
+    },
+    {
+      "file": "scripts/qualify-native-delivery.mjs",
+      "sha256": "0cbec70cedf836b3219bcf900810f0834fafd6c7328a5f664c972b94a3529875",
+      "normalizedHash": "0cbec70cedf836b3219bcf900810f0834fafd6c7328a5f664c972b94a3529875",
+      "committedHash": "0cbec70cedf836b3219bcf900810f0834fafd6c7328a5f664c972b94a3529875"
+    },
+    {
+      "file": "scripts/qualify-private-native-host.mjs",
+      "sha256": "6896fe7be4455bc4fe6d0ba0b07f424aa4dca6beb62860128ccf653cf5a4be83",
+      "normalizedHash": "6896fe7be4455bc4fe6d0ba0b07f424aa4dca6beb62860128ccf653cf5a4be83",
+      "committedHash": "6896fe7be4455bc4fe6d0ba0b07f424aa4dca6beb62860128ccf653cf5a4be83"
+    },
+    {
+      "file": "scripts/qualify-private-tools.mjs",
+      "sha256": "4e0dec9740d21c5cbabe29c09a9195e73f7eb353fa97f650742393c0a770d8ff",
+      "normalizedHash": "4e0dec9740d21c5cbabe29c09a9195e73f7eb353fa97f650742393c0a770d8ff",
+      "committedHash": "4e0dec9740d21c5cbabe29c09a9195e73f7eb353fa97f650742393c0a770d8ff"
+    },
+    {
+      "file": "scripts/systemd-attempt-guardian.mjs",
+      "sha256": "b2b1ce68fc1770cccb54f65c78632b8d74c6d4ec921c9e3fb570665dd6e53cda",
+      "normalizedHash": "b2b1ce68fc1770cccb54f65c78632b8d74c6d4ec921c9e3fb570665dd6e53cda",
+      "committedHash": "b2b1ce68fc1770cccb54f65c78632b8d74c6d4ec921c9e3fb570665dd6e53cda"
+    },
+    {
+      "file": "scripts/taskboard-isolated-runner.mjs",
+      "sha256": "b292d2424fd40b0569b82f63ef159ce344bcf999343d19cb4f70ed9c899b0068",
+      "normalizedHash": "b292d2424fd40b0569b82f63ef159ce344bcf999343d19cb4f70ed9c899b0068",
+      "committedHash": "b292d2424fd40b0569b82f63ef159ce344bcf999343d19cb4f70ed9c899b0068"
+    },
+    {
+      "file": "scripts/trusted-host-files.mjs",
+      "sha256": "fd1a75009e86b2cdc1b6c14efbcd08453c650cdbb2578ecf33fc50562aadf015",
+      "normalizedHash": "fd1a75009e86b2cdc1b6c14efbcd08453c650cdbb2578ecf33fc50562aadf015",
+      "committedHash": "fd1a75009e86b2cdc1b6c14efbcd08453c650cdbb2578ecf33fc50562aadf015"
+    },
+    {
+      "file": "scripts/turn-permit.mjs",
+      "sha256": "8353fbdc0cee51457461034dd4630e96ca357a238d484293475c33f72ec3b1a6",
+      "normalizedHash": "8353fbdc0cee51457461034dd4630e96ca357a238d484293475c33f72ec3b1a6",
+      "committedHash": "8353fbdc0cee51457461034dd4630e96ca357a238d484293475c33f72ec3b1a6"
+    },
+    {
+      "file": "scripts/unlaunched-fence.mjs",
+      "sha256": "c482b484cb2496608d6e16fe83e556eec69f96bd0f236e6db563f9225936b81f",
+      "normalizedHash": "c482b484cb2496608d6e16fe83e556eec69f96bd0f236e6db563f9225936b81f",
+      "committedHash": "c482b484cb2496608d6e16fe83e556eec69f96bd0f236e6db563f9225936b81f"
+    },
+    {
+      "file": "src/sdlc/codex-candidate.ts",
+      "sha256": "661d4b46113aefa04f8659f5407e55837bbf0053574c37ee58654bbb96288533",
+      "normalizedHash": "661d4b46113aefa04f8659f5407e55837bbf0053574c37ee58654bbb96288533",
+      "committedHash": "661d4b46113aefa04f8659f5407e55837bbf0053574c37ee58654bbb96288533"
+    },
+    {
+      "file": "src/sdlc/contracts.ts",
+      "sha256": "4983c31628ff0d301bfc12dce44679761cdd689408a2661504ad6918983ea01c",
+      "normalizedHash": "4983c31628ff0d301bfc12dce44679761cdd689408a2661504ad6918983ea01c",
+      "committedHash": "4983c31628ff0d301bfc12dce44679761cdd689408a2661504ad6918983ea01c"
+    },
+    {
+      "file": "src/sdlc/delivery-artifact.ts",
+      "sha256": "a239433e1a8fd264ad36ae69414781ab0a382b4df552ac3ed3f787400f8f6758",
+      "normalizedHash": "a239433e1a8fd264ad36ae69414781ab0a382b4df552ac3ed3f787400f8f6758",
+      "committedHash": "a239433e1a8fd264ad36ae69414781ab0a382b4df552ac3ed3f787400f8f6758"
+    },
+    {
+      "file": "src/sdlc/delivery-current.ts",
+      "sha256": "8de4e6eb22e63e0d08fda2f20500e590b2d2cbbd38a81d670c9a9d1a4befa4cf",
+      "normalizedHash": "8de4e6eb22e63e0d08fda2f20500e590b2d2cbbd38a81d670c9a9d1a4befa4cf",
+      "committedHash": "8de4e6eb22e63e0d08fda2f20500e590b2d2cbbd38a81d670c9a9d1a4befa4cf"
+    },
+    {
+      "file": "src/sdlc/delivery-showcase.ts",
+      "sha256": "dc326c669f67eb83ae3c0e89dea9fe5e003d34460ccc2b63699f211daa409c61",
+      "normalizedHash": "dc326c669f67eb83ae3c0e89dea9fe5e003d34460ccc2b63699f211daa409c61",
+      "committedHash": "dc326c669f67eb83ae3c0e89dea9fe5e003d34460ccc2b63699f211daa409c61"
+    },
+    {
+      "file": "src/sdlc/native-candidate.ts",
+      "sha256": "6b1b1f00a23bf232da05a1a6dce5f9af2f5a291f8740d62cb970f449d6690569",
+      "normalizedHash": "6b1b1f00a23bf232da05a1a6dce5f9af2f5a291f8740d62cb970f449d6690569",
+      "committedHash": "6b1b1f00a23bf232da05a1a6dce5f9af2f5a291f8740d62cb970f449d6690569"
+    },
+    {
+      "file": "src/sdlc/native-delivery-authority.ts",
+      "sha256": "ee37808507a06ef14b5cb448d2fdc6ca6ec491f820aa02c55dda7608f43ec1f6",
+      "normalizedHash": "ee37808507a06ef14b5cb448d2fdc6ca6ec491f820aa02c55dda7608f43ec1f6",
+      "committedHash": "ee37808507a06ef14b5cb448d2fdc6ca6ec491f820aa02c55dda7608f43ec1f6"
+    },
+    {
+      "file": "src/sdlc/source-capsule.ts",
+      "sha256": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594",
+      "normalizedHash": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594",
+      "committedHash": "4a414f165fef307613b9a99ff361d553707d1823ab4b0c25ed8ed8b96d456594"
+    },
+    {
+      "file": "src/sdlc/task-binding.ts",
+      "sha256": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e",
+      "normalizedHash": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e",
+      "committedHash": "cf8dcf1de44b4f405f067410d5a1eb592cc8471923202adb3f6460e5f1c44a5e"
+    },
+    {
+      "file": "src/sdlc/taskboard-verifier.ts",
+      "sha256": "06ad62e158a7a430a24560c7edb929c7eca1bca35cf3d56a6cbaa744c5da5a81",
+      "normalizedHash": "06ad62e158a7a430a24560c7edb929c7eca1bca35cf3d56a6cbaa744c5da5a81",
+      "committedHash": "06ad62e158a7a430a24560c7edb929c7eca1bca35cf3d56a6cbaa744c5da5a81"
+    }
+  ],
+  "sourceTreeClean": true,
+  "files": [
+    {
+      "name": "guardian.mjs",
+      "bytes": 31476,
+      "sha256": "89757d44865d0f562805c73ae271aede176db5fa32e567f28c2affd1f22d6b60"
+    },
+    {
+      "name": "guardian-engine.mjs",
+      "bytes": 13621,
+      "sha256": "47096cc781d232115d52c6df07b98c0a2186eca39d183b65acd5b4323566c382"
+    },
+    {
+      "name": "recover-unlaunched.mjs",
+      "bytes": 10756,
+      "sha256": "2bb837c374e2a049377c38926d7bc4faf0e7a4f7c7c7bc8b38e007f6cb88b3fa"
+    },
+    {
+      "name": "broker.mjs",
+      "bytes": 18996,
+      "sha256": "a0ffe725d6513a7dee9e1840f739f3b3672121111caf517a44205f33d05d5b01"
+    },
+    {
+      "name": "verifier.mjs",
+      "bytes": 10285,
+      "sha256": "1fdae4be19beb39beab41dd0bd0add52828bbe60aaf2f35072e388c4f59e7a14"
+    },
+    {
+      "name": "authority.mjs",
+      "bytes": 86844,
+      "sha256": "8fffd1cc74d341529a1df2e96aa047dc7e7ed696dbb4792b89b2ad9f571813f2"
+    },
+    {
+      "name": "qualify-host.mjs",
+      "bytes": 20398,
+      "sha256": "adc674698dfb51c98c5339fd328c8e20270af85a2c581e5efc85059c1ff02d3d"
+    },
+    {
+      "name": "qualify-delivery.mjs",
+      "bytes": 71491,
+      "sha256": "1ae20cc08d3ddef39cc288104c5fe4c23fa4cdf3988bddbac517190da98b7402"
+    },
+    {
+      "name": "qualify-tools.mjs",
+      "bytes": 79803,
+      "sha256": "c360f562f9150eff53e53b43f9e03d5ba1e3bccd6f50a5cdb70651c2125bf44a"
+    },
+    {
+      "name": "runner.mjs",
+      "bytes": 5631,
+      "sha256": "b292d2424fd40b0569b82f63ef159ce344bcf999343d19cb4f70ed9c899b0068"
+    },
+    {
+      "name": "prepare-client.sh",
+      "bytes": 4776,
+      "sha256": "5cfb1c36e7ba2cf1151b9fb218bc5784155ab06716da4f502480d02d5b88fb79"
+    },
+    {
+      "name": "prepare-authority.sh",
+      "bytes": 3158,
+      "sha256": "bb649b983eba6016633dfdb34b72020f9051852b1f303159d43629fa2b6b753a"
+    },
+    {
+      "name": "metadata-preflight.py",
+      "bytes": 7601,
+      "sha256": "704b84479978829c726e1335a585e206205e70cf0b516cae5ab3f64991ad250f"
+    },
+    {
+      "name": "install-runtime.py",
+      "bytes": 7395,
+      "sha256": "5b02a9c3ef9bbd010ffdf7740b7fbf1286720e69bc055212960f85560990f706"
+    }
+  ],
+  "node": "24.14.0",
+  "codex": "0.155.1",
+  "model": "gpt-6-sol",
+  "deployed": false,
+  "nativeRuntimeQualified": false,
+  "executionAllowed": false,
+  "realModelCalls": 0
+}

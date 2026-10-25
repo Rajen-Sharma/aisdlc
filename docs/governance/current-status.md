@@ -1,5 +1,15 @@
 # Current governance status GOV-STATUS-001
 
+Update, 25 October 2026, after native execution: both private hosts qualified
+and the approved first task ran under the external attempt authority. All three
+authorized intents are spent and have signed cleanup evidence. No candidate or
+delivery was produced; the final native turn was stopped on a warning whose
+precise cause remains unresolved. Further coding is blocked by the approved
+three-attempt limit. Code-security, outcome and MVP artifact approvals remain
+unavailable. [Run and failure evidence](../reviews/native-delivery-run-2026-10-25.md).
+Both trial VMs were then deallocated and the local executor disabled; external
+attempt history and archived proofs are preserved.
+
 Update, 25 October 2026: the user renewed the protected 48-hour Azure trial.
 Both existing VMs were started after verifying Free Trial status, spending limit,
 management-plane SSH fingerprints and daily shutdown schedules. The deadline is

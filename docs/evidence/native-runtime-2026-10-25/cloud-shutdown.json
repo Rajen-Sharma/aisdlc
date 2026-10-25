@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-25T06:32:37.2671968+00:00",
+  "vms": [
+    {
+      "name": "vm-aisdlc-client",
+      "powerState": "VM deallocated"
+    },
+    {
+      "name": "vm-aisdlc-tools",
+      "powerState": "VM deallocated"
+    }
+  ],
+  "reason": "Approved three-intent limit exhausted; prevent idle compute use",
+  "resourcesDeleted": false,
+  "localExecutorEnabled": false
+}

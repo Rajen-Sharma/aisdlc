@@ -25,6 +25,8 @@ jobs:
         run: |
           mkdir -p docs/evidence/github-ci
           node --input-type=module -e "import fs from 'node:fs'; fs.writeFileSync('docs/evidence/github-ci/run.json', JSON.stringify({commit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,createdAt:new Date().toISOString()},null,2))"
+      - name: Verify archived native trial signatures and attempt accounting
+        run: node scripts/verify-native-run-evidence.mjs
       - name: Validate private client preparation script
         run: |
           bash -n scripts/prepare-private-codex-client.sh

@@ -27,9 +27,10 @@ export default async function NativeRunStatus() {
     running: 'Coding is in progress. The result will be checked independently.', verifying: 'The coding run has stopped. Independent checks are running.',
     'awaiting-review': 'A checked result is ready for the separate human reviews below.',
     'failed-checks': 'Independent checks failed. The retained result and feedback form are below; acceptance is blocked.',
+    'attempt-limit': 'The three-attempt limit has been reached. No additional coding run is permitted. Review the failure evidence and execution policy before continuing.',
     uncertain: 'The run is paused while its state is checked. No automatic retry is permitted.',
   }
-  const stale = status && Date.now() - Date.parse(status.updatedAt) > 180000 && !['awaiting-review', 'failed-checks', 'uncertain'].includes(status.phase)
+  const stale = status && Date.now() - Date.parse(status.updatedAt) > 180000 && !['awaiting-review', 'failed-checks', 'attempt-limit', 'uncertain'].includes(status.phase)
   return <section className="delivery-panel runs-panel" aria-label="Coding run progress"><span className="eyebrow">05 / FOLLOW THE CODING RUN</span><h2>Coding run progress</h2>
     <p role="status">{stale ? 'The run has stopped reporting. Review is paused until its state is checked.' : status && descriptions[status.phase]
       ? descriptions[status.phase] : configured ? 'No current run status is available. Verified delivery evidence governs review.' : 'No private coding run has started. Your recorded scope decisions remain available.'}</p>

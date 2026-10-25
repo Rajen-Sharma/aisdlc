@@ -1,0 +1,118 @@
+{
+  "observedAt": "2026-10-25T06:29:26.939Z",
+  "task": {
+    "registrationId": "52390619-45a2-4ceb-b3ab-b427d33c57e1",
+    "policy": {
+      "taskKey": "35ee0a337e6ba28dfb51cd680edfb007cfa46fb7a0c80e711566af4df3ae418d",
+      "scopeHash": "9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb",
+      "approvalHash": "c5313941467ba3cb0daa28d4e1afa4df76370a613940520fc0362d3069d4aa35",
+      "runtimeHash": "12274b25db38f41fdaa356d83d10fc57c9a9de892d70ae9093369f13ea7ed906",
+      "expiresAt": 1792994783,
+      "maxAttempts": 3,
+      "model": "gpt-6-sol",
+      "maxTurnsPerAttempt": 1,
+      "subscriptionOnly": true,
+      "additionalChargesAllowed": false,
+      "protocol": "ai-sdlc/attempt-authority/v1",
+      "action": "register"
+    },
+    "scopeHistory": [
+      "9e60b3e20539bf90070dfd52e0e53aa4898e7e2da838857e3645ced9e26ecdcb"
+    ],
+    "generationStart": 0,
+    "attempts": [
+      {
+        "attemptId": "eb056296-d26e-4d7a-beec-01cd0d5f7810",
+        "attempt": 1,
+        "fence": 1,
+        "issuedAt": 1792908386,
+        "reservationHash": "d095bf74176ac3770249c1ced6a8d9edfa53f842236db3db254a9407b2ec2374",
+        "runtime": {
+          "hostId": "e82d9afd-8e99-46ad-ae41-0913f8bb171b",
+          "bootId": "f678b7c8-8770-4d0d-a3ed-866c46643b74",
+          "unit": "aisdlc-attempt-eb056296-d26e-4d7a-beec-01cd0d5f7810.service"
+        },
+        "deadline": 1792908506,
+        "admission": {
+          "operationId": "440fb0cc-a40b-41a8-ad49-dd6f0dbc52d8",
+          "challengeNonce": "82333fad-5715-49c9-a1da-185995f5adec"
+        },
+        "candidateHash": null,
+        "terminal": {
+          "terminationHash": "e15b6d5c61da54c935e133a77950ced5892e805cc95205c6251a09c797bb43e0",
+          "outcome": "failed",
+          "usage": null
+        },
+        "verification": null,
+        "delivery": null,
+        "repair": null
+      },
+      {
+        "attemptId": "730e6ca0-6ee9-4aec-a96c-501c8b3a66c0",
+        "attempt": 2,
+        "fence": 2,
+        "issuedAt": 1792908883,
+        "reservationHash": "5bf6432d4e841b07acb107992fe572de37b09dd90332bc374e6798dc30acc97d",
+        "runtime": {
+          "hostId": "e82d9afd-8e99-46ad-ae41-0913f8bb171b",
+          "bootId": "f678b7c8-8770-4d0d-a3ed-866c46643b74",
+          "unit": "aisdlc-attempt-730e6ca0-6ee9-4aec-a96c-501c8b3a66c0.service"
+        },
+        "deadline": 1792909003,
+        "admission": null,
+        "candidateHash": null,
+        "terminal": {
+          "terminationHash": "236414e0ee83cf601454956c04c098e4c3f0740293ec61c5b958e8e186649c0e",
+          "outcome": "failed",
+          "usage": null
+        },
+        "verification": null,
+        "delivery": null,
+        "repair": null
+      },
+      {
+        "attemptId": "ea8176ac-605d-4a51-a31d-6ad08bb2353f",
+        "attempt": 3,
+        "fence": 3,
+        "issuedAt": 1792909613,
+        "reservationHash": "2fde6e1d7d6c3d367c7b760db7c88bfc7f218aff2db3f762d43e117de8d88bdd",
+        "runtime": {
+          "hostId": "e82d9afd-8e99-46ad-ae41-0913f8bb171b",
+          "bootId": "f678b7c8-8770-4d0d-a3ed-866c46643b74",
+          "unit": "aisdlc-attempt-ea8176ac-605d-4a51-a31d-6ad08bb2353f.service"
+        },
+        "deadline": 1792909733,
+        "admission": {
+          "operationId": "8decf0c7-a269-4cd8-8405-f30438e8661a",
+          "challengeNonce": "275102a7-5e71-4bca-815f-17a428e5e7d7"
+        },
+        "candidateHash": null,
+        "terminal": {
+          "terminationHash": "2a4d082cb54ba062ab52776735ece82cff8435f0b6c3ea5b91a80164408c56bf",
+          "outcome": "failed",
+          "usage": null
+        },
+        "verification": null,
+        "delivery": null,
+        "repair": null
+      }
+    ],
+    "revoked": false,
+    "lastAt": 1792909616
+  },
+  "tipHash": "f17c84494fcee6ab6544d6f4748a7dbcb21e722107d54f15f060d8e9dbfbc69a",
+  "sequence": 16,
+  "accounting": {
+    "attemptsSpent": 3,
+    "remainingAttempts": 0,
+    "usage": {
+      "knownInputTokens": 0,
+      "knownOutputTokens": 0,
+      "knownTotalTokens": 0,
+      "unknownAttempts": 3,
+      "complete": false
+    }
+  },
+  "executionAllowed": false,
+  "retryAuthorized": false
+}
