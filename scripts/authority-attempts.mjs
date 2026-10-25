@@ -70,6 +70,15 @@ function reduce(records) {
       // fencing remain global to the stable task key, including across revisions.
       task.policy = copy(next); task.registrationId = record.operationId
       task.scopeHistory.push(next.scopeHash); task.generationStart = task.attempts.length; task.revoked = false
+    } else if (p.action === 'requalify') {
+      if (record.kind !== 'registry' || !exact(p, [...fixed, 'previousRegistrationId', 'previousRuntimeHash', 'runtimeHash'])
+        || task.revoked || p.previousRegistrationId !== task.registrationId || p.previousRuntimeHash !== task.policy.runtimeHash
+        || !sha(p.runtimeHash) || p.runtimeHash === p.previousRuntimeHash || task.attempts.length >= 3
+        || !previous || previous.terminal?.outcome !== 'failed' || previous.candidateHash || previous.verification || previous.delivery
+        || record.issuedAt >= task.policy.expiresAt) reject()
+      // Runtime maintenance changes no approved scope, deadline, budget or fences.
+      // Only an independently settled failure without a candidate is eligible.
+      task.policy.runtimeHash = p.runtimeHash; task.registrationId = record.operationId
     } else if (p.action === 'revoke') {
       if (record.kind !== 'registry' || !exact(p, [...fixed, 'reasonHash']) || !sha(p.reasonHash) || task.revoked) reject()
       task.revoked = true
@@ -173,7 +182,8 @@ export class AttemptAuthority {
     if (!uuid(record.operationId)) reject()
     // Replay validation runs before signing and before any external write.
     reduce([...records, record])
-    const context = { action: p.action, policy: p.action === 'register' ? p : p.action === 'revise' ? p.policy : before.policy,
+    const context = { action: p.action, policy: p.action === 'register' ? p : p.action === 'revise' ? p.policy
+      : p.action === 'requalify' ? { ...before.policy, runtimeHash: p.runtimeHash } : before.policy,
       attempt: before?.attempts.at(-1) ?? null, payload: p }
     const cleanup = p.action === 'settle'
     const restrictive = cleanup || p.action === 'revoke'
@@ -201,6 +211,9 @@ export class AttemptAuthority {
     return this.#ledger.append(head, JSON.stringify({ record, signature }))
   }
   register(policy) { return this.#append('registry', { ...policy, protocol, action: 'register' }) }
+  requalify({ taskKey, previousRegistrationId, previousRuntimeHash, runtimeHash }) {
+    return this.#append('registry', { protocol, action: 'requalify', taskKey, previousRegistrationId, previousRuntimeHash, runtimeHash })
+  }
   revise({ taskKey, previousRegistrationId, feedbackHash, policy }) {
     return this.#append('registry', { protocol, action: 'revise', taskKey, previousRegistrationId, feedbackHash,
       policy: { ...policy, taskKey, protocol, action: 'register' } })

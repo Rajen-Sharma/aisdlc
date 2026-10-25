@@ -62,7 +62,7 @@ console.log(JSON.stringify({qualifiedPolicyInstalled:true,modelCalls:0}));`
     await remote(policies.executor, 'client', command, writer('/opt/aisdlc-codex/guarded/policy.json', policies.clientPolicy))
     await remote(policies.executor, 'authority', command, writer('/opt/aisdlc-authority/native-policy.json', policies.authorityPolicy))
     // Actual current external state must remain readable under the pinned anchor.
-    const external = await nativeAuthorityCall(policies.executor, 'inspect', null)
+    let external = await nativeAuthorityCall(policies.executor, 'inspect', null)
     if (external.executionAllowed !== false || external.retryAuthorized !== false || (external.task && external.task.policy.scopeHash !== policies.executor.scopeHash && !external.task.revoked)) throw new Error('External authority requires reconciliation.')
     let helloText = ''
     try {
@@ -73,6 +73,11 @@ console.log(JSON.stringify({qualifiedPolicyInstalled:true,modelCalls:0}));`
     const hello = JSON.parse(helloText.trim().split('\n')[0])
     if (hello.kind !== 'hello' || hello.hostId !== policies.clientPolicy.hostId || hello.bootId !== policies.clientPolicy.qualifiedBootId
       || hello.runtimeHash !== policies.executor.runtimeHash) throw new Error('Guardian policy preflight failed.')
+    if (external.task && !external.task.revoked && external.task.policy.runtimeHash !== policies.executor.runtimeHash) {
+      await nativeAuthorityCall(policies.executor, 'requalify', null, await current())
+      external = await nativeAuthorityCall(policies.executor, 'inspect', null)
+      if (external.task?.policy.runtimeHash !== policies.executor.runtimeHash) throw new Error('Runtime requalification was not retained.')
+    }
     await current() // Recheck human actor and scope immediately before local activation.
     const file = path.resolve('.local/native-executor.json'), temporary = file + `.activate-${randomUUID()}`
     await writeFile(temporary, JSON.stringify(policies.executor, null, 2) + '\n', { flag: 'wx', mode: 0o600 }); await rename(temporary, file)

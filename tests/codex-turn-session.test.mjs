@@ -46,6 +46,20 @@ function fixture(mutate = () => {}) {
   return { child, requests, run }
 }
 
+test('provider failures retain only fixed diagnostic labels and numeric RPC codes', async () => {
+  const state = fixture(c => {
+    if (c.request.method === 'turn/start') {
+      c.skip = true
+      c.child.stdout.write(JSON.stringify({ id: c.request.id, error: { code: -32602,
+        message: 'Invalid parameter schema; private diagnostic must never be retained' } }) + '\n')
+    }
+  })
+  const result = await state.run()
+  assert.equal(result.completed, false); assert.equal(result.turnSent, true)
+  assert.equal(result.rpcErrorCode, -32602); assert.equal(result.failureCategory, 'request-schema')
+  assert.equal(JSON.stringify(result).includes('private diagnostic'), false)
+})
+
 test('one admitted thread/turn returns inert bytes and usage without asserting cleanup or correctness', async () => {
   const state = fixture(); let admitted = 0
   const result = await state.run({ admit: async ({ threadId, challengeNonce }) => {

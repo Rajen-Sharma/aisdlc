@@ -70,7 +70,7 @@ export function nativeSshEnvironment(): NodeJS.ProcessEnv {
 export async function nativeAuthorityCall(config: NativeExecutorConfiguration, action: string, input: unknown, eligibility: unknown = null) {
   const restrictive = ['inspect', 'revoke', 'settle-cleanup'].includes(action)
   if (!restrictive && (!config.enabled || !config.nativeRuntimeQualified || Date.now() >= config.expiresAt * 1000)) return reject()
-  if (!['inspect', 'register', 'revise', 'begin', 'launch', 'admit', 'finish', 'verify', 'head', 'repair', 'revoke', 'settle-cleanup'].includes(action)) return reject()
+  if (!['inspect', 'register', 'revise', 'requalify', 'begin', 'launch', 'admit', 'finish', 'verify', 'head', 'repair', 'revoke', 'settle-cleanup'].includes(action)) return reject()
   const request = JSON.stringify({ action, input, eligibility }) + '\n'
   if (Buffer.byteLength(request) > 131072) return reject()
   try {

@@ -47,7 +47,7 @@ async function main() {
   try {
     const request = await channel.read(Date.now() + 10000)
     if (!request || Object.keys(request).sort().join(',') !== 'action,eligibility,input' || typeof request.action !== 'string') fail()
-    const permitted = ['inspect', 'register', 'revise', 'begin', 'launch', 'admit', 'finish', 'verify', 'head', 'repair', 'revoke', 'settle-cleanup']
+    const permitted = ['inspect', 'register', 'revise', 'requalify', 'begin', 'launch', 'admit', 'finish', 'verify', 'head', 'repair', 'revoke', 'settle-cleanup']
     if (!permitted.includes(request.action) || (now() >= raw.expiresAt && !['inspect', 'revoke', 'settle-cleanup'].includes(request.action))) fail()
     const signRecord = async (bytes: Uint8Array) => sign(null, bytes, privateKey).toString('base64')
     const authorizeCurrent = async () => {
@@ -94,6 +94,13 @@ async function main() {
     let result
     switch (request.action) {
       case 'inspect': result = await attempts.inspect(configuration.taskKey); break
+      case 'requalify': {
+        if (!await authorizeCurrent()) fail()
+        const current = await attempts.inspect(configuration.taskKey), task = current.task
+        if (!task || task.policy.scopeHash !== configuration.scopeHash || task.policy.approvalHash !== configuration.approvalHash) fail()
+        result = await attempts.requalify({ taskKey: configuration.taskKey, previousRegistrationId: task.registrationId,
+          previousRuntimeHash: task.policy.runtimeHash, runtimeHash: configuration.trust.runtimeHash }); break
+      }
       case 'register': {
         if (!await authorizeCurrent()) fail()
         const existing = await attempts.inspect(configuration.taskKey)

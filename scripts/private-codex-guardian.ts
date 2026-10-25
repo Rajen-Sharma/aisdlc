@@ -108,7 +108,15 @@ async function main() {
         observedAt, provider: 'openai', authentication: 'chatgpt', model: 'gpt-6-sol', maxTurns: 1, usage: result.usage as NativeCandidate['usage'] }
       provenance = { record, signature: sign(null, nativeCandidateSigningBytes(record), privateKey).toString('base64') }
     }
-    await write({ kind: 'finished', attemptId: lease.attemptId, candidate, provenance, terminationProof })
+    const diagnostic = result && result.completed !== true ? {
+      turnSent: result.turnSent === true,
+      failure: typeof result.failure === 'string' && /^[a-z-]{1,64}$/.test(result.failure) ? result.failure : 'unclassified',
+      stage: typeof result.failureStage === 'string' && /^[A-Za-z/]{1,80}$/.test(result.failureStage) ? result.failureStage : 'unknown',
+      rpcErrorCode: Number.isSafeInteger(result.rpcErrorCode) ? result.rpcErrorCode : null,
+      category: ['request-schema', 'capacity', 'authentication', 'model-unavailable', 'connection', 'provider-error'].includes(result.failureCategory as string)
+        ? result.failureCategory : null,
+    } : null
+    await write({ kind: 'finished', attemptId: lease.attemptId, candidate, provenance, terminationProof, diagnostic })
   } finally { controller.dispose() }
 }
 process.stdout.on('error', () => { process.exitCode = 1 })

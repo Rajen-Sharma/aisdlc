@@ -63,6 +63,32 @@ async function settle(state, extra = {}, proofExtra = {}) {
     outcome: attempt.candidateHash ? 'candidate' : 'failed', usage: null, ...extra }, proof)
 }
 
+test('qualified runtime maintenance retains the spent intent, approved scope, deadline and fence', async () => {
+  const state = fixture(); await state.authority.register(state.policy()); await begin(state)
+  const before = await state.authority.inspect(taskKey)
+  const refresh = () => state.authority.requalify({ taskKey, previousRegistrationId: before.task.registrationId,
+    previousRuntimeHash: before.task.policy.runtimeHash, runtimeHash: hash('qualified replacement') })
+  await assert.rejects(refresh()) // Unresolved process ownership cannot be repaired by maintenance.
+  await settle(state)
+  const settled = await state.authority.inspect(taskKey)
+  state.controls.authorized = false; await assert.rejects(refresh()); state.controls.authorized = true
+  await refresh()
+  const after = await state.construct().inspect(taskKey)
+  assert.deepEqual(after.accounting, settled.accounting)
+  assert.equal(after.accounting.attemptsSpent, 1); assert.equal(after.accounting.remainingAttempts, 2)
+  assert.deepEqual(after.task.attempts[0], settled.task.attempts[0])
+  assert.equal(after.task.policy.scopeHash, before.task.policy.scopeHash)
+  assert.equal(after.task.policy.approvalHash, before.task.policy.approvalHash)
+  assert.equal(after.task.policy.expiresAt, before.task.policy.expiresAt)
+  await assert.rejects(refresh()) // Stale registration cannot overwrite current qualification.
+  await begin(state); await admit(state); assert.equal((await current(state)).fence, 2)
+  await state.authority.candidate({ taskKey, attemptId: (await current(state)).attemptId, candidateHash: hash('candidate') })
+  await settle(state)
+  const latest = await state.authority.inspect(taskKey)
+  await assert.rejects(state.authority.requalify({ taskKey, previousRegistrationId: latest.task.registrationId,
+    previousRuntimeHash: latest.task.policy.runtimeHash, runtimeHash: hash('another runtime') }))
+})
+
 test('new human-approved feedback scopes retain the global budget and cannot restore an old scope', async () => {
   const state = fixture()
   await state.authority.register(state.policy()); await begin(state); await settle(state)

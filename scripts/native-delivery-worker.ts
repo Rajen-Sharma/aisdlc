@@ -93,7 +93,8 @@ try {
         }
         if (transportFailed || event.kind !== 'finished' || event.attemptId !== attemptId) throw new Error('Native attempt remains uncertain.')
         child.stdin.end()
-        const handoff = { attemptId, candidate: event.candidate, provenance: event.provenance, terminationProof: event.terminationProof }
+        const handoff = { attemptId, candidate: event.candidate, provenance: event.provenance, terminationProof: event.terminationProof,
+          diagnostic: event.diagnostic ?? null }
         await writeNativeRecord(`native-attempt-${attemptId}.json`, handoff)
         await call('finish', handoff)
         if (event.candidate === null) throw new Error('No candidate was produced; resolve the failure before starting another turn.')

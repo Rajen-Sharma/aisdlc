@@ -1,5 +1,14 @@
 # Native coding guardian
 
+Update, 25 October 2026: trusted operator activation can append a runtime
+requalification after a signed, settled failure that produced no candidate.
+It requires fresh host qualification, exact-source CI and current human scope
+gates. The append changes only the runtime hash and registration fence; approved
+scope, expiry, spent intents, global attempt numbers and usage remain intact.
+Unresolved work, candidates, revoked policy and exhausted budgets deny this path.
+Failed native handoffs now retain fixed diagnostic categories, protocol stages
+and numeric RPC codes; raw provider messages and credentials are discarded.
+
 Implementation prepared 24 October 2026. Packaging and synthetic qualification
 do not enable the private runtime or demonstrate an actual model delivery.
 

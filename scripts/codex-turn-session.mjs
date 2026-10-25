@@ -19,6 +19,16 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
     || !['chatgpt', 'synthetic'].includes(authentication)) throw new Error('Invalid guarded turn configuration.')
   let sequence = 0, bytes = 0, messages = 0, pending = '', waiter, failure
   let threadId, turnId, completed = false, candidateText = null, usage = null, turnSent = false, stage = 'initialize'
+  let rpcErrorCode = null, failureCategory = null
+  const classify = error => {
+    const message = typeof error?.message === 'string' ? error.message : ''
+    // Fixed labels only. Never retain raw provider errors, endpoints or credentials.
+    failureCategory = /schema|invalid.*parameter|unsupported.*parameter/i.test(message) ? 'request-schema'
+      : /usage limit|quota|rate limit|too many requests/i.test(message) ? 'capacity'
+      : /unauthorized|authentication|not logged|token.*expired/i.test(message) ? 'authentication'
+      : /model.*(?:not supported|not found|unavailable)|unsupported.*model/i.test(message) ? 'model-unavailable'
+      : /connect|network|dns|resolve|stream disconnected/i.test(message) ? 'connection' : 'provider-error'
+  }
   const decoder = new TextDecoder('utf-8', { fatal: true }), queue = []
   const wake = () => { const waiting = waiter; waiter = undefined; waiting?.() }
   const stop = code => {
@@ -68,6 +78,7 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
     if ('id' in message) fail('unexpected-server-request')
     const p = message.params ?? {}, method = message.method
     stage = /^[A-Za-z/]{1,80}$/.test(method) ? method : 'unknown-notification'
+    if (method === 'error') { classify(p.error); fail('provider-error') }
     if (method === 'remoteControl/status/changed' && p.status === 'disabled') return
     if (method === 'account/updated' && (p.authMode === (authentication === 'chatgpt' ? 'chatgpt' : null))) return
     // Account-wide sparse metadata has no thread/turn identity. It cannot
@@ -131,7 +142,10 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
     for (;;) {
       const value = await receive()
       if ('method' in value) { notification(value); continue }
-      if (value.id !== id || 'error' in value || !('result' in value)) fail('rpc-rejected')
+      if (value.id !== id || 'error' in value || !('result' in value)) {
+        if (value.error) { classify(value.error); if (Number.isSafeInteger(value.error.code)) rpcErrorCode = value.error.code }
+        fail('rpc-rejected')
+      }
       return value.result
     }
   }
@@ -182,9 +196,9 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
     const known = ['output-limit', 'protocol-invalid', 'protocol-limit', 'transport-closed', 'transport-error', 'cancelled', 'timeout',
       'turn-identity', 'thread-identity', 'thread-status', 'turn-status', 'turn-incomplete', 'unexpected-server-request', 'unexpected-notification',
       'usage-invalid', 'tool-or-unknown-item', 'candidate-invalid', 'rpc-rejected', 'subscription-auth-required', 'synthetic-auth-required',
-      'effective-config-rejected', 'provider-retries-or-fallback', 'custom-endpoint-denied', 'thread-policy-rejected', 'admission-denied']
+      'effective-config-rejected', 'provider-retries-or-fallback', 'custom-endpoint-denied', 'thread-policy-rejected', 'admission-denied', 'provider-error']
     stop(known.includes(error.message) ? error.message : 'protocol-invalid')
-    return { completed: false, candidateText: null, usage, turnSent, failure: failure ?? 'protocol-invalid', failureStage: stage,
+    return { completed: false, candidateText: null, usage, turnSent, failure: failure ?? 'protocol-invalid', failureStage: stage, rpcErrorCode, failureCategory,
       executionAllowed: false, retryAuthorized: false, descendantTerminationVerified: false }
   } finally {
     clearTimeout(timer); signal?.removeEventListener('abort', cancel)
