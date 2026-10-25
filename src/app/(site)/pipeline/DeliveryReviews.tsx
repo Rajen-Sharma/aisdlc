@@ -19,14 +19,24 @@ export default async function DeliveryReviews({ payload, user, projectKey }: { p
       const story = await payload.findByID({ collection: 'sdlc-stories', id: typeof row.story === 'number' ? row.story : row.story.id, user, overrideAccess: false, depth: 0 })
       let verified
       try { verified = await reviewArtifact(req, story, row.artifactHash) } catch { /* Unavailable or stale evidence never enables review. */ }
-      if (!verified) return <article className="run-card" key={row.id}><h3>{story.storyKey} · v{story.revision}</h3><p className="hash">Artifact {row.artifactHash}</p><p role="status">Review blocked: current independent evidence is unavailable, expired or superseded. Refresh when the verifier service is available.</p></article>
+      if (!verified) {
+        const history = await payload.find({ collection: 'sdlc-gates', user, overrideAccess: false, depth: 0,
+          where: { and: [{ story: { equals: story.id } }, { artifactHash: { equals: row.artifactHash } }] }, limit: 20 })
+        return <article className="run-card" key={row.id}><h3>{story.storyKey} · v{story.revision}</h3><p className="hash">Artifact {row.artifactHash}</p>
+          <p role="status">Review blocked: current independent evidence is unavailable, expired or superseded. Refresh when the verifier service is available.</p>
+          <details><summary>Retained evidence · historical record</summary><p>This record does not establish current verification or enable a decision.</p><pre>{JSON.stringify(row.record, null, 2).slice(0, 131072)}</pre></details>
+          {history.docs.length > 0 && <div className="review-record"><h4>Previously recorded human decisions</h4>{history.docs.map(gate =>
+            <p key={gate.id}>{gate.kind}: {gate.decision} · {gate.notes} · {gate.createdAt}</p>)}</div>}
+        </article>
+      }
       const { artifact, gates, passed } = verified, claim = artifact.envelope.claim
+      const accepted = ['code-security', 'outcome', 'mvp'].every(kind => gates.some(g => g.kind === kind && g.artifactHash === row.artifactHash && g.decision === 'accept'))
       const showcase = await recordedShowcase(row.artifactHash, claim)
       const feedback = await payload.find({ collection: 'sdlc-delivery-feedback', user, overrideAccess: false, depth: 0,
         where: { and: [{ story: { equals: story.id } }, { artifactHash: { equals: row.artifactHash } }] }, sort: '-id', limit: 20 })
       const contract = story.contract as { acceptanceCriteria: string[]; checkPolicyHash: string }
       return <article className="run-card" key={row.id}>
-        <div className="run-heading"><h3>{story.storyKey} · v{story.revision}</h3><span className="pill">{passed ? 'Checks passed · human review pending' : `Checks ${claim.verdict}`}</span></div>
+        <div className="run-heading"><h3>{story.storyKey} · v{story.revision}</h3><span className="pill">{passed ? accepted ? 'Accepted for this artifact' : 'Checks passed · human review pending' : `Checks ${claim.verdict}`}</span></div>
         <p>{claim.criteriaPassed}/{claim.criteriaTotal} criteria passed · Attempt {claim.attempt}/3 · Native Codex candidate</p>
         <ol>{contract.acceptanceCriteria.map((criterion, i) => <li key={i}>{criterion}</li>)}</ol>
         {showcase ? <><p>{showcase.casesPassed}/{showcase.cases.length} check cases passed · {showcase.elapsedMs} ms · Exit {showcase.exitCode ?? 'unknown'} · {showcase.usage ? `${showcase.usage.totalTokens} recorded tokens` : 'Token usage unavailable'}</p>
