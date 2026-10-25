@@ -48,7 +48,7 @@ try {
   assert.equal(installedNode.uid, 0); assert.equal(installedNode.nlink, 1); assert.equal(installedNode.mode & 0o022, 0)
   await copyFile(path.join(packageDirectory, 'guardian-engine.mjs'), engineFile); files.push(engineFile)
   const engine = await import(pathToFileURL(engineFile).href)
-  listener = createServer(socket => socket.end('synthetic'))
+  listener = createServer(socket => { socket.on('error', () => {}); socket.end() })
   await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve))
   const port = listener.address().port
   await exec('/usr/bin/setpriv', [`--reuid=${uid}`, `--regid=${gid}`, '--clear-groups', rootNode, '-e',

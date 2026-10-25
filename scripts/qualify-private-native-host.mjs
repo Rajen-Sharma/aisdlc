@@ -36,7 +36,7 @@ const connection = (host, port) => new Promise(resolve => {
   socket.once('connect', () => { clearTimeout(timer); socket.destroy(); resolve(true) })
   socket.once('error', () => { clearTimeout(timer); resolve(false) })
 })
-const listener = createServer(socket => socket.end('synthetic-control'))
+const listener = createServer(socket => { socket.on('error', () => {}); socket.end() })
 try {
   const installed = JSON.parse((await trustedHostFile(`${base}/installed-runtime.json`)).toString())
   assert.equal(installed.role, 'client')
