@@ -47,7 +47,20 @@ Whole-host recovery remains a separate authenticated fencing operation.
 hashes. It includes no login, application secret, private key or execution policy.
 Its manifest keeps native qualification and execution false. Installing the
 documented [Linux bubblewrap prerequisite](https://learn.chatgpt.com/docs/sandboxing)
-does not relax the outer guardian sandbox or enable model tools.
+does not relax the outer guardian sandbox or enable model tools. Ubuntu 24.04
+also loads the distribution's scoped bubblewrap AppArmor profile; the global
+unprivileged-user-namespace restriction remains enabled. The system resolver's
+public stub configuration is bound read-only so hiding `/run` does not break DNS.
+The client qualification checks DNS readability and native account/config/catalog/
+read-only-thread metadata under the same unit restrictions, without `turn/start`.
+
+The pinned CLI forbids redefining its built-in `openai` provider. The fixed
+`aisdlc-openai` configuration uses native OpenAI authentication, forced ChatGPT
+login, no endpoint/header/API-key override, no transport retries and no web search.
+Candidate provenance uses `openai` as the provider's canonical name; the pinned
+runtime and configuration hashes bind the exact internal provider identifier.
+Activation rejects dirty runtime sources, mismatched package/boot/qualification,
+stale probes and unsuccessful source CI.
 
 The disposable CI qualification uses ephemeral roots and a fixed synthetic broker
 to test actual unit isolation, a readable-host-canary positive control, broker-only

@@ -19,7 +19,7 @@ type Configuration = {
   task: { projectKey: string; contextHash: string; storyKey: string; revision: number; supersedes: number | null; feedback?: number;
     title: string; contract: { sourceHash: string; checkPolicyHash: string; allowedPaths: string[]; acceptanceCriteria: string[] } }
   source: SourceCapsule
-  runtimeMaterial: { nodeHash: string; codexHash: string; brokerHash: string; guardianHash: string; profileHash: string; guardianKeyFingerprint: string }
+  runtimeMaterial: { nodeHash: string; codexHash: string; configHash: string; brokerHash: string; guardianHash: string; profileHash: string; guardianKeyFingerprint: string }
   guardian: { keyId: string; revision: number; publicKeyDer: string }
 }
 const exact = (value: unknown, fields: string[]): value is Record<string, unknown> => !!value && typeof value === 'object'
@@ -41,6 +41,7 @@ async function main() {
   validateSourceCapsule(config.source, config.task.contract.sourceHash)
   for (const [file, hash] of [
     ['/opt/aisdlc-node/24.14.0/node', config.runtimeMaterial.nodeHash], ['/opt/aisdlc-codex/0.155.1/codex', config.runtimeMaterial.codexHash],
+    ['/var/lib/aisdlc-codex-broker/.codex/config.toml', config.runtimeMaterial.configHash],
     ['/opt/aisdlc-codex/guarded/broker.mjs', config.runtimeMaterial.brokerHash], ['/opt/aisdlc-codex/guarded/guardian.mjs', config.runtimeMaterial.guardianHash],
   ]) await trustedHostHash(file, hash)
   if (config.hostId !== (await readFile('/sys/class/dmi/id/product_uuid', 'utf8')).trim().toLowerCase()) throw new Error()

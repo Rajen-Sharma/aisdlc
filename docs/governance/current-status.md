@@ -1,5 +1,13 @@
 # Current governance status GOV-STATUS-001
 
+Update, 25 October 2026: the user renewed the protected 48-hour Azure trial.
+Both existing VMs were started after verifying Free Trial status, spending limit,
+management-plane SSH fingerprints and daily shutdown schedules. The deadline is
+26 October 23:52:32 UTC (27 October 10:52:32 Sydney). Native ChatGPT metadata and
+read-only thread checks pass; private-host qualification and current source CI
+remain prerequisites to model execution. No real model patch or artifact approval
+has occurred. [Renewal record](azure-trial-renewal-2026-10-25.json).
+
 Update, 24 October 2026: native execution orchestration, signed delivery archives,
 feedback revisions preserving the external attempt budget, recorded-case showcase
 and exact-artifact review integration are implemented. Local tests and browser

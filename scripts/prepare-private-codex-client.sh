@@ -7,6 +7,14 @@ if ! command -v bwrap >/dev/null 2>&1; then
   apt-get update -qq
   apt-get install -y --no-install-recommends bubblewrap
 fi
+# Ubuntu 24.04 requires the distribution's narrow bubblewrap user-namespace
+# profile. Keep the global unprivileged-user-namespace restriction enabled.
+if [[ -f /etc/apparmor.d/abi/4.0 && ! -f /etc/apparmor.d/bwrap-userns-restrict ]]; then
+  apt-get update -qq
+  apt-get install -y --no-install-recommends apparmor-profiles apparmor-utils
+  install -o root -g root -m 0644 /usr/share/apparmor/extra-profiles/bwrap-userns-restrict /etc/apparmor.d/bwrap-userns-restrict
+  apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+fi
 account=aisdlc-broker
 install_dir=/opt/aisdlc-codex/0.155.1
 broker_home=/var/lib/aisdlc-codex-broker
@@ -65,18 +73,19 @@ staging=$(mktemp "$install_dir/config.XXXXXX")
 trap 'rm -f -- "$staging"' EXIT
 cat > "$staging" <<'TOML'
 model = "gpt-6-sol"
-model_provider = "openai"
+model_provider = "aisdlc-openai"
 forced_login_method = "chatgpt"
 cli_auth_credentials_store = "file"
 web_search = "disabled"
 suppress_unstable_features_warning = true
-[model_providers.openai]
+[model_providers.aisdlc-openai]
 name = "OpenAI"
 requires_openai_auth = true
 wire_api = "responses"
 request_max_retries = 0
 stream_max_retries = 0
 supports_websockets = false
+supports_standalone_web_search = false
 [features]
 shell_tool = false
 shell_snapshot = false

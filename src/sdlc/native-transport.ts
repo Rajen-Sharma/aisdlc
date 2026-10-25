@@ -61,6 +61,8 @@ export function nativeSshEnvironment(): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { NODE_ENV: 'production', PATH: process.env.PATH || '' }
   if (process.platform === 'win32') {
     env.SYSTEMROOT = process.env.SYSTEMROOT; env.USERPROFILE = process.env.USERPROFILE
+    // Windows OpenSSH exits before connecting without its system data directory.
+    env.PROGRAMDATA = process.env.PROGRAMDATA
     env.TEMP = process.env.TEMP; env.TMP = process.env.TMP
   }
   return env

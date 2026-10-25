@@ -10,11 +10,11 @@ function fixture(mutate = () => {}) {
   child.stdout = new PassThrough(); child.stderr = new PassThrough()
   child.kill = () => { child.killed = true }
   const notify = (method, params) => child.stdout.write(JSON.stringify({ method, params }) + '\n')
-  const config = { model: 'gpt-6-sol', model_provider: 'openai', forced_login_method: 'chatgpt', web_search: 'disabled',
+  const config = { model: 'gpt-6-sol', model_provider: 'aisdlc-openai', forced_login_method: 'chatgpt', web_search: 'disabled',
     features: Object.fromEntries(['shell_tool', 'shell_snapshot', 'apps', 'hooks', 'multi_agent', 'plugins', 'remote_plugin',
       'skill_search', 'skill_mcp_dependency_install', 'tool_suggest'].map(key => [key, false])),
-    model_providers: { openai: { name: 'OpenAI', requires_openai_auth: true, wire_api: 'responses',
-      request_max_retries: 0, stream_max_retries: 0, supports_websockets: false } } }
+    model_providers: { 'aisdlc-openai': { name: 'OpenAI', requires_openai_auth: true, wire_api: 'responses',
+      request_max_retries: 0, stream_max_retries: 0, supports_websockets: false, supports_standalone_web_search: false } } }
   config.features.skip_host_skill_discovery = true
   const account = { account: { type: 'chatgpt' }, requiresOpenaiAuth: true }
   child.stdin = new Writable({ write(chunk, _, done) {
@@ -25,7 +25,7 @@ function fixture(mutate = () => {}) {
       let result = {}
       if (request.method === 'account/read') result = account
       if (request.method === 'config/read') result = { config }
-      if (request.method === 'thread/start') result = { thread: { id: 'thread_1' }, model: 'gpt-6-sol', modelProvider: 'openai', instructionSources: [] }
+      if (request.method === 'thread/start') result = { thread: { id: 'thread_1' }, model: 'gpt-6-sol', modelProvider: 'aisdlc-openai', instructionSources: [] }
       if (request.method === 'turn/start') result = { turn: { id: 'turn_1', status: 'inProgress' } }
       const controls = { child, requests, request, result, notify, config, account, skip: false }
       mutate(controls)
@@ -58,7 +58,7 @@ test('one admitted thread/turn returns inert bytes and usage without asserting c
   assert.equal(state.requests.filter(request => request.method === 'turn/start').length, 1)
   const thread = state.requests.find(request => request.method === 'thread/start').params
   assert.deepEqual(thread.environments, []); assert.deepEqual(thread.dynamicTools, []); assert.deepEqual(thread.selectedCapabilityRoots, [])
-  assert.equal(thread.modelProvider, 'openai')
+  assert.equal(thread.modelProvider, 'aisdlc-openai')
 })
 
 test('missing admission, wrong authentication, inherited tools, retries and custom endpoints deny before a turn', async () => {
@@ -66,8 +66,11 @@ test('missing admission, wrong authentication, inherited tools, retries and cust
   assert.equal((await denied.run({ admit: async () => false })).failure, 'admission-denied')
   assert.equal(denied.requests.some(request => request.method === 'turn/start'), false)
   for (const change of [c => { c.account.account.type = 'apiKey' }, c => { c.config.features.shell_tool = true },
-    c => { c.config.model_providers.openai.request_max_retries = 1 }, c => { c.config.model_providers.openai.base_url = 'https://unexpected.invalid' },
-    c => { c.config.model_providers.other = {} }, c => { c.config.mcp_servers = { server: {} } }]) {
+    c => { c.config.model_providers['aisdlc-openai'].request_max_retries = 1 }, c => { c.config.model_providers['aisdlc-openai'].base_url = 'https://unexpected.invalid' },
+    c => { c.config.model_providers.other = {} }, c => { c.config.mcp_servers = { server: {} } },
+    c => { c.config.model_provider = 'openai' },
+    c => { c.config.model_providers['aisdlc-openai'].supports_standalone_web_search = true },
+    c => { c.config.model_providers['aisdlc-openai'].name = 'Unexpected' }]) {
     const state = fixture(c => { if (c.request.method === 'initialize') change(c) })
     assert.equal((await state.run()).completed, false)
     assert.equal(state.requests.some(request => request.method === 'turn/start'), false)

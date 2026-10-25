@@ -45,10 +45,12 @@ try {
       || createHash('sha256').update(data).digest('hex') !== entry.sha256) throw new Error('Public package changed.')
   }
   for (const role of ['client', 'tools']) {
-    phase = `${role}-public-install`
+    phase = `${role}-transfer-directory`
     await ssh(role, `mkdir -m 700 ${folder}`)
+    phase = `${role}-public-copy`
     await exec(scp, [...common, '-q', ...[...manifest.files.map(entry => entry.name), 'manifest.json'].map(name => path.join(packageDirectory, name)),
       `trialadmin@${hosts[role]}:${folder}/`], { env: nativeSshEnvironment(), windowsHide: true, timeout: 90000, maxBuffer: 16384 })
+    phase = `${role}-runtime-install`
     const installed = await ssh(role, `sudo -n python3 - ${role} ${folder} ${manifestHash}`,
       await readFile(path.join(packageDirectory, 'install-runtime.py')), 240000)
     await save(`${role}-install.jsonl`, installed)
@@ -93,9 +95,10 @@ console.log(JSON.stringify({publicPoliciesPrepared:true,executionAllowed:false})
   await save('stage.json', { version: 1, packageDirectory, packetDirectory, manifestHash, preparedAt: new Date().toISOString(),
     nativeRuntimeQualified: false, executionAllowed: false, modelCalls: 0 })
   console.log(JSON.stringify({ stage, manifestHash, installed: true, qualificationEvidenceRetained: true, executionAllowed: false, modelCalls: 0 }))
-} catch {
-  await save('failure.json', { phase, executionAllowed: false, modelCalls: 0 }).catch(() => {})
-  console.error(JSON.stringify({ stage, failedPhase: phase, executionAllowed: false, modelCalls: 0,
+} catch (error) {
+  const code = typeof error.code === 'number' || typeof error.code === 'string' ? error.code : null
+  await save('failure.json', { phase, code, executionAllowed: false, modelCalls: 0 }).catch(() => {})
+  console.error(JSON.stringify({ stage, failedPhase: phase, code, executionAllowed: false, modelCalls: 0,
     message: 'Installation/qualification paused. No operation was retried and no native policy was activated.' }))
   process.exitCode = 1
 }

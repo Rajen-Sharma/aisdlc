@@ -45,9 +45,15 @@ for (const [name, source] of [
   sources.add(source)
   files.push({ name, bytes: bytes.length, sha256: hash(bytes) })
 }
-const sourceFiles = await Promise.all([...sources].sort().map(async file => ({ file, sha256: hash(await readFile(file)) })))
+sources.add('scripts/package-native-runtime.mjs')
+const sourceFiles = await Promise.all([...sources].sort().map(async file => {
+  const bytes = await readFile(file)
+  let committedHash = null
+  try { committedHash = hash(execFileSync('git', ['show', `HEAD:${file}`], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })) } catch { /* Development package only. */ }
+  return { file, sha256: hash(bytes), normalizedHash: hash(bytes.toString('utf8').replaceAll('\r\n', '\n')), committedHash }
+})))
 const manifest = { version: 1, sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', windowsHide: true }).trim(),
-  sourceFiles, files, node: '24.14.0', codex: '0.155.1', model: 'gpt-6-sol',
+  sourceFiles, sourceTreeClean: sourceFiles.every(file => file.committedHash === file.normalizedHash), files, node: '24.14.0', codex: '0.155.1', model: 'gpt-6-sol',
   deployed: false, nativeRuntimeQualified: false, executionAllowed: false, realModelCalls: 0 }
 await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' })
 console.log(JSON.stringify({ directory, files: files.length, sourceFiles: sourceFiles.length, manifestHash: hash(await readFile(path.join(directory, 'manifest.json'))),

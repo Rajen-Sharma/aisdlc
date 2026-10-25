@@ -114,7 +114,7 @@ process.stdout.write(createPublicKey(key).export({format:'der',type:'spki'}));
     public = subprocess.check_output([str(node), '--input-type=module', '-e', helper.decode()])
     assert len(public) == 44
     atomic(base / 'guardian-public-key.der', public)
-    mapping = {'guardian.mjs': 'guardian.mjs', 'broker.mjs': 'broker.mjs', 'qualify-host.mjs': 'qualify-host.mjs'}
+    mapping = {'guardian.mjs': 'guardian.mjs', 'broker.mjs': 'broker.mjs', 'qualify-host.mjs': 'qualify-host.mjs', 'metadata-preflight.py': 'metadata-preflight.py'}
 else:
     subprocess.run(['/usr/bin/bash', '-s'], input=content['prepare-authority.sh'], check=True)
     folder(base)

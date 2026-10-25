@@ -50,5 +50,6 @@ assert.equal((await trustedHostFile(`${base}/root-public-key.der`)).toString('ba
 const record = { version: 1, kind: 'private-tools-verifier', observedAt: Math.floor(Date.now() / 1000),
   bootId: (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim(),
   manifestHash: installed.manifestHash, hashes, publicKeyDer, sourceHash: source.sha256, policyHash: hash(policyText),
-  runnerHash: hash(runnerSource), image: verifierImage, controls, modelCalls: 0, credentialsUsed: false, executionAllowed: false }
+  runnerHash: hash(runnerSource), image: verifierImage, controls, modelCalls: 0,
+  nativeAuthenticationUsedForMetadata: false, nativeAuthenticationExported: false, executionAllowed: false }
 console.log(JSON.stringify({ record, signature: sign(null, Buffer.from('ai-sdlc/private-tools-verifier/v1\n' + digest(record)), key).toString('base64') }))

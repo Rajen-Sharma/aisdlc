@@ -43,7 +43,7 @@ def main():
 
     def rpc(method, params):
         nonlocal sequence, total
-        assert method in {'initialize', 'account/read', 'config/read', 'model/list'}
+        assert method in {'initialize', 'account/read', 'config/read', 'model/list', 'thread/start'}
         sequence += 1
         send({'id': sequence, 'method': method, 'params': params})
         while time.monotonic() < deadline:
@@ -59,6 +59,7 @@ def main():
             message = json.loads(line)
             if 'method' in message:
                 assert 'id' not in message, 'unexpected-server-request'
+                assert message['method'] not in {'configWarning', 'warning', 'error', 'model/rerouted'}, 'native-config-warning'
                 continue
             assert message.get('id') == sequence, 'unexpected-response'
             assert 'result' in message and 'error' not in message, 'metadata-rpc-rejected'
@@ -66,7 +67,7 @@ def main():
         raise RuntimeError('metadata-deadline')
 
     try:
-        rpc('initialize', {'clientInfo': {'name': 'aisdlc_private_metadata', 'version': '1'}})
+        rpc('initialize', {'clientInfo': {'name': 'aisdlc_private_metadata', 'version': '1'}, 'capabilities': {'experimentalApi': True}})
         send({'method': 'initialized'})
         account = rpc('account/read', {'refreshToken': False})
         assert account.get('account', {}).get('type') == 'chatgpt', 'chatgpt-login-required'
@@ -74,14 +75,15 @@ def main():
         config = rpc('config/read', {'includeLayers': False})['config']
         assert config.get('model') == 'gpt-6-sol', 'model-mismatch'
         assert config.get('forced_login_method') == 'chatgpt', 'login-policy-mismatch'
-        assert config.get('model_provider') in (None, 'openai'), 'provider-mismatch'
+        assert config.get('model_provider') == 'aisdlc-openai', 'provider-mismatch'
         assert config.get('web_search') == 'disabled', 'web-search-enabled'
         assert not config.get('mcp_servers'), 'mcp-configuration-present'
         providers = config.get('model_providers') or {}
-        assert set(providers) == {'openai'}, 'custom-provider-present'
-        provider = providers['openai']
+        assert set(providers) == {'aisdlc-openai'}, 'custom-provider-present'
+        provider = providers['aisdlc-openai']
         expected = {'requires_openai_auth': True, 'wire_api': 'responses',
-                    'request_max_retries': 0, 'stream_max_retries': 0, 'supports_websockets': False}
+                    'request_max_retries': 0, 'stream_max_retries': 0, 'supports_websockets': False,
+                    'supports_standalone_web_search': False, 'name': 'OpenAI'}
         assert all(provider.get(key) == value for key, value in expected.items()), 'custom-provider-present'
         assert all(value is None or key in set(expected) | {'name'} for key, value in provider.items()), 'custom-provider-present'
         disabled = ['shell_tool', 'shell_snapshot', 'apps', 'hooks', 'multi_agent',
@@ -97,11 +99,16 @@ def main():
                     re.fullmatch(r'[A-Za-z0-9._-]{1,80}', value)]
             print(json.dumps({'availableModelIds': safe[:100], 'hasNextPage': bool(models.get('nextCursor'))}))
         assert any(model.get('model') == 'gpt-6-sol' for model in models['data']), 'selected-model-not-listed'
+        thread = rpc('thread/start', {'model': 'gpt-6-sol', 'modelProvider': 'aisdlc-openai', 'cwd': workspace,
+                                     'ephemeral': True, 'environments': [], 'dynamicTools': [], 'selectedCapabilityRoots': [],
+                                     'approvalPolicy': 'never', 'sandbox': 'read-only'})
+        assert thread.get('model') == 'gpt-6-sol' and thread.get('modelProvider') == 'aisdlc-openai', 'thread-policy-mismatch'
+        assert not thread.get('instructionSources'), 'thread-policy-mismatch'
         server.stdin.close()
         assert server.wait(timeout=5) == 0, 'app-server-clean-exit-required'
         assert not errors, 'reader-failed'
         print(json.dumps({'version': 1, 'host': 'azure-client-trial', 'authentication': 'chatgpt',
-                          'effectiveConfigChecked': True, 'selectedModelListed': True,
+                          'effectiveConfigChecked': True, 'selectedModelListed': True, 'threadPolicyChecked': True,
                           'model': 'gpt-6-sol', 'metadataOnly': True, 'realModelCalls': 0,
                           'executionAllowed': False, 'retryAuthorized': False}))
     finally:
@@ -120,7 +127,8 @@ if __name__ == '__main__':
                    'chatgpt-login-required', 'unexpected-auth-provider', 'model-mismatch',
                    'login-policy-mismatch', 'provider-mismatch', 'web-search-enabled',
                    'mcp-configuration-present', 'custom-provider-present', 'feature-policy-mismatch',
-                   'host-skills-enabled', 'selected-model-not-listed', 'app-server-clean-exit-required', 'reader-failed'}
+                   'host-skills-enabled', 'selected-model-not-listed', 'app-server-clean-exit-required', 'reader-failed',
+                   'thread-policy-mismatch', 'native-config-warning'}
         reason = str(error) if str(error) in allowed else 'metadata-preflight-rejected'
         print(json.dumps({'privateMetadataPassed': False, 'reason': reason,
                           'realModelCalls': 0, 'executionAllowed': False}))

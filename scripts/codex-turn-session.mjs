@@ -139,7 +139,7 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
       if (account.account?.type !== 'chatgpt' || account.requiresOpenaiAuth !== true) fail('subscription-auth-required')
     } else if (account.account !== null || account.requiresOpenaiAuth !== false) fail('synthetic-auth-required')
     const config = (await rpc('config/read', { includeLayers: false })).config
-    const provider = authentication === 'chatgpt' ? 'openai' : 'synthetic'
+    const provider = authentication === 'chatgpt' ? 'aisdlc-openai' : 'synthetic'
     if (!config || config.model !== 'gpt-6-sol' || ![null, undefined, provider].includes(config.model_provider)
       || config.web_search !== 'disabled' || (authentication === 'chatgpt' && config.forced_login_method !== 'chatgpt')
       || Object.keys(config.mcp_servers ?? {}).length || !disabled.every(key => config.features?.[key] === false)
@@ -148,10 +148,11 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
     if (Object.keys(overrides).some(key => key !== provider)
       || overrides[provider]?.request_max_retries !== 0 || overrides[provider]?.stream_max_retries !== 0
       || overrides[provider]?.supports_websockets !== false) fail('provider-retries-or-fallback')
-    if (authentication === 'chatgpt' && (overrides[provider].requires_openai_auth !== true
+    if (authentication === 'chatgpt' && (overrides[provider].requires_openai_auth !== true || overrides[provider].name !== 'OpenAI'
+      || overrides[provider].supports_standalone_web_search !== false
       || overrides[provider].wire_api !== 'responses'
       || Object.entries(overrides[provider]).some(([key, value]) => value != null
-        && !['name', 'requires_openai_auth', 'wire_api', 'request_max_retries', 'stream_max_retries', 'supports_websockets'].includes(key)))) fail('custom-endpoint-denied')
+        && !['name', 'requires_openai_auth', 'wire_api', 'request_max_retries', 'stream_max_retries', 'supports_websockets', 'supports_standalone_web_search'].includes(key)))) fail('custom-endpoint-denied')
     const thread = await rpc('thread/start', { model: 'gpt-6-sol', modelProvider: provider, cwd, ephemeral: true,
       environments: [], dynamicTools: [], selectedCapabilityRoots: [], approvalPolicy: 'never', sandbox: 'read-only' })
     if (!identifier(thread.thread?.id) || (threadId && threadId !== thread.thread.id)
