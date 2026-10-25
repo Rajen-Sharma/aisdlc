@@ -157,4 +157,5 @@ async function main() {
   } finally { channel.dispose() }
 }
 process.stdout.on('error', () => { process.exitCode = 1 })
-main().catch(async () => { process.exitCode = 1; try { await write({ ok: false, error: 'Private authority denied or state uncertain; no request was retried.' }) } catch { /* No effects retried. */ } })
+main().catch(async error => { process.exitCode = 1; try { await write({ ok: false, error: 'Private authority denied or state uncertain; no request was retried.',
+  diagnostic: typeof error?.message === 'string' && /^Native permit denied at [a-z-]{1,40}\.$/.test(error.message) ? error.message : null }) } catch { /* No effects retried. */ } })

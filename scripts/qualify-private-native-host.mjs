@@ -12,6 +12,7 @@ import { nativeUnitProperties } from './systemd-attempt-guardian.mjs'
 import { boundedJsonChannel } from './bounded-json-channel.mjs'
 import { trustedHostFile } from './trusted-host-files.mjs'
 import { digest } from '../src/sdlc/contracts'
+import { fenceUnlaunchedAttempt } from './unlaunched-fence.mjs'
 
 const node = '/opt/aisdlc-node/24.14.0/node', base = '/opt/aisdlc-codex/guarded'
 const env = { PATH: '/usr/bin:/bin', HOME: '/root', LANG: 'C', NODE_ENV: 'production' }
@@ -107,6 +108,15 @@ child.stdout.once('data',bytes=>process.stdout.write(JSON.stringify({uid:process
     try { await metadataClosed } finally { clearTimeout(timer) }
   } finally { metadataChannel.dispose(); if (metadataProcess.exitCode === null) metadataProcess.kill('SIGKILL') }
   const hashes = {}
+  const fenceInput = { attemptId: randomUUID(), taskKey: digest('synthetic-qualification'), reservationHash: digest(token),
+    runtimeHash: digest('synthetic-runtime'), hostId: (await readFile('/sys/class/dmi/id/product_uuid', 'utf8')).trim().toLowerCase(),
+    bootId: (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim(), deadline: Math.floor(Date.now() / 1000) - 1 }
+  const fenced = { ...fenceInput, unit: `aisdlc-attempt-${fenceInput.attemptId}.service` }
+  assert.deepEqual(await fenceUnlaunchedAttempt(fenced), { rootExited: true, cgroupEmpty: true, launchWritersDrained: true })
+  await assert.rejects(fenceUnlaunchedAttempt(fenced))
+  const claimedId = randomUUID()
+  await writeFile(`/var/lib/aisdlc-guardian/journal/${claimedId}.jsonl`, JSON.stringify({ phase: 'synthetic-launch-claimed' }) + '\n', { flag: 'wx', mode: 0o600 })
+  await assert.rejects(fenceUnlaunchedAttempt({ ...fenced, attemptId: claimedId, unit: `aisdlc-attempt-${claimedId}.service` }))
   for (const [name, file] of Object.entries({ nodeHash: node, codexHash: '/opt/aisdlc-codex/0.155.1/codex',
     configHash: '/var/lib/aisdlc-codex-broker/.codex/config.toml',
     brokerHash: `${base}/broker.mjs`, guardianHash: `${base}/guardian.mjs`, qualificationBundleHash: `${base}/qualify-host.mjs` })) {
@@ -120,6 +130,7 @@ child.stdout.once('data',bytes=>process.stdout.write(JSON.stringify({uid:process
     hostId: (await readFile('/sys/class/dmi/id/product_uuid', 'utf8')).trim().toLowerCase(),
     bootId: (await readFile('/proc/sys/kernel/random/boot_id', 'utf8')).trim(), manifestHash: installed.manifestHash,
     profileHash: digest(nativeUnitProperties), hashes, publicKeyDer, reports, nativeMetadata,
+    unlaunchedRecovery: { fencedAbsentUnit: true, duplicateFenceDenied: true, existingLaunchClaimDenied: true, realModelCalls: 0 },
     nativeAuthenticationUsedForMetadata: true, nativeAuthenticationExported: false, modelCalls: 0, executionAllowed: false }
   console.log(JSON.stringify({ record, signature: sign(null, Buffer.from('ai-sdlc/private-client-profile/v1\n' + digest(record)), privateKey).toString('base64') }))
 } finally {

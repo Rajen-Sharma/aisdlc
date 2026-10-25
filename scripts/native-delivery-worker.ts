@@ -113,9 +113,10 @@ try {
   await status(passed ? 'awaiting-review' : 'failed-checks', delivered.artifact.envelope.claim.attempt)
   console.log(JSON.stringify({ artifactHash: delivered.current.state.artifactHash, awaitingHumanReview: passed,
     failedChecks: !passed, additionalModelTurnsStarted: false }))
-} catch {
+} catch (error) {
   await status('uncertain').catch(() => {})
   console.error('Native cycle paused: independent state or proof is unavailable. No request was retried and no additional attempt was authorized.')
+  if (error instanceof Error && /^Native permit denied at [a-z-]{1,40}\.$/.test(error.message)) console.error(error.message)
   process.exitCode = 1
 } finally { await payload.destroy() }
 process.exit(process.exitCode || 0)

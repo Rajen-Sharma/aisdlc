@@ -51,6 +51,8 @@ export function buildNativePolicies(input: {
       || typeof q.bootId !== 'string' || !/^[a-f0-9-]{36}$/.test(q.bootId)) return reject()
   }
   if (client.kind !== 'private-client-profile' || tools.kind !== 'private-tools-verifier'
+    || client.unlaunchedRecovery?.fencedAbsentUnit !== true || client.unlaunchedRecovery.duplicateFenceDenied !== true
+    || client.unlaunchedRecovery.existingLaunchClaimDenied !== true || client.unlaunchedRecovery.realModelCalls !== 0
     || client.nativeAuthenticationUsedForMetadata !== true || tools.nativeAuthenticationUsedForMetadata !== false
     || client.nativeMetadata?.metadataOnly !== true || client.nativeMetadata.threadPolicyChecked !== true || client.nativeMetadata.realModelCalls !== 0
     || client.profileHash !== digest(nativeUnitProperties) || tools.sourceHash !== r.sourceHash || tools.policyHash !== r.checkPolicyHash

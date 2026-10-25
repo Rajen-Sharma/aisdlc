@@ -84,7 +84,17 @@ export async function nativeAuthorityCall(config: NativeExecutorConfiguration, a
     const response = await operation
     if (Buffer.byteLength(response.stdout) > 262144) return reject()
     const envelope = JSON.parse(response.stdout)
+    if (envelope?.ok === false && typeof envelope.diagnostic === 'string' && /^Native permit denied at [a-z-]{1,40}\.$/.test(envelope.diagnostic)) throw new Error(envelope.diagnostic)
     if (!envelope || envelope.ok !== true || !Object.hasOwn(envelope, 'result')) return reject()
     return envelope.result as any
-  } catch { return reject() }
+  } catch (error) {
+    if (error instanceof Error && /^Native permit denied at [a-z-]{1,40}\.$/.test(error.message)) throw error
+    const stdout = (error as { stdout?: unknown })?.stdout
+    if (typeof stdout === 'string' && Buffer.byteLength(stdout) <= 262144) {
+      let denied
+      try { denied = JSON.parse(stdout) } catch { /* Truncated/unknown output grants no diagnostic authority. */ }
+      if (denied?.ok === false && typeof denied.diagnostic === 'string' && /^Native permit denied at [a-z-]{1,40}\.$/.test(denied.diagnostic)) throw new Error(denied.diagnostic)
+    }
+    return reject()
+  }
 }

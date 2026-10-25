@@ -12,6 +12,7 @@ const directory = await mkdtemp(path.join(root, 'package-'))
 const entries = {
   'guardian.mjs': 'scripts/private-codex-guardian.ts',
   'guardian-engine.mjs': 'scripts/systemd-attempt-guardian.mjs',
+  'recover-unlaunched.mjs': 'scripts/private-unlaunched-recovery.ts',
   'broker.mjs': 'scripts/private-codex-broker.mjs',
   'verifier.mjs': 'src/sdlc/taskboard-verifier.ts',
   'authority.mjs': 'scripts/private-native-authority.ts',

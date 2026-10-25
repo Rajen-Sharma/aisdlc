@@ -9,6 +9,14 @@ Unresolved work, candidates, revoked policy and exhausted budgets deny this path
 Failed native handoffs now retain fixed diagnostic categories, protocol stages
 and numeric RPC codes; raw provider messages and credentials are discarded.
 
+Unlaunched recovery is narrower than cleanup after a running process. After the
+intent deadline, root recovery must exclusively create and fsync the same journal
+claim required by every launcher. Any existing claim denies recovery. Only after
+that durable fence, an absent systemd unit and absent cgroup may yield a signed
+termination proof. This prevents delayed launch without refunding the intent.
+Private qualification checks absent-unit fencing, duplicate rejection and denial
+when a launch claim exists. It does not recover an already-claimed unknown run.
+
 Implementation prepared 24 October 2026. Packaging and synthetic qualification
 do not enable the private runtime or demonstrate an actual model delivery.
 

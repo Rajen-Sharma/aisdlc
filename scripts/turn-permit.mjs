@@ -50,22 +50,23 @@ export class TurnPermitIssuer {
     this.#authority = authority; this.#sign = signPermit; this.#eligible = authorizeCurrent; this.#qualified = resolveQualified; this.#now = now
   }
   async #issue(request, kind) {
+    const deny = stage => { throw new Error(`Native permit denied at ${stage}.`) }
     if (!exact(request, ['taskKey', 'attemptId', 'challengeNonce', 'threadId']) || !sha(request.taskKey) || !uuid(request.attemptId)
       || !uuid(request.challengeNonce) || (kind === 'launch' ? request.threadId !== null
         : typeof request.threadId !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(request.threadId))) reject()
     const before = await this.#authority.inspect(request.taskKey), task = before.task, attempt = task?.attempts.at(-1)
     if (!task || task.revoked || !attempt || attempt.attemptId !== request.attemptId || attempt.terminal
-      || attempt.candidateHash || attempt.admission) reject()
+      || attempt.candidateHash || attempt.admission) deny('attempt-state')
     const context = { policy: task.policy, attempt, threadId: request.threadId }
     const qualified = await this.#qualified(structuredClone(context))
     const start = this.#now()
     if (!Number.isSafeInteger(start) || start < 1 || !qualified || qualified.nativeRuntimeQualified !== true || qualified.runtimeHash !== task.policy.runtimeHash
-      || await this.#eligible(structuredClone(context)) !== true || start >= attempt.deadline || start >= task.policy.expiresAt) reject()
+      || await this.#eligible(structuredClone(context)) !== true || start >= attempt.deadline || start >= task.policy.expiresAt) deny('qualification')
     let head = before, admissionId = attempt.attemptId
     if (kind === 'admission') {
       const receipt = await this.#authority.admit({ taskKey: request.taskKey, attemptId: request.attemptId, challengeNonce: request.challengeNonce })
       head = await this.#authority.inspect(request.taskKey)
-      if (head.tipHash !== receipt.tipHash || head.task?.attempts.at(-1)?.admission?.operationId !== receipt.operationId) reject()
+      if (head.tipHash !== receipt.tipHash || head.task?.attempts.at(-1)?.admission?.operationId !== receipt.operationId) deny('admission-tip')
       admissionId = receipt.operationId
     }
     const lease = { version: 1, kind, keyId: qualified.keyId, authorityRevision: qualified.authorityRevision,
@@ -82,9 +83,9 @@ export class TurnPermitIssuer {
       || current?.authorityRevision !== qualified.authorityRevision || current?.nativeRuntimeQualified !== true
       || current?.runtimeHash !== qualified.runtimeHash || current?.expiresAt !== qualified.expiresAt
       || current?.publicKey?.export({ format: 'der', type: 'spki' }).toString('base64') !== qualified.publicKey?.export({ format: 'der', type: 'spki' }).toString('base64')
-      || await this.#eligible(structuredClone(context)) !== true) reject()
+      || await this.#eligible(structuredClone(context)) !== true) deny('freshness-recheck')
     const finalAt = this.#now()
-    if (finalAt < start || finalAt - start > 5) reject()
+    if (finalAt < start || finalAt - start > 5) deny('signing-deadline')
     authenticateTurnPermit(envelope, { policy: { ...qualified, ...task.policy }, ...attempt.runtime, kind,
       challengeNonce: request.challengeNonce, threadId: request.threadId, attemptId: request.attemptId }, finalAt)
     return envelope

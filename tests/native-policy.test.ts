@@ -23,6 +23,7 @@ function vector() {
     hostId: randomUUID(), bootId: randomUUID(), profileHash: digest(nativeUnitProperties), modelCalls: 0,
     nativeAuthenticationUsedForMetadata: true, nativeAuthenticationExported: false, executionAllowed: false,
     nativeMetadata: { metadataOnly: true, threadPolicyChecked: true, realModelCalls: 0 },
+    unlaunchedRecovery: { fencedAbsentUnit: true, duplicateFenceDenied: true, existingLaunchClaimDenied: true, realModelCalls: 0 },
     hashes: { nodeHash: digest('node'), codexHash: digest('codex'), configHash: digest('config'), brokerHash: digest('broker.mjs'),
       guardianHash: digest('guardian.mjs'), qualificationBundleHash: digest('qualify-host.mjs') },
     reports: ['explicit-stop', 'controller-disconnect'].map(scenario => ({ scenario, hostCanariesHidden: true, brokerSyntheticDataReadable: true,
