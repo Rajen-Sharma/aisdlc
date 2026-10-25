@@ -110,6 +110,10 @@ export async function runCodexTurn({ child, prompt, sourceHash, allowedPaths, cw
     if (['item/started', 'item/completed'].includes(method)) {
       if (!['userMessage', 'agentMessage', 'reasoning'].includes(p.item?.type)) fail('tool-or-unknown-item')
       if (p.item.type === 'agentMessage' && method === 'item/completed') {
+        if (p.item.phase === 'commentary') {
+          if (typeof p.item.text !== 'string' || Buffer.byteLength(p.item.text) > 65536) fail('candidate-invalid')
+          return // Interim text is never candidate bytes or a success assertion.
+        }
         if (candidateText !== null || typeof p.item.text !== 'string' || !p.item.text.length
           || Buffer.byteLength(p.item.text) > 65536 || (p.item.phase && p.item.phase !== 'final_answer')) fail('candidate-invalid')
         candidateText = p.item.text

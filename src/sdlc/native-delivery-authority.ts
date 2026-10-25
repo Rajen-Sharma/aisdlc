@@ -12,7 +12,7 @@ const bytes = (value: unknown) => Buffer.from(JSON.stringify(value))
 const hash = (value: Uint8Array) => createHash('sha256').update(value).digest('hex')
 const reject = (): never => { throw new Error('Native delivery authority rejected.') }
 export type NativeDeliveryConfiguration = {
-  storyId: number; taskKey: string; scopeHash: string; approvalHash: string; source: SourceCapsule
+  storyId: number; taskKey: string; scopeHash: string; approvalHash: string; source: SourceCapsule; feedbackHash?: string
   contract: { sourceHash: string; checkPolicyHash: string; allowedPaths: string[]; acceptanceCriteria: string[] }
   guardian: { keyId: string; revision: number; publicKey: import('node:crypto').KeyObject; publicKeyDer: string }
   trust: DeliveryTrust; policyText: string; runnerSource: string; workspaceRoot: string

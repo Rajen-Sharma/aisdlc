@@ -85,6 +85,7 @@ test('exact artifact reviews stay separate; stale proof, failed checks and feedb
     const reapproved = await inspectExecutionEligibility(payload, revision.id)
     assert.equal(reapproved.record.taskKey, eligible.record.taskKey)
     assert.equal(reapproved.record.feedbackHash, feedback.feedbackHash)
+    assert.equal(reapproved.record.feedbackContext?.record.content, feedback.content)
     assert.equal(reapproved.record.supersedes, story.id)
     assert.notEqual(reapproved.record.approvalHash, eligible.record.approvalHash)
     await assert.rejects(payload.create({ collection: 'sdlc-gates', user: human, overrideAccess: false, data: gate('mvp', artifactHash) }), /Superseded/)

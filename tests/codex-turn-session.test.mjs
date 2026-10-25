@@ -90,6 +90,19 @@ test('tools, model reroutes, mismatched identities and early success claims cann
   }
 })
 
+test('schema-supported interim commentary cannot replace the required final candidate', async () => {
+  const state = fixture(c => { if (c.request.method === 'turn/start') c.notify('item/completed', {
+    threadId: 'thread_1', turnId: 'turn_1', item: { type: 'agentMessage', phase: 'commentary', text: 'Untrusted interim success claim.' },
+  }) })
+  const result = await state.run()
+  assert.equal(result.completed, true); assert.equal(result.candidateText, text)
+  const early = fixture(c => { if (c.request.method === 'turn/start') {
+    c.notify('item/completed', { threadId: 'thread_1', turnId: 'turn_1', item: { type: 'agentMessage', phase: 'commentary', text: 'Done' } })
+    c.notify('turn/completed', { threadId: 'thread_1', turn: { id: 'turn_1', status: 'completed' } })
+  } })
+  assert.equal((await early.run()).completed, false)
+})
+
 test('timeout, caller cancellation, malformed bytes and output overflow fail without retries', async () => {
   const hanging = fixture(c => { if (c.request.method === 'turn/start') c.skip = true })
   assert.equal((await hanging.run({ deadlineAt: Date.now() + 30 })).failure, 'timeout')

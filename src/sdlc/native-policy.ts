@@ -39,6 +39,10 @@ export function buildNativePolicies(input: {
     || metadata?.metadataOnly !== true || metadata.authentication !== 'chatgpt' || metadata.model !== 'gpt-6-sol'
     || metadata.effectiveConfigChecked !== true || metadata.selectedModelListed !== true || metadata.threadPolicyChecked !== true || metadata.realModelCalls !== 0) return reject()
   validateSourceCapsule(plan.source, r.sourceHash)
+  if (plan.task.feedback && (!r.feedbackContext || r.feedbackContext.id !== plan.task.feedback || r.feedbackContext.record.storyId !== plan.task.supersedes
+    || digest(r.feedbackContext.record) !== r.feedbackHash || r.feedbackContext.feedbackHash !== r.feedbackHash
+    || typeof r.feedbackContext.record.content !== 'string' || r.feedbackContext.record.content.length > 4000)) return reject()
+  if (!plan.task.feedback && (r.feedbackHash || r.feedbackContext)) return reject()
   const client = authenticated(input.client, 'ai-sdlc/private-client-profile/v1', input.clientPublicKeyDer)
   const tools = authenticated(input.tools, 'ai-sdlc/private-tools-verifier/v1', input.authorityPublicKeyDer)
   for (const q of [client, tools]) {
@@ -66,7 +70,7 @@ export function buildNativePolicies(input: {
   if (!sha(client.hashes.nodeHash) || !sha(client.hashes.codexHash) || !sha(client.hashes.configHash) || tools.hashes.nodeHash !== client.hashes.nodeHash
     || typeof client.hostId !== 'string' || !/^[a-f0-9-]{36}$/.test(client.hostId) || !/^node@sha256:[a-f0-9]{64}$/.test(tools.image)) return reject()
   const runtimeMaterial = { nodeHash: client.hashes.nodeHash, codexHash: client.hashes.codexHash, configHash: client.hashes.configHash, brokerHash: client.hashes.brokerHash,
-    guardianHash: client.hashes.guardianHash, profileHash: client.profileHash,
+    guardianHash: client.hashes.guardianHash, profileHash: client.profileHash, feedbackHash: r.feedbackHash ?? null,
     guardianKeyFingerprint: createHash('sha256').update(Buffer.from(input.clientPublicKeyDer, 'base64')).digest('hex') }
   const runtimeHash = digest(runtimeMaterial), qualificationHash = digest({ client: input.client, tools: input.tools, ci })
   const trust = { keyId: 'azure-native-authority', authorityRevision: 1, publicKeyDer: input.authorityPublicKeyDer,
@@ -76,11 +80,12 @@ export function buildNativePolicies(input: {
   const clientPolicy = { version: 1, hostId: client.hostId, qualifiedBootId: client.bootId, storyId: plan.storyId,
     policy: { taskKey: r.taskKey, scopeHash: r.scopeHash, approvalHash: r.approvalHash, runtimeHash, keyId: trust.keyId,
       authorityRevision: trust.authorityRevision, publicKeyDer: trust.publicKeyDer, nativeRuntimeQualified: true, expiresAt: w.expiresAt },
-    task: plan.task, source: plan.source, runtimeMaterial, guardian }
+    task: plan.task, source: plan.source, runtimeMaterial, guardian, ...(r.feedbackContext ? { feedbackContext: r.feedbackContext } : {}) }
   const authorityPolicy = { version: 1, nativeRuntimeQualified: true, issuedAt: w.issuedAt, expiresAt: w.expiresAt,
     authorityBundleHash: tools.hashes.authorityBundleHash, nodeHash: tools.hashes.nodeHash, guardianValidFrom: w.issuedAt,
     toolsBootId: tools.bootId, delivery: { storyId: plan.storyId, taskKey: r.taskKey, scopeHash: r.scopeHash, approvalHash: r.approvalHash,
-      source: plan.source, contract: plan.task.contract, guardian, trust, workspaceRoot: '/var/lib/aisdlc-authority/verifier-work' } }
+      source: plan.source, contract: plan.task.contract, guardian, trust, workspaceRoot: '/var/lib/aisdlc-authority/verifier-work',
+      ...(r.feedbackHash ? { feedbackHash: r.feedbackHash } : {}) } }
   const executor: NativeExecutorConfiguration = { version: 1, enabled: true, nativeRuntimeQualified: true, storyId: plan.storyId,
     taskKey: r.taskKey, scopeHash: r.scopeHash, approvalHash: r.approvalHash, runtimeHash, clientHost: '20.53.249.58', toolsHost: '20.213.88.10',
     issuedAt: w.issuedAt, expiresAt: w.expiresAt, trust }

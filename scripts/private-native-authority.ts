@@ -60,6 +60,7 @@ async function main() {
         && r.taskKey === configuration.taskKey && r.scopeHash === configuration.scopeHash && r.approvalHash === configuration.approvalHash
         && digest(r.approvalGates) === configuration.approvalHash && r.sourceHash === configuration.contract.sourceHash
         && r.checkPolicyHash === configuration.contract.checkPolicyHash && r.maxAttempts === 3 && r.subscriptionOnly === true
+        && r.feedbackHash === configuration.feedbackHash
         && r.additionalChargesAllowed === false && r.executionAllowed === false && now() < raw.expiresAt
     }
     const ledger = new AzureAuthorityLedger({ accountName: 'aisdlctrialb7c13fa8', publicKey, token: () => authorityStorageToken() })

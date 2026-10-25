@@ -19,7 +19,8 @@ type Configuration = {
   task: { projectKey: string; contextHash: string; storyKey: string; revision: number; supersedes: number | null; feedback?: number;
     title: string; contract: { sourceHash: string; checkPolicyHash: string; allowedPaths: string[]; acceptanceCriteria: string[] } }
   source: SourceCapsule
-  runtimeMaterial: { nodeHash: string; codexHash: string; configHash: string; brokerHash: string; guardianHash: string; profileHash: string; guardianKeyFingerprint: string }
+  runtimeMaterial: { nodeHash: string; codexHash: string; configHash: string; brokerHash: string; guardianHash: string; profileHash: string; guardianKeyFingerprint: string; feedbackHash: string | null }
+  feedbackContext?: { id: number; feedbackHash: string; record: { storyId: number; scopeHash: string; artifactHash: string; content: string; actor: number } }
   guardian: { keyId: string; revision: number; publicKeyDer: string }
 }
 const exact = (value: unknown, fields: string[]): value is Record<string, unknown> => !!value && typeof value === 'object'
@@ -39,6 +40,9 @@ async function main() {
     || config.policy.runtimeHash !== digest(config.runtimeMaterial) || config.runtimeMaterial.profileHash !== digest(nativeUnitProperties)
     || !Number.isSafeInteger(config.storyId) || config.storyId < 1) throw new Error()
   validateSourceCapsule(config.source, config.task.contract.sourceHash)
+  if (config.runtimeMaterial.feedbackHash !== (config.feedbackContext?.feedbackHash ?? null)
+    || (!!config.task.feedback !== !!config.feedbackContext) || (config.feedbackContext && (config.task.feedback !== config.feedbackContext.id
+      || config.task.supersedes !== config.feedbackContext.record.storyId || digest(config.feedbackContext.record) !== config.feedbackContext.feedbackHash))) throw new Error()
   for (const [file, hash] of [
     ['/opt/aisdlc-node/24.14.0/node', config.runtimeMaterial.nodeHash], ['/opt/aisdlc-codex/0.155.1/codex', config.runtimeMaterial.codexHash],
     ['/var/lib/aisdlc-codex-broker/.codex/config.toml', config.runtimeMaterial.configHash],
@@ -66,6 +70,7 @@ async function main() {
     try {
       const prompt = `Implement the approved task as JSON source replacements only. Use no tools or external dependencies.\n${JSON.stringify({
         title: config.task.title, acceptanceCriteria: config.task.contract.acceptanceCriteria, sourceHash: config.source.sha256,
+        ...(config.feedbackContext ? { humanFeedback: config.feedbackContext.record.content, reviewedArtifactHash: config.feedbackContext.record.artifactHash } : {}),
         files: config.source.files.map(file => ({ path: file.path, content: Buffer.from(file.content, 'base64').toString('utf8') })),
       })}`
       work.send({ kind: 'task', unit: lease.unit, prompt, sourceHash: config.source.sha256, allowedPaths: config.task.contract.allowedPaths, deadlineAt: lease.deadline * 1000 })

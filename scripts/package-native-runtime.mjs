@@ -51,7 +51,7 @@ const sourceFiles = await Promise.all([...sources].sort().map(async file => {
   let committedHash = null
   try { committedHash = hash(execFileSync('git', ['show', `HEAD:${file}`], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })) } catch { /* Development package only. */ }
   return { file, sha256: hash(bytes), normalizedHash: hash(bytes.toString('utf8').replaceAll('\r\n', '\n')), committedHash }
-})))
+}))
 const manifest = { version: 1, sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', windowsHide: true }).trim(),
   sourceFiles, sourceTreeClean: sourceFiles.every(file => file.committedHash === file.normalizedHash), files, node: '24.14.0', codex: '0.155.1', model: 'gpt-6-sol',
   deployed: false, nativeRuntimeQualified: false, executionAllowed: false, realModelCalls: 0 }

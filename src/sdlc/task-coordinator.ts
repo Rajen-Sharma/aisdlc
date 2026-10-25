@@ -48,14 +48,18 @@ async function eligible(db: PoolClient, storyId: number) {
     return { id: Number(gate.id), kind, actorId: Number(gate.actor_id), decisionKey: gate.decision_key }
   })
   let feedbackHash: string | null = null
+  let feedbackContext: { id: number; feedbackHash: string; record: { storyId: number; scopeHash: string; artifactHash: string; content: string; actor: number } } | null = null
   if (story.feedback_id) {
     const feedback = (await db.query('SELECT * FROM sdlc_delivery_feedback WHERE id=$1 AND story_id=$2 AND project_key=$3',
       [story.feedback_id, story.supersedes_id, story.project_key])).rows[0]
     if (!feedback || feedback.feedback_hash !== digest({ storyId: Number(feedback.story_id), scopeHash: feedback.scope_hash,
       artifactHash: feedback.artifact_hash, content: feedback.content, actor: Number(feedback.actor_id) })) throw new Error('Feedback integrity failed.')
     feedbackHash = feedback.feedback_hash
+    feedbackContext = { id: Number(feedback.id), feedbackHash: feedback.feedback_hash, record: {
+      storyId: Number(feedback.story_id), scopeHash: feedback.scope_hash, artifactHash: feedback.artifact_hash,
+      content: feedback.content, actor: Number(feedback.actor_id) } }
   }
-  return { ...story, approvalGates, feedbackHash }
+  return { ...story, approvalGates, feedbackHash, feedbackContext }
 }
 async function lockedTask(db: PoolClient, id: number): Promise<Task> {
   const lookup = await db.query('SELECT s.project_key,s.story_key FROM sdlc_tasks t JOIN sdlc_stories s ON s.id=t.story_id WHERE t.id=$1', [id])
@@ -84,7 +88,7 @@ function executionSnapshot(story: Awaited<ReturnType<typeof eligible>>, storyId:
       storyId, storyRevision: Number(story.revision), projectKey: story.project_key, storyKey: story.story_key,
       scopeHash: story.scope_hash, approvalHash: digest(story.approvalGates), approvalGates: story.approvalGates,
       sourceHash: story.contract.sourceHash, checkPolicyHash: story.contract.checkPolicyHash,
-      ...(story.feedbackHash ? { feedbackHash: story.feedbackHash, supersedes: Number(story.supersedes_id) } : {}),
+      ...(story.feedbackHash ? { feedbackHash: story.feedbackHash, feedbackContext: story.feedbackContext, supersedes: Number(story.supersedes_id) } : {}),
       maxAttempts: 3, subscriptionOnly: true, additionalChargesAllowed: false, executionAllowed: false }
     return { record, snapshotHash: digest(record) }
 }
